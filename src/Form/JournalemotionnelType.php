@@ -16,13 +16,17 @@ class JournalemotionnelType extends AbstractType
         $builder
             ->add('notePersonnelle', TextareaType::class, [
                 'label' => 'Note personnelle',
+                'required' => true,
+                'help' => 'Ecrivez entre 5 et 255 caracteres.',
                 'attr' => [
                     'rows' => 6,
+                    'maxlength' => 255,
                 ],
             ])
             ->add('dateCreation', DateTimeType::class, [
                 'label' => 'Date creation',
                 'widget' => 'single_text',
+                'required' => true,
             ]);
     }
 
