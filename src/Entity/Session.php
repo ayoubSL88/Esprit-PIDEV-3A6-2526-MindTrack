@@ -36,7 +36,7 @@ class Session
     private bool $terminee;
 
         #[ORM\ManyToOne(targetEntity: Exercice::class, inversedBy: "sessions")]
-    #[ORM\JoinColumn(name: 'idEx', referencedColumnName: 'idEx', onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'idEx', referencedColumnName: 'id_ex', onDelete: 'CASCADE')]
     private Exercice $idEx;
 
     public function getIdSession()

@@ -36,7 +36,7 @@ class Todo
     private \DateTimeInterface $dateCompletion;
 
         #[ORM\ManyToOne(targetEntity: Exercice::class, inversedBy: "todos")]
-    #[ORM\JoinColumn(name: 'idExercice', referencedColumnName: 'idEx', onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'idExercice', referencedColumnName: 'id_ex', onDelete: 'CASCADE')]
     private Exercice $idExercice;
 
     #[ORM\Column(type: "integer")]

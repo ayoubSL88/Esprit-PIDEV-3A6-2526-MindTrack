@@ -21,7 +21,7 @@ class Suivihabitude
     private bool $etat;
 
         #[ORM\ManyToOne(targetEntity: Habitude::class, inversedBy: "suivihabitudes")]
-    #[ORM\JoinColumn(name: 'idHabitude', referencedColumnName: 'idHabitude', onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'idHabitude', referencedColumnName: 'id_habitude', onDelete: 'CASCADE')]
     private Habitude $idHabitude;
 
     #[ORM\Column(type: "integer")]

@@ -15,7 +15,7 @@ class Jalonprogression
     private int $idJalon;
 
         #[ORM\ManyToOne(targetEntity: Objectif::class, inversedBy: "jalonprogressions")]
-    #[ORM\JoinColumn(name: 'idObj', referencedColumnName: 'idObj', onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'idObj', referencedColumnName: 'id_obj', onDelete: 'CASCADE')]
     private Objectif $idObj;
 
     #[ORM\Column(type: "string", length: 150)]

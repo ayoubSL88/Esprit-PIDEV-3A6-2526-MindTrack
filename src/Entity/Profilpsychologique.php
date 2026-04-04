@@ -24,7 +24,7 @@ class Profilpsychologique
     private string $Description;
 
         #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "profilpsychologiques")]
-    #[ORM\JoinColumn(name: 'idU', referencedColumnName: 'idU', onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'idU', referencedColumnName: 'id_u', onDelete: 'CASCADE')]
     private Utilisateur $idU;
 
     public function getIdP()

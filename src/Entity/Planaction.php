@@ -21,7 +21,7 @@ class Planaction
     private int $priorite;
 
         #[ORM\ManyToOne(targetEntity: Objectif::class, inversedBy: "planactions")]
-    #[ORM\JoinColumn(name: 'idObj', referencedColumnName: 'idObj', onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'idObj', referencedColumnName: 'id_obj', onDelete: 'CASCADE')]
     private Objectif $idObj;
 
     public function getIdPlan()

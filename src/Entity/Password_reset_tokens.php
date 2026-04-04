@@ -15,7 +15,7 @@ class Password_reset_tokens
     private int $id;
 
         #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "password_reset_tokenss")]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idU', onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id_u', onDelete: 'CASCADE')]
     private Utilisateur $user_id;
 
     #[ORM\Column(type: "string", length: 100)]

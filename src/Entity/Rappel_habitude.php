@@ -15,7 +15,7 @@ class Rappel_habitude
     private int $idRappel;
 
         #[ORM\ManyToOne(targetEntity: Habitude::class, inversedBy: "rappel_habitudes")]
-    #[ORM\JoinColumn(name: 'idHabitude', referencedColumnName: 'idHabitude', onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'idHabitude', referencedColumnName: 'id_habitude', onDelete: 'CASCADE')]
     private Habitude $idHabitude;
 
     #[ORM\Column(type: "string")]
