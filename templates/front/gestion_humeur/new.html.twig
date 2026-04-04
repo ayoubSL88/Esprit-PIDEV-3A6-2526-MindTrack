@@ -1,0 +1,22 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}New Humeur{% endblock %}
+
+{% block content %}
+    {% include 'humeur/_crud_styles.html.twig' %}
+
+    <section class="crud-header">
+        <div>
+            <h1>Add a mood entry</h1>
+            <p>Record how you feel today.</p>
+        </div>
+        <a class="button-secondary" href="{{ path('front_gestion_humeur_index') }}">Back to list</a>
+    </section>
+
+    <div class="card-shell form-shell">
+        {% include 'humeur/_form.html.twig' with {
+            form: form,
+            button_label: 'Save entry'
+        } only %}
+    </div>
+{% endblock %}

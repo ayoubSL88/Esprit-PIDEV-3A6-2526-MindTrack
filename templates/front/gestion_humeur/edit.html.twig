@@ -1,0 +1,24 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}Edit Humeur{% endblock %}
+
+{% block content %}
+    {% include 'humeur/_crud_styles.html.twig' %}
+
+    <section class="crud-header">
+        <div>
+            <h1>Edit mood entry #{{ humeur.idH }}</h1>
+            <p>Adjust the details of this record.</p>
+        </div>
+        <a class="button-secondary" href="{{ path('front_gestion_humeur_index') }}">Back to list</a>
+    </section>
+
+    {% include 'humeur/_flash_messages.html.twig' %}
+
+    <div class="card-shell form-shell">
+        {% include 'humeur/_form.html.twig' with {
+            form: form,
+            button_label: 'Update entry'
+        } only %}
+    </div>
+{% endblock %}

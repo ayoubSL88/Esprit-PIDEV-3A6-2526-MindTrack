@@ -1,0 +1,8 @@
+{{ form_start(form, { attr: { class: 'crud-form' } }) }}
+    <div class="field-grid">
+        {{ form_row(form.date) }}
+        {{ form_row(form.typeHumeur) }}
+        {{ form_row(form.intensite) }}
+    </div>
+    <button class="button-primary" type="submit">{{ button_label }}</button>
+{{ form_end(form) }}

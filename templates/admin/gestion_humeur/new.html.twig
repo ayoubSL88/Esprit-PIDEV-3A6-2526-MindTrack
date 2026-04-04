@@ -1,0 +1,22 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}New Humeur{% endblock %}
+
+{% block content %}
+    {% include 'humeur/_crud_styles.html.twig' %}
+
+    <section class="crud-header">
+        <div>
+            <h1>Create humeur</h1>
+            <p>Add a new mood entry to the system.</p>
+        </div>
+        <a class="button-secondary" href="{{ path('admin_gestion_humeur_index') }}">Back to list</a>
+    </section>
+
+    <div class="card-shell form-shell">
+        {% include 'humeur/_form.html.twig' with {
+            form: form,
+            button_label: 'Create humeur'
+        } only %}
+    </div>
+{% endblock %}

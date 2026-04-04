@@ -3,6 +3,53 @@
 {% block page_title %}Gestion Humeur{% endblock %}
 
 {% block content %}
-    <h1>Gestion Humeur</h1>
-    <p>Entities: Journalemotionnel, Humeur.</p>
+    {% include 'humeur/_crud_styles.html.twig' %}
+
+    <section class="crud-header">
+        <div>
+            <h1>Gestion Humeur</h1>
+            <p>View and delete mood entries from the admin area.</p>
+        </div>
+        <div class="header-actions">
+            <a class="button-secondary" href="{{ path('admin_gestion_humeur_journal_index') }}">View journals</a>
+        </div>
+    </section>
+
+    {% include 'humeur/_flash_messages.html.twig' %}
+
+    <div class="card-shell">
+        {% if humeurs is empty %}
+            <p>No humeur entries found yet.</p>
+        {% else %}
+            <table class="crud-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Type humeur</th>
+                        <th>Intensite</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for humeur in humeurs %}
+                        <tr>
+                            <td>{{ humeur.idH }}</td>
+                            <td>{{ humeur.date|date('Y-m-d') }}</td>
+                            <td>{{ humeur.typeHumeur }}</td>
+                            <td>{{ humeur.intensite }}/10</td>
+                            <td class="actions-cell">
+                                <a href="{{ path('admin_gestion_humeur_show', {idH: humeur.idH}) }}">View</a>
+                                {% include 'humeur/_delete_form.html.twig' with {
+                                    delete_path: path('admin_gestion_humeur_delete', {idH: humeur.idH}),
+                                    csrf_token: csrf_token('delete_humeur_' ~ humeur.idH),
+                                    button_label: 'Delete'
+                                } only %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
 {% endblock %}

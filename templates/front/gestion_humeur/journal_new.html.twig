@@ -1,0 +1,22 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}New Journal{% endblock %}
+
+{% block content %}
+    {% include 'humeur/_crud_styles.html.twig' %}
+
+    <section class="crud-header">
+        <div>
+            <h1>Add a journal entry</h1>
+            <p>Capture your thoughts and emotions in your journal.</p>
+        </div>
+        <a class="button-secondary" href="{{ path('front_gestion_humeur_journal_index') }}">Back to list</a>
+    </section>
+
+    <div class="card-shell form-shell">
+        {% include 'journalemotionnel/_form.html.twig' with {
+            form: form,
+            button_label: 'Save journal'
+        } only %}
+    </div>
+{% endblock %}

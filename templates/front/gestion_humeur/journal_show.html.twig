@@ -1,0 +1,37 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}Journal Details{% endblock %}
+
+{% block content %}
+    {% include 'humeur/_crud_styles.html.twig' %}
+
+    <section class="crud-header">
+        <div>
+            <h1>Journal #{{ journal.idJ }}</h1>
+            <p>Review your journal entry in detail.</p>
+        </div>
+        <div class="header-actions">
+            <a class="button-secondary" href="{{ path('front_gestion_humeur_journal_index') }}">Back to list</a>
+            <a class="button-primary" href="{{ path('front_gestion_humeur_journal_edit', {idJ: journal.idJ}) }}">Edit</a>
+        </div>
+    </section>
+
+    <div class="card-shell details-grid">
+        <div>
+            <span class="detail-label">Date creation</span>
+            <strong>{{ journal.dateCreation|date('Y-m-d H:i') }}</strong>
+        </div>
+        <div style="grid-column: 1 / -1;">
+            <span class="detail-label">Note personnelle</span>
+            <strong>{{ journal.notePersonnelle }}</strong>
+        </div>
+    </div>
+
+    <div class="danger-zone">
+        {% include 'journalemotionnel/_delete_form.html.twig' with {
+            delete_path: path('front_gestion_humeur_journal_delete', {idJ: journal.idJ}),
+            csrf_token: csrf_token('delete_journal_' ~ journal.idJ),
+            button_label: 'Delete journal'
+        } only %}
+    </div>
+{% endblock %}

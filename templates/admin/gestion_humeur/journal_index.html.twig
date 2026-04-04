@@ -1,0 +1,50 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}Journal Emotionnel{% endblock %}
+
+{% block content %}
+    {% include 'humeur/_crud_styles.html.twig' %}
+
+    <section class="crud-header">
+        <div>
+            <h1>Journal emotionnel</h1>
+            <p>View and delete users' journal entries from the admin area.</p>
+        </div>
+    </section>
+
+    {% include 'humeur/_flash_messages.html.twig' %}
+
+    <div class="card-shell">
+        {% if journals is empty %}
+            <p>No journal entries found yet.</p>
+        {% else %}
+            <table class="crud-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Note</th>
+                        <th>Date creation</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for journal in journals %}
+                        <tr>
+                            <td>{{ journal.idJ }}</td>
+                            <td>{{ journal.notePersonnelle|length > 80 ? journal.notePersonnelle|slice(0, 80) ~ '...' : journal.notePersonnelle }}</td>
+                            <td>{{ journal.dateCreation|date('Y-m-d H:i') }}</td>
+                            <td class="actions-cell">
+                                <a href="{{ path('admin_gestion_humeur_journal_show', {idJ: journal.idJ}) }}">View</a>
+                                {% include 'journalemotionnel/_delete_form.html.twig' with {
+                                    delete_path: path('admin_gestion_humeur_journal_delete', {idJ: journal.idJ}),
+                                    csrf_token: csrf_token('delete_journal_' ~ journal.idJ),
+                                    button_label: 'Delete'
+                                } only %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+{% endblock %}
