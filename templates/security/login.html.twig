@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Sign in{% endblock %}
+
+{% block body %}
+    <main class="container" style="max-width: 560px; margin-top: 4rem;">
+        <h1>Sign in</h1>
+        <p>Use your MindTrack account to enter the front area or the admin area, depending on your role.</p>
+
+        {% if error %}
+            <div style="padding: 0.9rem 1rem; border: 1px solid #f2b8b5; background: #fff1f0; color: #8a1f17; border-radius: 10px; margin-bottom: 1rem;">
+                {{ error.messageKey|trans(error.messageData, 'security') }}
+            </div>
+        {% endif %}
+
+        <form method="post" style="display: grid; gap: 1rem;">
+            <div>
+                <label for="username" style="display: block; margin-bottom: 0.35rem; font-weight: 600;">Email</label>
+                <input type="email" id="username" name="_username" value="{{ last_username }}" autocomplete="email" required autofocus style="width: 100%; padding: 0.8rem 0.9rem; border: 1px solid #d7dde5; border-radius: 10px;">
+            </div>
+
+            <div>
+                <label for="password" style="display: block; margin-bottom: 0.35rem; font-weight: 600;">Password</label>
+                <input type="password" id="password" name="_password" autocomplete="current-password" required style="width: 100%; padding: 0.8rem 0.9rem; border: 1px solid #d7dde5; border-radius: 10px;">
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <button type="submit" style="padding: 0.85rem 1.1rem; border: 0; border-radius: 10px; background: #1f6f78; color: #fff; font-weight: 700; cursor: pointer;">
+                Sign in
+            </button>
+        </form>
+    </main>
+{% endblock %}

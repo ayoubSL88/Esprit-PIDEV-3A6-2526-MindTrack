@@ -6,9 +6,11 @@ use Doctrine\ORM\Mapping as ORM;
 
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Profilpsychologique;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity]
-class Utilisateur
+class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
 
     #[ORM\Id]
@@ -179,6 +181,31 @@ class Utilisateur
     public function setTotp_enabled($value)
     {
         $this->totp_enabled = $value;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->emailU;
+    }
+
+    public function getRoles(): array
+    {
+        $roles = ['ROLE_USER'];
+
+        if ($this->roleU === 'ADMIN' || $this->roleU === 'ROLE_ADMIN') {
+            $roles[] = 'ROLE_ADMIN';
+        }
+
+        return array_values(array_unique($roles));
+    }
+
+    public function getPassword(): string
+    {
+        return $this->mdpsU;
+    }
+
+    public function eraseCredentials(): void
+    {
     }
 
     #[ORM\OneToMany(mappedBy: "user_id", targetEntity: Password_reset_tokens::class)]
