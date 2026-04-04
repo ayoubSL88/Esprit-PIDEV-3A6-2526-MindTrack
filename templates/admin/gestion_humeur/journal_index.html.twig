@@ -38,6 +38,18 @@
                         </select>
                     </div>
                 </div>
+                <div class="filter-toolbar">
+                    <div class="sort-group">
+                        <label for="admin-journal-filter-type">Filter by</label>
+                        <select id="admin-journal-filter-type" class="sort-select">
+                            <option value="date">Date</option>
+                        </select>
+                    </div>
+                    <div class="sort-group">
+                        <label for="admin-journal-filter-value">Filter value</label>
+                        <input id="admin-journal-filter-value" class="filter-input" type="date">
+                    </div>
+                </div>
             </div>
             <table class="crud-table">
                 <thead>
@@ -74,7 +86,8 @@
         (() => {
             const input = document.getElementById('admin-journal-search');
             const sort = document.getElementById('admin-journal-sort');
-            if (!input || !sort) {
+            const filterValue = document.getElementById('admin-journal-filter-value');
+            if (!input || !sort || !filterValue) {
                 return;
             }
 
@@ -85,6 +98,7 @@
             const applyFilters = () => {
                 const term = input.value.trim().toLowerCase();
                 const direction = sort.value;
+                const filterTerm = filterValue.value.trim().toLowerCase();
                 const sortedRows = [...rows].sort((a, b) => {
                     const left = new Date(a.dataset.dateValue);
                     const right = new Date(b.dataset.dateValue);
@@ -97,9 +111,11 @@
 
                 sortedRows.forEach((row) => {
                     const searchable = row.dataset.searchValue || '';
-                    const matches = term === '' || searchable.includes(term);
-                    row.style.display = matches ? '' : 'none';
-                    if (matches) {
+                    const matchesSearch = term === '' || searchable.includes(term);
+                    const matchesFilter = filterTerm === '' || (row.dataset.dateValue || '').includes(filterTerm);
+                    const visible = matchesSearch && matchesFilter;
+                    row.style.display = visible ? '' : 'none';
+                    if (visible) {
                         visibleCount += 1;
                     }
                 });
@@ -109,6 +125,7 @@
 
             input.addEventListener('input', applyFilters);
             sort.addEventListener('change', applyFilters);
+            filterValue.addEventListener('input', applyFilters);
             applyFilters();
         })();
     </script>

@@ -41,6 +41,19 @@
                         </select>
                     </div>
                 </div>
+                <div class="filter-toolbar">
+                    <div class="sort-group">
+                        <label for="admin-humeur-filter-type">Filter by</label>
+                        <select id="admin-humeur-filter-type" class="sort-select">
+                            <option value="intensity">Intensity</option>
+                            <option value="date">Date</option>
+                        </select>
+                    </div>
+                    <div class="sort-group">
+                        <label for="admin-humeur-filter-value">Filter value</label>
+                        <input id="admin-humeur-filter-value" class="filter-input" type="number" min="1" max="10" placeholder="Filter by intensity...">
+                    </div>
+                </div>
             </div>
             <table class="crud-table">
                 <thead>
@@ -54,7 +67,7 @@
                 </thead>
                 <tbody id="admin-humeur-table">
                     {% for humeur in humeurs %}
-                        <tr data-search-value="{{ humeur.idH }} {{ humeur.typeHumeur|lower }}" data-date-value="{{ humeur.date|date('Y-m-d') }}">
+                        <tr data-search-value="{{ humeur.idH }} {{ humeur.typeHumeur|lower }}" data-date-value="{{ humeur.date|date('Y-m-d') }}" data-intensity-value="{{ humeur.intensite }}">
                             <td>{{ humeur.idH }}</td>
                             <td>{{ humeur.date|date('Y-m-d') }}</td>
                             <td>{{ humeur.typeHumeur }}</td>
@@ -79,7 +92,9 @@
         (() => {
             const input = document.getElementById('admin-humeur-search');
             const sort = document.getElementById('admin-humeur-sort');
-            if (!input || !sort) {
+            const filterType = document.getElementById('admin-humeur-filter-type');
+            const filterValue = document.getElementById('admin-humeur-filter-value');
+            if (!input || !sort || !filterType || !filterValue) {
                 return;
             }
 
@@ -90,6 +105,8 @@
             const applyFilters = () => {
                 const term = input.value.trim().toLowerCase();
                 const direction = sort.value;
+                const mode = filterType.value;
+                const filterTerm = filterValue.value.trim().toLowerCase();
                 const sortedRows = [...rows].sort((a, b) => {
                     const left = new Date(a.dataset.dateValue);
                     const right = new Date(b.dataset.dateValue);
@@ -102,9 +119,12 @@
 
                 sortedRows.forEach((row) => {
                     const searchable = row.dataset.searchValue || '';
-                    const matches = term === '' || searchable.includes(term);
-                    row.style.display = matches ? '' : 'none';
-                    if (matches) {
+                    const matchesSearch = term === '' || searchable.includes(term);
+                    const filterSource = mode === 'date' ? (row.dataset.dateValue || '') : (row.dataset.intensityValue || '');
+                    const matchesFilter = filterTerm === '' || filterSource.includes(filterTerm);
+                    const visible = matchesSearch && matchesFilter;
+                    row.style.display = visible ? '' : 'none';
+                    if (visible) {
                         visibleCount += 1;
                     }
                 });
@@ -114,6 +134,15 @@
 
             input.addEventListener('input', applyFilters);
             sort.addEventListener('change', applyFilters);
+            filterType.addEventListener('change', () => {
+                filterValue.value = '';
+                filterValue.type = filterType.value === 'date' ? 'date' : 'number';
+                filterValue.min = filterType.value === 'date' ? '' : '1';
+                filterValue.max = filterType.value === 'date' ? '' : '10';
+                filterValue.placeholder = filterType.value === 'date' ? 'Filter by date...' : 'Filter by intensity...';
+                applyFilters();
+            });
+            filterValue.addEventListener('input', applyFilters);
             applyFilters();
         })();
     </script>
