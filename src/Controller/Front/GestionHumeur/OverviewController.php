@@ -30,7 +30,7 @@ final class OverviewController extends AbstractController
     {
         $humeur = new Humeur();
         $humeur->setIdH($this->getNextId($entityManager));
-        $humeur->setDate(new \DateTimeImmutable('today'));
+        $humeur->setDate(new \DateTime('today'));
         $humeur->setTypeHumeur('Neutre');
         $humeur->setIntensite(5);
 
@@ -110,7 +110,7 @@ final class OverviewController extends AbstractController
     {
         $journal = new Journalemotionnel();
         $journal->setIdJ($this->getNextJournalId($entityManager));
-        $journal->setDateCreation(new \DateTimeImmutable());
+        $journal->setDateCreation(new \DateTime());
         $journal->setNotePersonnelle('');
 
         $form = $this->createForm(JournalemotionnelType::class, $journal);

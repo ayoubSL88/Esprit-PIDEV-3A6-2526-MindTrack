@@ -21,6 +21,27 @@
         {% if humeurs is empty %}
             <p>No humeur entries found yet.</p>
         {% else %}
+            <div class="search-panel">
+                <label for="admin-humeur-search">Search humeur</label>
+                <p>Search dynamically by humeur ID or humeur type.</p>
+                <div class="search-toolbar">
+                    <input
+                        id="admin-humeur-search"
+                        class="search-input"
+                        type="search"
+                        placeholder="Search by ID or humeur type..."
+                        data-search-target="admin-humeur-table"
+                        data-empty-target="admin-humeur-empty"
+                    >
+                    <div class="sort-group">
+                        <label for="admin-humeur-sort">Sort by date</label>
+                        <select id="admin-humeur-sort" class="sort-select">
+                            <option value="latest">Latest</option>
+                            <option value="oldest">Oldest</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
             <table class="crud-table">
                 <thead>
                     <tr>
@@ -31,9 +52,9 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="admin-humeur-table">
                     {% for humeur in humeurs %}
-                        <tr>
+                        <tr data-search-value="{{ humeur.idH }} {{ humeur.typeHumeur|lower }}" data-date-value="{{ humeur.date|date('Y-m-d') }}">
                             <td>{{ humeur.idH }}</td>
                             <td>{{ humeur.date|date('Y-m-d') }}</td>
                             <td>{{ humeur.typeHumeur }}</td>
@@ -50,6 +71,50 @@
                     {% endfor %}
                 </tbody>
             </table>
+            <div id="admin-humeur-empty" class="search-empty">No humeur matches your search.</div>
         {% endif %}
     </div>
+
+    <script>
+        (() => {
+            const input = document.getElementById('admin-humeur-search');
+            const sort = document.getElementById('admin-humeur-sort');
+            if (!input || !sort) {
+                return;
+            }
+
+            const tableBody = document.getElementById(input.dataset.searchTarget);
+            const emptyState = document.getElementById(input.dataset.emptyTarget);
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+
+            const applyFilters = () => {
+                const term = input.value.trim().toLowerCase();
+                const direction = sort.value;
+                const sortedRows = [...rows].sort((a, b) => {
+                    const left = new Date(a.dataset.dateValue);
+                    const right = new Date(b.dataset.dateValue);
+                    return direction === 'oldest' ? left - right : right - left;
+                });
+
+                sortedRows.forEach((row) => tableBody.appendChild(row));
+
+                let visibleCount = 0;
+
+                sortedRows.forEach((row) => {
+                    const searchable = row.dataset.searchValue || '';
+                    const matches = term === '' || searchable.includes(term);
+                    row.style.display = matches ? '' : 'none';
+                    if (matches) {
+                        visibleCount += 1;
+                    }
+                });
+
+                emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+            };
+
+            input.addEventListener('input', applyFilters);
+            sort.addEventListener('change', applyFilters);
+            applyFilters();
+        })();
+    </script>
 {% endblock %}

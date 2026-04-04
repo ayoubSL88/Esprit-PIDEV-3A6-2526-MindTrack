@@ -23,6 +23,7 @@ class HumeurType extends AbstractType
             ->add('typeHumeur', ChoiceType::class, [
                 'label' => 'Type humeur',
                 'placeholder' => 'Choisir une humeur',
+                'empty_data' => '',
                 'choices' => [
                     'Sad' => 'sad',
                     'Anxious' => 'anxious',

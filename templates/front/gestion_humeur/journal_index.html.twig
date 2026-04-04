@@ -19,19 +19,38 @@
         {% if journals is empty %}
             <p>No journal entries found yet.</p>
         {% else %}
+            <div class="search-panel">
+                <label for="journal-search">Search journal</label>
+                <p>Type part of your note to filter your journal entries instantly.</p>
+                <div class="search-toolbar">
+                    <input
+                        id="journal-search"
+                        class="search-input"
+                        type="search"
+                        placeholder="Search by note..."
+                        data-search-target="front-journal-table"
+                        data-empty-target="front-journal-empty"
+                    >
+                    <div class="sort-group">
+                        <label for="front-journal-sort">Sort by date</label>
+                        <select id="front-journal-sort" class="sort-select">
+                            <option value="latest">Latest</option>
+                            <option value="oldest">Oldest</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
             <table class="crud-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Note</th>
                         <th>Date creation</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="front-journal-table">
                     {% for journal in journals %}
-                        <tr>
-                            <td>{{ journal.idJ }}</td>
+                        <tr data-search-value="{{ journal.notePersonnelle|lower }}" data-date-value="{{ journal.dateCreation|date('c') }}">
                             <td>{{ journal.notePersonnelle|length > 80 ? journal.notePersonnelle|slice(0, 80) ~ '...' : journal.notePersonnelle }}</td>
                             <td>{{ journal.dateCreation|date('Y-m-d H:i') }}</td>
                             <td class="actions-cell">
@@ -47,6 +66,50 @@
                     {% endfor %}
                 </tbody>
             </table>
+            <div id="front-journal-empty" class="search-empty">No journal entry matches your search.</div>
         {% endif %}
     </div>
+
+    <script>
+        (() => {
+            const input = document.getElementById('journal-search');
+            const sort = document.getElementById('front-journal-sort');
+            if (!input || !sort) {
+                return;
+            }
+
+            const tableBody = document.getElementById(input.dataset.searchTarget);
+            const emptyState = document.getElementById(input.dataset.emptyTarget);
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+
+            const applyFilters = () => {
+                const term = input.value.trim().toLowerCase();
+                const direction = sort.value;
+                const sortedRows = [...rows].sort((a, b) => {
+                    const left = new Date(a.dataset.dateValue);
+                    const right = new Date(b.dataset.dateValue);
+                    return direction === 'oldest' ? left - right : right - left;
+                });
+
+                sortedRows.forEach((row) => tableBody.appendChild(row));
+
+                let visibleCount = 0;
+
+                sortedRows.forEach((row) => {
+                    const searchable = row.dataset.searchValue || '';
+                    const matches = term === '' || searchable.includes(term);
+                    row.style.display = matches ? '' : 'none';
+                    if (matches) {
+                        visibleCount += 1;
+                    }
+                });
+
+                emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+            };
+
+            input.addEventListener('input', applyFilters);
+            sort.addEventListener('change', applyFilters);
+            applyFilters();
+        })();
+    </script>
 {% endblock %}
