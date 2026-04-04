@@ -3,6 +3,20 @@
 {% block page_title %}Gestion Objectifs Personnelles{% endblock %}
 
 {% block content %}
-    <h1>Gestion Objectifs Personnelles</h1>
-    <p>Entities: Jalonprogression, Objectif, Planificateurintelligent, Planaction.</p>
+    <section class="page-header">
+        <div>
+            <h1>Gestion des objectifs personnelles</h1>
+            <p>L’admin peut consulter les données des 4 entités et supprimer les enregistrements.</p>
+        </div>
+    </section>
+
+    <section class="grid cards">
+        {% for module in modules %}
+            <article class="card">
+                <h3>{{ module.title }}</h3>
+                <p>{{ module.description }}</p>
+                <a class="btn btn-primary" href="{{ path(module.route) }}">Ouvrir</a>
+            </article>
+        {% endfor %}
+    </section>
 {% endblock %}

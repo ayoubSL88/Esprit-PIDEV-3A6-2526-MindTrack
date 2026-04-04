@@ -1,0 +1,46 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+    {% include 'front/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
+
+    <section class="page-header">
+        <div>
+            <h1>{{ page_title }}</h1>
+            <p>Configure l’objectif lié, le mode d’organisation et la capacité quotidienne.</p>
+        </div>
+        <a class="btn btn-secondary" href="{{ path('front_planificateurintelligent_index') }}">Retour à la liste</a>
+    </section>
+
+    <section class="form-card">
+        {{ form_start(form, {attr: {class: 'form-grid'}}) }}
+            {{ form_errors(form) }}
+            <div>
+                {{ form_label(form.idObj) }}
+                {{ form_widget(form.idObj) }}
+                <div class="field-error">{{ form_errors(form.idObj) }}</div>
+            </div>
+            <div>
+                {{ form_label(form.modeOrganisation) }}
+                {{ form_widget(form.modeOrganisation) }}
+                <div class="field-error">{{ form_errors(form.modeOrganisation) }}</div>
+            </div>
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                <div>
+                    {{ form_label(form.capaciteQuotidienne) }}
+                    {{ form_widget(form.capaciteQuotidienne) }}
+                    <div class="field-error">{{ form_errors(form.capaciteQuotidienne) }}</div>
+                </div>
+                <div>
+                    {{ form_label(form.derniereGeneration) }}
+                    {{ form_widget(form.derniereGeneration) }}
+                    <div class="field-error">{{ form_errors(form.derniereGeneration) }}</div>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+            </div>
+        {{ form_end(form) }}
+    </section>
+{% endblock %}

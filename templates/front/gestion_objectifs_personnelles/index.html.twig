@@ -1,8 +1,22 @@
 {% extends 'layouts/front_base.html.twig' %}
 
-{% block page_title %}Mes Objectifs{% endblock %}
+{% block page_title %}Gestion des objectifs{% endblock %}
 
 {% block content %}
-    <h1>Mes Objectifs</h1>
-    <p>Entities: Jalonprogression, Objectif, Planificateurintelligent, Planaction.</p>
+    <section class="page-header">
+        <div>
+            <h1>Gestion des objectifs personnelles</h1>
+            <p>Choisis le module que tu veux gérer puis utilise les écrans de liste, ajout, modification et suppression.</p>
+        </div>
+    </section>
+
+    <section class="grid cards">
+        {% for module in modules %}
+            <article class="card">
+                <h3>{{ module.title }}</h3>
+                <p>{{ module.description }}</p>
+                <a class="btn btn-primary" href="{{ path(module.route) }}">Ouvrir</a>
+            </article>
+        {% endfor %}
+    </section>
 {% endblock %}
