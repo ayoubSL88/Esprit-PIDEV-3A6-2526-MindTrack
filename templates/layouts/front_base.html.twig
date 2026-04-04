@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Front - {% block page_title %}MindTrack{% endblock %}{% endblock %}
+
+{% block body %}
+    {% include 'shared/_navbar.html.twig' with { office: 'front' } %}
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+{% endblock %}

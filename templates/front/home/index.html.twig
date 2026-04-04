@@ -1,0 +1,32 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}Accueil{% endblock %}
+
+{% block content %}
+    <h1>MindTrack - Navigation de test</h1>
+    <p>Utilisez cette page comme point d'entree pour visiter chaque ecran un par un.</p>
+
+    <section>
+        <h2>Frontoffice</h2>
+        <ul>
+            <li><a href="{{ path('front_home') }}">Accueil</a></li>
+            <li><a href="{{ path('front_gestion_objectifs_personnelles_index') }}">Gestion objectifs personnelles</a></li>
+            <li><a href="{{ path('front_gestion_suivi_habitudes_index') }}">Gestion suivi habitudes</a></li>
+            <li><a href="{{ path('front_gestion_exercices_index') }}">Gestion exercices</a></li>
+            <li><a href="{{ path('front_gestion_humeur_index') }}">Gestion humeur</a></li>
+            <li><a href="{{ path('front_gestion_user_index') }}">Gestion user</a></li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Backoffice</h2>
+        <ul>
+            <li><a href="{{ path('admin_dashboard') }}">Dashboard admin</a></li>
+            <li><a href="{{ path('admin_gestion_objectifs_personnelles_index') }}">Gestion objectifs personnelles</a></li>
+            <li><a href="{{ path('admin_gestion_suivi_habitudes_index') }}">Gestion suivi habitudes</a></li>
+            <li><a href="{{ path('admin_gestion_exercices_index') }}">Gestion exercices</a></li>
+            <li><a href="{{ path('admin_gestion_humeur_index') }}">Gestion humeur</a></li>
+            <li><a href="{{ path('admin_gestion_user_index') }}">Gestion user</a></li>
+        </ul>
+    </section>
+{% endblock %}

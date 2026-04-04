@@ -1,0 +1,25 @@
+<header class="topbar">
+    <div class="container topbar-inner">
+        <a class="brand" href="{{ path(office == 'admin' ? 'admin_dashboard' : 'front_home') }}">MindTrack</a>
+
+        <nav class="navlinks">
+            {% if office == 'admin' %}
+                <a href="{{ path('front_home') }}">Front</a>
+                <a href="{{ path('admin_dashboard') }}">Dashboard</a>
+                <a href="{{ path('admin_gestion_objectifs_personnelles_index') }}">Objectifs</a>
+                <a href="{{ path('admin_gestion_suivi_habitudes_index') }}">Habitudes</a>
+                <a href="{{ path('admin_gestion_exercices_index') }}">Exercices</a>
+                <a href="{{ path('admin_gestion_humeur_index') }}">Humeur</a>
+                <a href="{{ path('admin_gestion_user_index') }}">Users</a>
+            {% else %}
+                <a href="{{ path('front_home') }}">Accueil</a>
+                <a href="{{ path('admin_dashboard') }}">Admin</a>
+                <a href="{{ path('front_gestion_objectifs_personnelles_index') }}">Objectifs</a>
+                <a href="{{ path('front_gestion_suivi_habitudes_index') }}">Habitudes</a>
+                <a href="{{ path('front_gestion_exercices_index') }}">Exercices</a>
+                <a href="{{ path('front_gestion_humeur_index') }}">Humeur</a>
+                <a href="{{ path('front_gestion_user_index') }}">Profil</a>
+            {% endif %}
+        </nav>
+    </div>
+</header>

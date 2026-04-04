@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}Welcome!{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        {% block stylesheets %}
+            <style>
+                :root {
+                    --bg: #f7f5f1;
+                    --surface: #ffffff;
+                    --ink: #202227;
+                    --muted: #5d636d;
+                    --line: #dde2ea;
+                    --brand: #1f6f78;
+                }
+
+                * {
+                    box-sizing: border-box;
+                }
+
+                body {
+                    margin: 0;
+                    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                    color: var(--ink);
+                    background: radial-gradient(circle at top right, #d9ecef 0, var(--bg) 45%);
+                }
+
+                .container {
+                    width: min(1120px, 92%);
+                    margin: 0 auto;
+                }
+
+                .topbar {
+                    position: sticky;
+                    top: 0;
+                    z-index: 10;
+                    background: color-mix(in srgb, var(--surface) 90%, transparent);
+                    border-bottom: 1px solid var(--line);
+                    backdrop-filter: blur(8px);
+                }
+
+                .topbar-inner {
+                    min-height: 64px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 1rem;
+                }
+
+                .brand {
+                    text-decoration: none;
+                    color: var(--ink);
+                    font-weight: 700;
+                    letter-spacing: 0.03em;
+                }
+
+                .navlinks {
+                    display: flex;
+                    gap: 1rem;
+                    flex-wrap: wrap;
+                }
+
+                .navlinks a {
+                    text-decoration: none;
+                    color: var(--muted);
+                    font-size: 0.95rem;
+                    padding: 0.3rem 0;
+                    border-bottom: 2px solid transparent;
+                    transition: border-color 0.2s ease, color 0.2s ease;
+                }
+
+                .navlinks a:hover {
+                    color: var(--ink);
+                    border-color: var(--brand);
+                }
+
+                main {
+                    margin: 1.75rem auto 3rem;
+                    background: var(--surface);
+                    border: 1px solid var(--line);
+                    border-radius: 14px;
+                    padding: 1.5rem;
+                }
+
+                h1 {
+                    margin-top: 0;
+                }
+
+                p {
+                    color: var(--muted);
+                }
+            </style>
+        {% endblock %}
+
+        {% block javascripts %}
+        {% endblock %}
+
+        {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
+        {% if frankenphpHotReload %}
+        <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
+        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
+        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
+        {% endif %}
+    </head>
+    <body>
+        {% block body %}{% endblock %}
+    </body>
+</html>
