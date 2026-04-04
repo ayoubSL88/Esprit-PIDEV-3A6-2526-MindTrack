@@ -7,6 +7,12 @@
         <h1>Sign in</h1>
         <p>Use your MindTrack account to enter the front area or the admin area, depending on your role.</p>
 
+        {% for message in app.flashes('success') %}
+            <div style="padding: 0.9rem 1rem; border: 1px solid #b8dfca; background: #edf9f1; color: #0f5132; border-radius: 10px; margin-bottom: 1rem;">
+                {{ message }}
+            </div>
+        {% endfor %}
+
         {% if error %}
             <div style="padding: 0.9rem 1rem; border: 1px solid #f2b8b5; background: #fff1f0; color: #8a1f17; border-radius: 10px; margin-bottom: 1rem;">
                 {{ error.messageKey|trans(error.messageData, 'security') }}
@@ -30,5 +36,10 @@
                 Sign in
             </button>
         </form>
+
+        <p style="margin-top: 1rem; color: var(--muted);">
+            Don't have an account?
+            <a href="{{ path('app_register') }}" style="color: var(--brand); font-weight: 600;">Sign up</a>
+        </p>
     </main>
 {% endblock %}
