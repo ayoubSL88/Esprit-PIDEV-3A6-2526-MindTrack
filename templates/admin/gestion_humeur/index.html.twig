@@ -3,6 +3,7 @@
 {% block page_title %}Gestion Humeur{% endblock %}
 
 {% block content %}
+<<<<<<< HEAD
     <div class="page-stack">
         {{ component('PageHeader', {
             eyebrow: 'Administration',
@@ -10,4 +11,149 @@
             copy: 'Entities: Journalemotionnel, Humeur.'
         }) }}
     </div>
+=======
+    {% include 'humeur/_crud_styles.html.twig' %}
+
+    <section class="crud-header">
+        <div>
+            <h1>Gestion Humeur</h1>
+            <p>View and delete mood entries from the admin area.</p>
+        </div>
+        <div class="header-actions">
+            <a class="button-secondary" href="{{ path('admin_gestion_humeur_journal_index') }}">View journals</a>
+        </div>
+    </section>
+
+    {% include 'humeur/_flash_messages.html.twig' %}
+
+    <div class="card-shell">
+        {% if humeurs is empty %}
+            <p>No humeur entries found yet.</p>
+        {% else %}
+            <div class="search-panel">
+                <label for="admin-humeur-search">Search humeur</label>
+                <p>Search dynamically by humeur ID or humeur type.</p>
+                <div class="search-toolbar">
+                    <input
+                        id="admin-humeur-search"
+                        class="search-input"
+                        type="search"
+                        placeholder="Search by ID or humeur type..."
+                        data-search-target="admin-humeur-table"
+                        data-empty-target="admin-humeur-empty"
+                    >
+                    <div class="sort-group">
+                        <label for="admin-humeur-sort">Sort by date</label>
+                        <select id="admin-humeur-sort" class="sort-select">
+                            <option value="latest">Latest</option>
+                            <option value="oldest">Oldest</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-toolbar">
+                    <div class="sort-group">
+                        <label for="admin-humeur-filter-type">Filter by</label>
+                        <select id="admin-humeur-filter-type" class="sort-select">
+                            <option value="intensity">Intensity</option>
+                            <option value="date">Date</option>
+                        </select>
+                    </div>
+                    <div class="sort-group">
+                        <label for="admin-humeur-filter-value">Filter value</label>
+                        <input id="admin-humeur-filter-value" class="filter-input" type="number" min="1" max="10" placeholder="Filter by intensity...">
+                    </div>
+                </div>
+            </div>
+            <table class="crud-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Type humeur</th>
+                        <th>Intensite</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-humeur-table">
+                    {% for humeur in humeurs %}
+                        <tr data-search-value="{{ humeur.idH }} {{ humeur.typeHumeur|lower }}" data-date-value="{{ humeur.date|date('Y-m-d') }}" data-intensity-value="{{ humeur.intensite }}">
+                            <td>{{ humeur.idH }}</td>
+                            <td>{{ humeur.date|date('Y-m-d') }}</td>
+                            <td>{{ humeur.typeHumeur }}</td>
+                            <td>{{ humeur.intensite }}/10</td>
+                            <td class="actions-cell">
+                                <a href="{{ path('admin_gestion_humeur_show', {idH: humeur.idH}) }}">View</a>
+                                {% include 'humeur/_delete_form.html.twig' with {
+                                    delete_path: path('admin_gestion_humeur_delete', {idH: humeur.idH}),
+                                    csrf_token: csrf_token('delete_humeur_' ~ humeur.idH),
+                                    button_label: 'Delete'
+                                } only %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div id="admin-humeur-empty" class="search-empty">No humeur matches your search.</div>
+        {% endif %}
+    </div>
+
+    <script>
+        (() => {
+            const input = document.getElementById('admin-humeur-search');
+            const sort = document.getElementById('admin-humeur-sort');
+            const filterType = document.getElementById('admin-humeur-filter-type');
+            const filterValue = document.getElementById('admin-humeur-filter-value');
+            if (!input || !sort || !filterType || !filterValue) {
+                return;
+            }
+
+            const tableBody = document.getElementById(input.dataset.searchTarget);
+            const emptyState = document.getElementById(input.dataset.emptyTarget);
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+
+            const applyFilters = () => {
+                const term = input.value.trim().toLowerCase();
+                const direction = sort.value;
+                const mode = filterType.value;
+                const filterTerm = filterValue.value.trim().toLowerCase();
+                const sortedRows = [...rows].sort((a, b) => {
+                    const left = new Date(a.dataset.dateValue);
+                    const right = new Date(b.dataset.dateValue);
+                    return direction === 'oldest' ? left - right : right - left;
+                });
+
+                sortedRows.forEach((row) => tableBody.appendChild(row));
+
+                let visibleCount = 0;
+
+                sortedRows.forEach((row) => {
+                    const searchable = row.dataset.searchValue || '';
+                    const matchesSearch = term === '' || searchable.includes(term);
+                    const filterSource = mode === 'date' ? (row.dataset.dateValue || '') : (row.dataset.intensityValue || '');
+                    const matchesFilter = filterTerm === '' || filterSource.includes(filterTerm);
+                    const visible = matchesSearch && matchesFilter;
+                    row.style.display = visible ? '' : 'none';
+                    if (visible) {
+                        visibleCount += 1;
+                    }
+                });
+
+                emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+            };
+
+            input.addEventListener('input', applyFilters);
+            sort.addEventListener('change', applyFilters);
+            filterType.addEventListener('change', () => {
+                filterValue.value = '';
+                filterValue.type = filterType.value === 'date' ? 'date' : 'number';
+                filterValue.min = filterType.value === 'date' ? '' : '1';
+                filterValue.max = filterType.value === 'date' ? '' : '10';
+                filterValue.placeholder = filterType.value === 'date' ? 'Filter by date...' : 'Filter by intensity...';
+                applyFilters();
+            });
+            filterValue.addEventListener('input', applyFilters);
+            applyFilters();
+        })();
+    </script>
+>>>>>>> origin/GestionHumeur
 {% endblock %}

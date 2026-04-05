@@ -1,0 +1,132 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}Journal Emotionnel{% endblock %}
+
+{% block content %}
+    {% include 'humeur/_crud_styles.html.twig' %}
+
+    <section class="crud-header">
+        <div>
+            <h1>Journal emotionnel</h1>
+            <p>View and delete users' journal entries from the admin area.</p>
+        </div>
+    </section>
+
+    {% include 'humeur/_flash_messages.html.twig' %}
+
+    <div class="card-shell">
+        {% if journals is empty %}
+            <p>No journal entries found yet.</p>
+        {% else %}
+            <div class="search-panel">
+                <label for="admin-journal-search">Search journal</label>
+                <p>Search dynamically by journal ID or note content.</p>
+                <div class="search-toolbar">
+                    <input
+                        id="admin-journal-search"
+                        class="search-input"
+                        type="search"
+                        placeholder="Search by ID or note..."
+                        data-search-target="admin-journal-table"
+                        data-empty-target="admin-journal-empty"
+                    >
+                    <div class="sort-group">
+                        <label for="admin-journal-sort">Sort by date</label>
+                        <select id="admin-journal-sort" class="sort-select">
+                            <option value="latest">Latest</option>
+                            <option value="oldest">Oldest</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-toolbar">
+                    <div class="sort-group">
+                        <label for="admin-journal-filter-type">Filter by</label>
+                        <select id="admin-journal-filter-type" class="sort-select">
+                            <option value="date">Date</option>
+                        </select>
+                    </div>
+                    <div class="sort-group">
+                        <label for="admin-journal-filter-value">Filter value</label>
+                        <input id="admin-journal-filter-value" class="filter-input" type="date">
+                    </div>
+                </div>
+            </div>
+            <table class="crud-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Note</th>
+                        <th>Date creation</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-journal-table">
+                    {% for journal in journals %}
+                        <tr data-search-value="{{ journal.idJ }} {{ journal.notePersonnelle|lower }}" data-date-value="{{ journal.dateCreation|date('c') }}">
+                            <td>{{ journal.idJ }}</td>
+                            <td>{{ journal.notePersonnelle|length > 80 ? journal.notePersonnelle|slice(0, 80) ~ '...' : journal.notePersonnelle }}</td>
+                            <td>{{ journal.dateCreation|date('Y-m-d H:i') }}</td>
+                            <td class="actions-cell">
+                                <a href="{{ path('admin_gestion_humeur_journal_show', {idJ: journal.idJ}) }}">View</a>
+                                {% include 'journalemotionnel/_delete_form.html.twig' with {
+                                    delete_path: path('admin_gestion_humeur_journal_delete', {idJ: journal.idJ}),
+                                    csrf_token: csrf_token('delete_journal_' ~ journal.idJ),
+                                    button_label: 'Delete'
+                                } only %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div id="admin-journal-empty" class="search-empty">No journal matches your search.</div>
+        {% endif %}
+    </div>
+
+    <script>
+        (() => {
+            const input = document.getElementById('admin-journal-search');
+            const sort = document.getElementById('admin-journal-sort');
+            const filterValue = document.getElementById('admin-journal-filter-value');
+            if (!input || !sort || !filterValue) {
+                return;
+            }
+
+            const tableBody = document.getElementById(input.dataset.searchTarget);
+            const emptyState = document.getElementById(input.dataset.emptyTarget);
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+
+            const applyFilters = () => {
+                const term = input.value.trim().toLowerCase();
+                const direction = sort.value;
+                const filterTerm = filterValue.value.trim().toLowerCase();
+                const sortedRows = [...rows].sort((a, b) => {
+                    const left = new Date(a.dataset.dateValue);
+                    const right = new Date(b.dataset.dateValue);
+                    return direction === 'oldest' ? left - right : right - left;
+                });
+
+                sortedRows.forEach((row) => tableBody.appendChild(row));
+
+                let visibleCount = 0;
+
+                sortedRows.forEach((row) => {
+                    const searchable = row.dataset.searchValue || '';
+                    const matchesSearch = term === '' || searchable.includes(term);
+                    const matchesFilter = filterTerm === '' || (row.dataset.dateValue || '').includes(filterTerm);
+                    const visible = matchesSearch && matchesFilter;
+                    row.style.display = visible ? '' : 'none';
+                    if (visible) {
+                        visibleCount += 1;
+                    }
+                });
+
+                emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+            };
+
+            input.addEventListener('input', applyFilters);
+            sort.addEventListener('change', applyFilters);
+            filterValue.addEventListener('input', applyFilters);
+            applyFilters();
+        })();
+    </script>
+{% endblock %}

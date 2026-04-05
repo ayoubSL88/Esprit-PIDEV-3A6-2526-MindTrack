@@ -1,0 +1,40 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}Humeur Details{% endblock %}
+
+{% block content %}
+    {% include 'humeur/_crud_styles.html.twig' %}
+
+    <section class="crud-header">
+        <div>
+            <h1>Humeur #{{ humeur.idH }}</h1>
+            <p>Detailed view of the selected mood record.</p>
+        </div>
+        <div class="header-actions">
+            <a class="button-secondary" href="{{ path('admin_gestion_humeur_index') }}">Back to list</a>
+        </div>
+    </section>
+
+    <div class="card-shell details-grid">
+        <div>
+            <span class="detail-label">Date</span>
+            <strong>{{ humeur.date|date('Y-m-d') }}</strong>
+        </div>
+        <div>
+            <span class="detail-label">Type humeur</span>
+            <strong>{{ humeur.typeHumeur }}</strong>
+        </div>
+        <div>
+            <span class="detail-label">Intensite</span>
+            <strong>{{ humeur.intensite }}/10</strong>
+        </div>
+    </div>
+
+    <div class="danger-zone">
+        {% include 'humeur/_delete_form.html.twig' with {
+            delete_path: path('admin_gestion_humeur_delete', {idH: humeur.idH}),
+            csrf_token: csrf_token('delete_humeur_' ~ humeur.idH),
+            button_label: 'Delete humeur'
+        } only %}
+    </div>
+{% endblock %}
