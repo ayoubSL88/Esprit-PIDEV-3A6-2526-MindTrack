@@ -80,6 +80,104 @@
     @apply flex flex-col gap-3 border-b border-border/80 pb-5;
   }
 
+  .stack {
+    @apply grid gap-4;
+  }
+
+  .grid.cards {
+    @apply gap-4 md:grid-cols-2 xl:grid-cols-4;
+  }
+
+  .card,
+  .table-card,
+  .form-card {
+    @apply rounded-3xl border border-border bg-surface p-5 shadow-soft;
+    background-image:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.88)),
+      linear-gradient(135deg, rgba(201, 204, 255, 0.18), rgba(162, 164, 242, 0.1));
+  }
+
+  .card h3 {
+    @apply mb-2 mt-0 text-lg font-semibold text-ink;
+  }
+
+  .actions,
+  .inline-actions {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .filter-bar {
+    @apply mb-4 grid items-end gap-4 md:grid-cols-2 xl:grid-cols-4;
+  }
+
+  label {
+    @apply mb-1.5 block text-sm font-semibold text-ink;
+  }
+
+  input,
+  textarea,
+  select {
+    @apply w-full rounded-2xl border border-border bg-white/95 px-4 py-3 text-sm text-ink shadow-sm outline-none transition placeholder:text-muted/80 focus:border-brand focus:ring-2 focus:ring-brand/20;
+  }
+
+  input[type="checkbox"] {
+    @apply w-auto;
+  }
+
+  .checkbox-row {
+    @apply flex items-center gap-3;
+  }
+
+  .checkbox-row label {
+    @apply mb-0;
+  }
+
+  .form-errors,
+  .field-error {
+    @apply text-xs font-medium text-danger;
+  }
+
+  .flash {
+    @apply mb-4 rounded-2xl border px-4 py-3 text-sm font-medium shadow-sm;
+  }
+
+  .flash-success {
+    @apply border-success-border bg-success-soft text-success;
+  }
+
+  .flash-error {
+    @apply border-danger-border bg-danger-soft text-danger;
+  }
+
+  .table-card table,
+  table {
+    @apply w-full border-collapse;
+  }
+
+  .table-card th,
+  .table-card td,
+  table th,
+  table td {
+    @apply border-b border-border px-4 py-4 text-left align-top;
+  }
+
+  .table-card th,
+  table th {
+    @apply text-xs font-semibold uppercase tracking-[0.16em] text-muted;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand;
+  }
+
+  .muted {
+    @apply text-muted;
+  }
+
+  .table-empty {
+    @apply px-4 py-6 text-sm text-muted;
+  }
+
   .page-title {
     @apply text-3xl font-semibold tracking-tight text-ink;
   }
@@ -310,5 +408,41 @@
 
   .journey-copy {
     @apply mt-2 text-sm leading-6 text-muted;
+  }
+
+  @media (max-width: 768px) {
+    main {
+      @apply px-4;
+    }
+
+    .table-card table,
+    .table-card thead,
+    .table-card tbody,
+    .table-card tr,
+    .table-card th,
+    .table-card td,
+    table,
+    thead,
+    tbody,
+    tr,
+    th,
+    td {
+      display: block;
+    }
+
+    .table-card thead,
+    thead {
+      display: none;
+    }
+
+    .table-card tr,
+    tr {
+      @apply border-b border-border py-2;
+    }
+
+    .table-card td,
+    td {
+      @apply border-0 py-1;
+    }
   }
 }

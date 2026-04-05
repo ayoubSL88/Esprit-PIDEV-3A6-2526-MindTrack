@@ -7,25 +7,6 @@
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         {% block stylesheets %}
             <link rel="stylesheet" href="{{ asset('build/app.css') }}">
-            <style>
-                .field-error {
-                    color: #b42318;
-                    font-size: 0.75rem;
-                    font-weight: 500;
-                }
-
-                .field-input-invalid,
-                .field-select.field-input-invalid {
-                    border-color: rgba(220, 38, 38, 0.7) !important;
-                    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.16) !important;
-                }
-
-                .field-input-valid,
-                .field-select.field-input-valid {
-                    border-color: rgba(22, 163, 74, 0.7) !important;
-                    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.16) !important;
-                }
-            </style>
         {% endblock %}
 
         {% block javascripts %}

@@ -1,0 +1,83 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}Jalons{% endblock %}
+
+{% block content %}
+    {% include 'admin/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
+
+    <section class="page-header">
+        <div>
+            <h1>Liste admin des jalons de progression</h1>
+            <p>L’admin peut consulter, filtrer et supprimer les jalons enregistrés.</p>
+        </div>
+        <a class="btn btn-secondary" href="{{ path('admin_gestion_objectifs_personnelles_index') }}">Retour au module</a>
+    </section>
+
+    <form method="get" class="table-card filter-bar">
+        <div>
+            <label for="admin_jalon_q">Mot-clé</label>
+            <input id="admin_jalon_q" type="text" name="q" value="{{ filters.q }}" placeholder="Titre du jalon ou objectif">
+        </div>
+        <div>
+            <label for="admin_jalon_sort">Tri</label>
+            <select id="admin_jalon_sort" name="sort">
+                {% for label, value in sort_choices %}
+                    <option value="{{ value }}" {{ filters.sort == value ? 'selected' : '' }}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="admin_jalon_status">Statut</label>
+            <select id="admin_jalon_status" name="status">
+                <option value="">Tous</option>
+                {% for label, value in status_choices %}
+                    <option value="{{ value }}" {{ filters.status == value ? 'selected' : '' }}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Filtrer</button>
+            <a class="btn btn-secondary" href="{{ path('admin_jalonprogression_index') }}">Réinitialiser</a>
+        </div>
+    </form>
+
+    <section class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Objectif</th>
+                    <th>Titre</th>
+                    <th>Date cible</th>
+                    <th>Date atteinte</th>
+                    <th>Progression</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for jalon in jalons %}
+                    <tr>
+                        <td>{{ jalon.idJalon }}</td>
+                        <td>{{ jalon.idObj.titre }}</td>
+                        <td>{{ jalon.titre }}</td>
+                        <td>{{ jalon.dateCible|date('d/m/Y') }}</td>
+                        <td>{{ jalon.dateAtteinte|date('d/m/Y') }}</td>
+                        <td>{{ jalon.pourcentageProgression }}%</td>
+                        <td><span class="badge">{{ jalon.atteint ? 'Atteint' : 'En cours' }}</span></td>
+                        <td>
+                            <form method="post" action="{{ path('admin_jalonprogression_delete', {idJalon: jalon.idJalon}) }}" onsubmit="return confirm('Supprimer ce jalon ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_jalon_' ~ jalon.idJalon) }}">
+                                <button class="btn btn-danger" type="submit">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="muted">Aucun jalon trouvé.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}Planificateurs intelligents{% endblock %}
+
+{% block content %}
+    {% include 'front/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
+
+    <section class="page-header">
+        <div>
+            <h1>Liste des planificateurs intelligents</h1>
+            <p>Recherche par objectif ou mode, tri par date ou statut, et filtrage du mode d’organisation.</p>
+        </div>
+        <div class="actions">
+            <a class="btn btn-secondary" href="{{ path('front_gestion_objectifs_personnelles_index') }}">Retour au module</a>
+            <a class="btn btn-primary" href="{{ path('front_planificateurintelligent_create') }}">Ajouter</a>
+        </div>
+    </section>
+
+    <form method="get" class="table-card filter-bar">
+        <div>
+            <label for="planificateur_q">Mot-clé</label>
+            <input id="planificateur_q" type="text" name="q" value="{{ filters.q }}" placeholder="Mode ou objectif">
+        </div>
+        <div>
+            <label for="planificateur_sort">Tri</label>
+            <select id="planificateur_sort" name="sort">
+                {% for label, value in sort_choices %}
+                    <option value="{{ value }}" {{ filters.sort == value ? 'selected' : '' }}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="planificateur_status">Statut</label>
+            <select id="planificateur_status" name="status">
+                <option value="">Tous</option>
+                {% for label, value in status_choices %}
+                    <option value="{{ value }}" {{ filters.status == value ? 'selected' : '' }}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Filtrer</button>
+            <a class="btn btn-secondary" href="{{ path('front_planificateurintelligent_index') }}">Réinitialiser</a>
+        </div>
+    </form>
+
+    <section class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Objectif</th>
+                    <th>Mode</th>
+                    <th>Capacité</th>
+                    <th>Dernière génération</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for planificateur in planificateurs %}
+                    <tr>
+                        <td>{{ planificateur.idPlanificateur }}</td>
+                        <td>{{ planificateur.idObj.titre }}</td>
+                        <td>{{ planificateur.modeOrganisation|title }}</td>
+                        <td>{{ planificateur.capaciteQuotidienne }} h</td>
+                        <td>{{ planificateur.derniereGeneration|date('d/m/Y H:i') }}</td>
+                        <td><span class="badge">{{ planificateur.modeOrganisation|title }}</span></td>
+                        <td>
+                            <div class="inline-actions">
+                                <a class="btn btn-secondary" href="{{ path('front_planificateurintelligent_edit', {idPlanificateur: planificateur.idPlanificateur}) }}">Modifier</a>
+                                <form method="post" action="{{ path('front_planificateurintelligent_delete', {idPlanificateur: planificateur.idPlanificateur}) }}" onsubmit="return confirm('Supprimer ce planificateur ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_planificateur_' ~ planificateur.idPlanificateur) }}">
+                                    <button class="btn btn-danger" type="submit">Supprimer</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="muted">Aucun planificateur trouvé.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% endblock %}

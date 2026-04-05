@@ -1,0 +1,95 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}Plans d’action{% endblock %}
+
+{% block content %}
+    {% include 'front/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
+
+    <section class="page-header">
+        <div>
+            <h1>Liste des plans d’action</h1>
+            <p>Recherche d’étapes, tri par priorité ou statut, et filtrage du niveau de priorité.</p>
+        </div>
+        <div class="actions">
+            <a class="btn btn-secondary" href="{{ path('front_gestion_objectifs_personnelles_index') }}">Retour au module</a>
+            <a class="btn btn-primary" href="{{ path('front_planaction_create') }}">Ajouter</a>
+        </div>
+    </section>
+
+    <form method="get" class="table-card filter-bar">
+        <div>
+            <label for="plan_q">Mot-clé</label>
+            <input id="plan_q" type="text" name="q" value="{{ filters.q }}" placeholder="Étape ou objectif">
+        </div>
+        <div>
+            <label for="plan_sort">Tri</label>
+            <select id="plan_sort" name="sort">
+                {% for label, value in sort_choices %}
+                    <option value="{{ value }}" {{ filters.sort == value ? 'selected' : '' }}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="plan_status">Statut</label>
+            <select id="plan_status" name="status">
+                <option value="">Tous</option>
+                {% for label, value in status_choices %}
+                    <option value="{{ value }}" {{ filters.status == value ? 'selected' : '' }}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Filtrer</button>
+            <a class="btn btn-secondary" href="{{ path('front_planaction_index') }}">Réinitialiser</a>
+        </div>
+    </form>
+
+    <section class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Objectif</th>
+                    <th>Étape</th>
+                    <th>Priorité</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plan in plans %}
+                    <tr>
+                        <td>{{ plan.idPlan }}</td>
+                        <td>{{ plan.idObj.titre }}</td>
+                        <td>{{ plan.etape }}</td>
+                        <td>{{ plan.priorite }}/10</td>
+                        <td>
+                            <span class="badge">
+                                {% if plan.priorite >= 8 %}
+                                    Haute
+                                {% elseif plan.priorite >= 4 %}
+                                    Moyenne
+                                {% else %}
+                                    Basse
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="inline-actions">
+                                <a class="btn btn-secondary" href="{{ path('front_planaction_edit', {idPlan: plan.idPlan}) }}">Modifier</a>
+                                <form method="post" action="{{ path('front_planaction_delete', {idPlan: plan.idPlan}) }}" onsubmit="return confirm('Supprimer ce plan d’action ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_plan_' ~ plan.idPlan) }}">
+                                    <button class="btn btn-danger" type="submit">Supprimer</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="muted">Aucun plan d’action trouvé.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% endblock %}
