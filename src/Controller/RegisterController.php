@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
-use App\Service\UserInputValidationService;
+use App\Service\GestionUser\ValidationService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,7 +21,7 @@ final class RegisterController extends AbstractController
         EntityManagerInterface $entityManager,
         Connection $connection,
         UserPasswordHasherInterface $passwordHasher,
-        UserInputValidationService $inputValidation,
+        ValidationService $inputValidation,
     ): Response|RedirectResponse {
         if ($this->getUser() !== null) {
             return $this->isGranted('ROLE_ADMIN')

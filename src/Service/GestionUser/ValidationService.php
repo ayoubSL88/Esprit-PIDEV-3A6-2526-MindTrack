@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\GestionUser;
 
-final class UserInputValidationService
+final class ValidationService
 {
     private const NAME_PATTERN = "/^[\p{L}][\p{L}\p{M}\s'\-]{1,79}$/u";
 
     /**
      * @param array<string, mixed> $rawInput
-    * @return array{data: array<string, mixed>, errors: string[], fieldErrors: array<string, string>}
+     * @return array{data: array<string, mixed>, errors: string[], fieldErrors: array<string, string>}
      */
     public function validate(array $rawInput, bool $requirePassword, bool $allowRole): array
     {
@@ -56,15 +56,13 @@ final class UserInputValidationService
             if ($data['password'] === '') {
                 $fieldErrors['password'] = 'Password is required.';
             } elseif (mb_strlen($data['password']) < 7) {
-                $fieldErrors['password'] = 'Password must contain at least 8 characters.';
+                $fieldErrors['password'] = 'Password must contain at least 7 characters.';
             } elseif (!preg_match('/[A-Z]/', $data['password'])) {
                 $fieldErrors['password'] = 'Password must contain at least one uppercase letter.';
             } elseif (!preg_match('/[a-z]/', $data['password'])) {
                 $fieldErrors['password'] = 'Password must contain at least one lowercase letter.';
             } elseif (!preg_match('/\d/', $data['password'])) {
                 $fieldErrors['password'] = 'Password must contain at least one number.';
-            } else {
-                $data['password'] = $data['password'];
             }
         }
 

@@ -3,7 +3,7 @@
 namespace App\Controller\Front\GestionUser;
 
 use App\Entity\Utilisateur;
-use App\Service\UserInputValidationService;
+use App\Service\GestionUser\ValidationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -18,7 +18,7 @@ final class ProfileController extends AbstractController
     public function show(
         Request $request,
         EntityManagerInterface $entityManager,
-        UserInputValidationService $inputValidation,
+        ValidationService $inputValidation,
     ): Response|RedirectResponse
     {
         $currentUser = $this->getUser();

@@ -3,7 +3,7 @@
 namespace App\Controller\Admin\GestionUser;
 
 use App\Entity\Utilisateur;
-use App\Service\UserInputValidationService;
+use App\Service\GestionUser\ValidationService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\UtilisateurRepository;
@@ -24,7 +24,7 @@ final class UserManagementController extends AbstractController
         EntityManagerInterface $entityManager,
         Connection $connection,
         UserPasswordHasherInterface $passwordHasher,
-        UserInputValidationService $inputValidation,
+        ValidationService $inputValidation,
     ): Response|RedirectResponse {
         $formData = [
             'nom' => '',
@@ -125,7 +125,7 @@ final class UserManagementController extends AbstractController
         Request $request,
         UtilisateurRepository $utilisateurRepository,
         EntityManagerInterface $entityManager,
-        UserInputValidationService $inputValidation,
+        ValidationService $inputValidation,
     ): Response|RedirectResponse
     {
         $user = $utilisateurRepository->find($id);
