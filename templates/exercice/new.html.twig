@@ -5,7 +5,7 @@
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Créer un exercice</h1>
-        <a href="{{ path('app_exercice_index') }}" class="btn btn-secondary">Retour</a>
+        <a href="{{ path('admin_gestion_exercices_index') }}" class="btn btn-secondary">Retour</a>
     </div>
 
     <div class="card">
@@ -23,10 +23,6 @@
                 </div>
                 {{ form_row(form.description) }}
                 {{ form_row(form.demarche) }}
-                <div class="row">
-                    <div class="col-md-6">{{ form_row(form.date_creation) }}</div>
-                    <div class="col-md-6">{{ form_row(form.date_modification) }}</div>
-                </div>
                 
                 <button type="submit" class="btn btn-primary">Enregistrer</button>
             {{ form_end(form) }}

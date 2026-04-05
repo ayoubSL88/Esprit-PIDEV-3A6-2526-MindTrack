@@ -5,7 +5,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Exercices</h1>
-    <a href="{{ path('app_exercice_new') }}" class="btn btn-primary">+ Nouvel exercice</a>
+    <a href="{{ path('admin_gestion_exercices_new') }}" class="btn btn-primary">+ Nouvel exercice</a>
 </div>
 
 {# Formulaire de recherche #}
@@ -19,14 +19,14 @@
             <div class="col-md-4">
                 <select name="difficulte" class="form-select">
                     <option value="">Niveau de difficulté</option>
-                    <option value="FACILE">Facile</option>
-                    <option value="MOYEN">Moyen</option>
-                    <option value="DIFFICILE">Difficile</option>
+                    <option value="FACILE" {% if difficulte == 'FACILE' %}selected{% endif %}>Facile</option>
+                    <option value="MOYEN" {% if difficulte == 'MOYEN' %}selected{% endif %}>Moyen</option>
+                    <option value="DIFFICILE" {% if difficulte == 'DIFFICILE' %}selected{% endif %}>Difficile</option>
                 </select>
             </div>
             <div class="col-md-3">
                 <button type="submit" class="btn btn-secondary">Filtrer</button>
-                <a href="{{ path('app_exercice_index') }}" class="btn btn-link">Réinitialiser</a>
+                <a href="{{ path('admin_gestion_exercices_index') }}" class="btn btn-link">Réinitialiser</a>
             </div>
         </form>
     </div>
@@ -57,9 +57,9 @@
                     </span>
                 </td>
                 <td>
-                    <a href="{{ path('app_exercice_show', {'idEx': exercice.idEx}) }}" class="btn btn-sm btn-info">Voir</a>
-                    <a href="{{ path('app_exercice_edit', {'idEx': exercice.idEx}) }}" class="btn btn-sm btn-warning">Modifier</a>
-                    <form method="post" action="{{ path('app_exercice_delete', {'idEx': exercice.idEx}) }}" style="display:inline-block">
+                    <a href="{{ path('admin_gestion_exercices_show', {'idEx': exercice.idEx}) }}" class="btn btn-sm btn-info">Voir</a>
+                    <a href="{{ path('admin_gestion_exercices_edit', {'idEx': exercice.idEx}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                    <form method="post" action="{{ path('admin_gestion_exercices_delete', {'idEx': exercice.idEx}) }}" style="display:inline-block">
                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ exercice.idEx) }}">
                         <button class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ?')">Supprimer</button>
                     </form>

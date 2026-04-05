@@ -14,14 +14,37 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ExerciceController extends AbstractController
 {
     #[Route('/', name: 'admin_gestion_exercices_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager): Response
+    public function index(Request $request, EntityManagerInterface $entityManager): Response
     {
-        $exercices = $entityManager
-            ->getRepository(Exercice::class)
-            ->findAll();
-
+        // Récupérer les paramètres de filtrage depuis l'URL
+        $search = $request->query->get('search', '');
+        $difficulte = $request->query->get('difficulte', '');
+        
+        // Créer le QueryBuilder
+        $qb = $entityManager->getRepository(Exercice::class)->createQueryBuilder('e');
+        
+        // Filtre par recherche (nom ou type)
+        if ($search) {
+            $qb->andWhere('e.nom LIKE :search OR e.type LIKE :search')
+            ->setParameter('search', '%'.$search.'%');
+        }
+        
+        // Filtre par difficulté
+        if ($difficulte) {
+            $qb->andWhere('e.difficulte = :difficulte')
+            ->setParameter('difficulte', $difficulte);
+        }
+        // Trier par ID décroissant (optionnel)
+        $qb->orderBy('e.idEx', 'DESC');
+        
+        // Exécuter la requête
+        $exercices = $qb->getQuery()->getResult();
+        
+        // Retourner la vue avec les paramètres de filtrage pour pré-remplir le formulaire
         return $this->render('exercice/index.html.twig', [
             'exercices' => $exercices,
+            'search' => $search,
+            'difficulte' => $difficulte,
         ]);
     }
 
@@ -29,20 +52,23 @@ final class ExerciceController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $exercice = new Exercice();
-        $form = $this->createForm(ExerciceType::class, $exercice);
+        $form = $this->createForm(ExerciceType::class, $exercice, [
+            'is_edit' => false
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($exercice);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_exercice_index', [], Response::HTTP_SEE_OTHER);
+        // Les dates sont automatiquement gérées par PrePersist
+        $entityManager->persist($exercice);
+        $entityManager->flush();
+        
+        $this->addFlash('success', 'Exercice créé avec succès !');
+        return $this->redirectToRoute('admin_gestion_exercices_index');
         }
-
+    
         return $this->render('exercice/new.html.twig', [
-            'exercice' => $exercice,
-            'form' => $form,
-        ]);
+        'form' => $form->createView(),
+     ]);
     }
 
     #[Route('/{idEx}', name: 'admin_gestion_exercices_show', methods: ['GET'])]
@@ -56,18 +82,24 @@ final class ExerciceController extends AbstractController
     #[Route('/{idEx}/edit', name: 'admin_gestion_exercices_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Exercice $exercice, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(ExerciceType::class, $exercice);
+            // Édition : is_edit = true (affiche les dates en lecture seule)
+        $form = $this->createForm(ExerciceType::class, $exercice, [
+            'is_edit' => true
+        ]);
+        
         $form->handleRequest($request);
-
+        
         if ($form->isSubmitted() && $form->isValid()) {
+            // La date de modification est automatiquement mise à jour par PreUpdate
             $entityManager->flush();
-
-            return $this->redirectToRoute('app_exercice_index', [], Response::HTTP_SEE_OTHER);
+            
+            $this->addFlash('success', 'Exercice modifié avec succès !');
+            return $this->redirectToRoute('admin_gestion_exercices_index');
         }
-
+        
         return $this->render('exercice/edit.html.twig', [
+            'form' => $form->createView(),
             'exercice' => $exercice,
-            'form' => $form,
         ]);
     }
 
@@ -79,6 +111,6 @@ final class ExerciceController extends AbstractController
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_exercice_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('admin_gestion_exercices_index', [], Response::HTTP_SEE_OTHER);
     }
 }

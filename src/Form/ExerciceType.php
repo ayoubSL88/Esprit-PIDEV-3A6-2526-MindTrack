@@ -47,23 +47,38 @@ class ExerciceType extends AbstractType
                 'label' => 'Démarche',
                 'attr' => ['class' => 'form-control', 'rows' => 5]
             ])
-            ->add('date_creation', DateTimeType::class, [
+        ;   
+            // Ajouter la date de création seulement si c'est une édition
+        if ($options['is_edit'] === true) {
+            $builder->add('date_creation', DateTimeType::class, [
+                'widget' => 'single_text',
+                'disabled' => true,
+                'required' => false,
                 'label' => 'Date de création',
+                'attr' => [
+                    'readonly' => true,
+                    'class' => 'bg-light'
+                ]
+            ]);
+            
+            $builder->add('date_modification', DateTimeType::class, [
                 'widget' => 'single_text',
-                'attr' => ['class' => 'form-control']
-            ])
-            ->add('date_modification', DateTimeType::class, [
+                'disabled' => true,
+                'required' => false,
                 'label' => 'Date de modification',
-                'widget' => 'single_text',
-                'attr' => ['class' => 'form-control']
-            ])
-        ;
+                'attr' => [
+                    'readonly' => true,
+                    'class' => 'bg-light'
+                ]
+            ]);
+            }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Exercice::class,
+            'is_edit' => false, // Option personnalisée pour différencier création et édition
         ]);
     }
 }
