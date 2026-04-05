@@ -1,0 +1,25 @@
+{% if habitudes is empty %}
+    <div class="empty">Aucune habitude trouvee. Creez votre premiere routine pour commencer.</div>
+{% else %}
+    <div class="habit-grid">
+        {% for habitude in habitudes %}
+            <article class="habit-card">
+                <div class="habit-meta">
+                    <span class="pill pill-gold">{{ habitude.frequence|title }}</span>
+                    <span class="pill pill-green">{{ habitude.habitType }}</span>
+                </div>
+                <h3>{{ habitude.nom }}</h3>
+                <p class="muted">{{ habitude.objectif }}</p>
+                <p><strong>Cible :</strong> {{ habitude.targetValue }} {{ habitude.unit }}</p>
+                <div class="card-actions">
+                    <a class="btn btn-soft" href="{{ path('front_gestion_suivi_habitudes_habitude_edit', {idHabitude: habitude.idHabitude}) }}">Modifier</a>
+                    <a class="btn btn-soft" href="{{ path('front_gestion_suivi_habitudes_suivi_new') }}">Suivre</a>
+                    <form class="inline-form" method="post" action="{{ path('front_gestion_suivi_habitudes_habitude_delete', {idHabitude: habitude.idHabitude}) }}" onsubmit="return confirm('Supprimer cette habitude ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_habitude_' ~ habitude.idHabitude) }}">
+                        <button class="btn btn-danger" type="submit">Supprimer</button>
+                    </form>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% endif %}

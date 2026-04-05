@@ -2,7 +2,135 @@
 
 {% block page_title %}Gestion Suivi Habitudes{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .hero { overflow: hidden; padding: 2rem; border-radius: 28px; background: radial-gradient(circle at top right, rgba(255,255,255,.9), transparent 28%), linear-gradient(135deg, #0f5c66 0%, #1f6f78 52%, #8fd4de 100%); color: #fff; box-shadow: 0 28px 80px rgba(15,92,102,.2); }
+        .hero h1 { margin-bottom: .55rem; font-size: clamp(2rem, 3.5vw, 3rem); }
+        .hero p { max-width: 720px; color: rgba(255,255,255,.85); }
+        .hero-actions, .filter-actions, .table-actions { display: flex; gap: .75rem; flex-wrap: wrap; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: .85rem 1.15rem; border-radius: 999px; text-decoration: none; border: none; cursor: pointer; font: inherit; font-weight: 700; }
+        .btn-light { background: #fff; color: #10474e; }
+        .btn-ghost { color: #fff; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.28); }
+        .btn-primary { color: #fff; background: linear-gradient(135deg, #1f6f78 0%, #2d8f9b 100%); }
+        .btn-secondary { color: #174b52; background: #e7f3f5; }
+        .btn-danger { color: #fff; background: #b54708; }
+        .stats-grid, .panel-grid { display: grid; gap: 1rem; margin-top: 1.5rem; }
+        .stats-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+        .stat-card, .panel-card { border: 1px solid #dce4eb; border-radius: 24px; background: linear-gradient(180deg, #ffffff 0%, #f8fbfd 100%); box-shadow: 0 18px 48px rgba(31,111,120,.08); }
+        .stat-card { padding: 1.15rem; }
+        .stat-label { display: block; color: #5d636d; font-size: .88rem; margin-bottom: .35rem; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: #13373c; }
+        .panel-card { padding: 1.5rem; }
+        .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .panel-head h2 { margin: 0; }
+        .filter-grid { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom: 1rem; }
+        .filter-grid input, .filter-grid select { width: 100%; padding: .8rem .95rem; border-radius: 14px; border: 1px solid #cbd8df; background: #fff; font: inherit; }
+        .table-shell { overflow-x: auto; border-radius: 18px; border: 1px solid #e4ebf0; }
+        table { width: 100%; border-collapse: collapse; min-width: 820px; background: #fff; }
+        th, td { padding: .95rem 1rem; border-bottom: 1px solid #edf2f6; text-align: left; vertical-align: top; }
+        th { background: #f7fafc; color: #486069; font-size: .84rem; text-transform: uppercase; letter-spacing: .06em; }
+        .pill { display: inline-flex; align-items: center; padding: .35rem .75rem; border-radius: 999px; font-size: .82rem; font-weight: 700; }
+        .pill-success { color: #0f5132; background: #d9f7e8; }
+        .pill-warn { color: #9a3412; background: #ffedd5; }
+        .flash { margin-top: 1rem; padding: 1rem 1.15rem; border-radius: 16px; border: 1px solid #cfe9dd; background: #f2fbf6; color: #14532d; }
+        .empty-state { padding: 1.25rem; border-radius: 18px; background: #f7fafc; color: #52616b; border: 1px dashed #d7e0e7; }
+        .inline-form { display: inline; }
+        .results-loading { opacity: .55; transition: opacity .2s ease; }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const content = document.querySelector('[data-admin-live-content]');
+            if (!content) {
+                return;
+            }
+
+            let controller = null;
+
+            const bindLiveForms = () => {
+                content.querySelectorAll('[data-live-admin-form]').forEach(form => {
+                    form.addEventListener('submit', event => {
+                        event.preventDefault();
+                        runRequest(new FormData(form));
+                    });
+
+                    form.querySelectorAll('input, select').forEach(field => {
+                        field.addEventListener(field.tagName === 'SELECT' ? 'change' : 'input', () => {
+                            clearTimeout(field._liveTimer);
+                            field._liveTimer = setTimeout(() => runRequest(new FormData(form)), 220);
+                        });
+                    });
+
+                    const resetButton = form.querySelector('[data-live-reset]');
+                    if (resetButton) {
+                        resetButton.addEventListener('click', () => {
+                            form.reset();
+                            runRequest(new FormData(form));
+                        });
+                    }
+                });
+            };
+
+            const runRequest = formData => {
+                const scrollY = window.scrollY;
+                const params = new URLSearchParams(formData);
+                const url = `${window.location.pathname}?${params.toString()}`;
+
+                if (controller) {
+                    controller.abort();
+                }
+
+                controller = new AbortController();
+                content.classList.add('results-loading');
+
+                fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    signal: controller.signal,
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Request failed');
+                        }
+
+                        return response.text();
+                    })
+                    .then(html => {
+                        content.innerHTML = html;
+                        window.history.replaceState({}, '', url);
+                        window.scrollTo({ top: scrollY, behavior: 'auto' });
+                        bindLiveForms();
+                    })
+                    .catch(error => {
+                        if (error.name !== 'AbortError') {
+                            console.error(error);
+                        }
+                    })
+                    .finally(() => {
+                        content.classList.remove('results-loading');
+                    });
+            };
+
+            bindLiveForms();
+        });
+    </script>
+{% endblock %}
+
 {% block content %}
-    <h1>Gestion Suivi Habitudes</h1>
-    <p>Entities: Habitude, Rappel_habitude, Suivihabitude.</p>
+    <section class="hero">
+        <h1>Back office habitudes</h1>
+        <p>Module admin pour gerer les habitudes, les suivis et les rappels avec CRUD complet, controles de saisie, recherche, tri, filtre et statistiques rapides.</p>
+        <div class="hero-actions">
+            <a class="btn btn-light" href="{{ path('admin_gestion_suivi_habitudes_habitude_new') }}">Nouvelle habitude</a>
+            <a class="btn btn-ghost" href="{{ path('admin_gestion_suivi_habitudes_suivi_new') }}">Nouveau suivi</a>
+            <a class="btn btn-ghost" href="{{ path('admin_gestion_suivi_habitudes_rappel_new') }}">Nouveau rappel</a>
+        </div>
+    </section>
+
+    <div data-admin-live-content>
+        {% include 'admin/gestion_suivi_habitudes/_content.html.twig' %}
+    </div>
 {% endblock %}

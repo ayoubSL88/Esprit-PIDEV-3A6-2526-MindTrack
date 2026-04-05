@@ -1,0 +1,133 @@
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="flash">{{ message }}</div>
+    {% endfor %}
+{% endfor %}
+
+<section class="stats-grid">
+    <article class="stat-card"><span class="stat-label">Habitudes</span><strong class="stat-value">{{ stats.habitudes }}</strong></article>
+    <article class="stat-card"><span class="stat-label">Booleennes</span><strong class="stat-value">{{ stats.habitudes_boolean }}</strong></article>
+    <article class="stat-card"><span class="stat-label">Numeriques</span><strong class="stat-value">{{ stats.habitudes_numeric }}</strong></article>
+    <article class="stat-card"><span class="stat-label">Suivis completes</span><strong class="stat-value">{{ stats.suivis_completed }}/{{ stats.suivis }}</strong></article>
+    <article class="stat-card"><span class="stat-label">Rappels actifs</span><strong class="stat-value">{{ stats.rappels_actifs }}/{{ stats.rappels }}</strong></article>
+</section>
+
+<section class="panel-grid">
+    <article class="panel-card">
+        <div class="panel-head">
+            <div><h2>Habitudes</h2><p>Recherche, tri et filtre sur les habitudes.</p></div>
+            <a class="btn btn-primary" href="{{ path('admin_gestion_suivi_habitudes_habitude_new') }}">Ajouter</a>
+        </div>
+        <form method="get" data-live-admin-form>
+            <div class="filter-grid">
+                <input type="text" name="hab_q" placeholder="Recherche..." value="{{ habitudeFilters.q }}">
+                <select name="hab_frequence"><option value="">Toutes les frequences</option><option value="QUOTIDIEN" {{ habitudeFilters.frequence == 'QUOTIDIEN' ? 'selected' : '' }}>Quotidien</option><option value="HEBDOMADAIRE" {{ habitudeFilters.frequence == 'HEBDOMADAIRE' ? 'selected' : '' }}>Hebdomadaire</option><option value="MENSUEL" {{ habitudeFilters.frequence == 'MENSUEL' ? 'selected' : '' }}>Mensuel</option></select>
+                <select name="hab_type"><option value="">Tous les types</option><option value="BOOLEAN" {{ habitudeFilters.habitType == 'BOOLEAN' ? 'selected' : '' }}>Booleen</option><option value="NUMERIC" {{ habitudeFilters.habitType == 'NUMERIC' ? 'selected' : '' }}>Numerique</option></select>
+                <select name="hab_sort"><option value="nom" {{ habitudeFilters.sort == 'nom' ? 'selected' : '' }}>Tri: nom</option><option value="frequence" {{ habitudeFilters.sort == 'frequence' ? 'selected' : '' }}>Tri: frequence</option><option value="type" {{ habitudeFilters.sort == 'type' ? 'selected' : '' }}>Tri: type</option><option value="target" {{ habitudeFilters.sort == 'target' ? 'selected' : '' }}>Tri: valeur cible</option></select>
+                <select name="hab_direction"><option value="ASC" {{ habitudeFilters.direction == 'ASC' ? 'selected' : '' }}>Croissant</option><option value="DESC" {{ habitudeFilters.direction == 'DESC' ? 'selected' : '' }}>Decroissant</option></select>
+            </div>
+            <div class="filter-actions"><button class="btn btn-secondary" type="submit">Appliquer</button><button class="btn btn-secondary" type="button" data-live-reset>Reinitialiser</button></div>
+        </form>
+        {% if habitudes is empty %}
+            <div class="empty-state">Aucune habitude ne correspond aux filtres.</div>
+        {% else %}
+            <div class="table-shell">
+                <table>
+                    <thead><tr><th>ID</th><th>Nom</th><th>Frequence</th><th>Type</th><th>Valeur cible</th><th>Unite</th><th>Objectif</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        {% for habitude in habitudes %}
+                            <tr>
+                                <td>#{{ habitude.idHabitude }}</td>
+                                <td>{{ habitude.nom }}</td>
+                                <td>{{ habitude.frequence|title }}</td>
+                                <td><span class="pill {{ habitude.habitType == 'BOOLEAN' ? 'pill-success' : 'pill-warn' }}">{{ habitude.habitType }}</span></td>
+                                <td>{{ habitude.targetValue }}</td>
+                                <td>{{ habitude.unit }}</td>
+                                <td>{{ habitude.objectif }}</td>
+                                <td><div class="table-actions"><a class="btn btn-secondary" href="{{ path('admin_gestion_suivi_habitudes_habitude_edit', {idHabitude: habitude.idHabitude}) }}">Modifier</a><form class="inline-form" method="post" action="{{ path('admin_gestion_suivi_habitudes_habitude_delete', {idHabitude: habitude.idHabitude}) }}" onsubmit="return confirm('Supprimer cette habitude ?');"><input type="hidden" name="_token" value="{{ csrf_token('delete_habitude_' ~ habitude.idHabitude) }}"><button class="btn btn-danger" type="submit">Supprimer</button></form></div></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </article>
+
+    <article class="panel-card">
+        <div class="panel-head">
+            <div><h2>Suivis</h2><p>Filtre par habitude, etat et tri.</p></div>
+            <a class="btn btn-primary" href="{{ path('admin_gestion_suivi_habitudes_suivi_new') }}">Ajouter</a>
+        </div>
+        <form method="get" data-live-admin-form>
+            <div class="filter-grid">
+                <input type="text" name="suivi_q" placeholder="Recherche habitude..." value="{{ suiviFilters.q }}">
+                <select name="suivi_habitude"><option value="">Toutes les habitudes</option>{% for habitude in habitudeChoices %}<option value="{{ habitude.idHabitude }}" {{ suiviFilters.habitude == (habitude.idHabitude ~ '') ? 'selected' : '' }}>{{ habitude.nom }}</option>{% endfor %}</select>
+                <select name="suivi_etat"><option value="">Tous les etats</option><option value="1" {{ suiviFilters.etat == '1' ? 'selected' : '' }}>Complete</option><option value="0" {{ suiviFilters.etat == '0' ? 'selected' : '' }}>Non complete</option></select>
+                <select name="suivi_sort"><option value="date" {{ suiviFilters.sort == 'date' ? 'selected' : '' }}>Tri: date</option><option value="etat" {{ suiviFilters.sort == 'etat' ? 'selected' : '' }}>Tri: etat</option><option value="valeur" {{ suiviFilters.sort == 'valeur' ? 'selected' : '' }}>Tri: valeur</option><option value="habitude" {{ suiviFilters.sort == 'habitude' ? 'selected' : '' }}>Tri: habitude</option></select>
+                <select name="suivi_direction"><option value="DESC" {{ suiviFilters.direction == 'DESC' ? 'selected' : '' }}>Decroissant</option><option value="ASC" {{ suiviFilters.direction == 'ASC' ? 'selected' : '' }}>Croissant</option></select>
+            </div>
+            <div class="filter-actions"><button class="btn btn-secondary" type="submit">Appliquer</button><button class="btn btn-secondary" type="button" data-live-reset>Reinitialiser</button></div>
+        </form>
+        {% if suivis is empty %}
+            <div class="empty-state">Aucun suivi disponible.</div>
+        {% else %}
+            <div class="table-shell">
+                <table>
+                    <thead><tr><th>ID</th><th>Habitude</th><th>Date</th><th>Etat</th><th>Valeur</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        {% for suivi in suivis %}
+                            <tr>
+                                <td>#{{ suivi.idSuivi }}</td>
+                                <td>{{ suivi.idHabitude ? suivi.idHabitude.nom : 'N/A' }}</td>
+                                <td>{{ suivi.date ? suivi.date|date('d/m/Y') : '-' }}</td>
+                                <td><span class="pill {{ suivi.etat ? 'pill-success' : 'pill-warn' }}">{{ suivi.etat ? 'Complete' : 'En attente' }}</span></td>
+                                <td>{{ suivi.valeur }}</td>
+                                <td><div class="table-actions"><a class="btn btn-secondary" href="{{ path('admin_gestion_suivi_habitudes_suivi_edit', {idSuivi: suivi.idSuivi}) }}">Modifier</a><form class="inline-form" method="post" action="{{ path('admin_gestion_suivi_habitudes_suivi_delete', {idSuivi: suivi.idSuivi}) }}" onsubmit="return confirm('Supprimer ce suivi ?');"><input type="hidden" name="_token" value="{{ csrf_token('delete_suivi_' ~ suivi.idSuivi) }}"><button class="btn btn-danger" type="submit">Supprimer</button></form></div></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </article>
+
+    <article class="panel-card">
+        <div class="panel-head">
+            <div><h2>Rappels</h2><p>Recherche, activation et tri des rappels.</p></div>
+            <a class="btn btn-primary" href="{{ path('admin_gestion_suivi_habitudes_rappel_new') }}">Ajouter</a>
+        </div>
+        <form method="get" data-live-admin-form>
+            <div class="filter-grid">
+                <input type="text" name="rappel_q" placeholder="Recherche..." value="{{ rappelFilters.q }}">
+                <select name="rappel_habitude"><option value="">Toutes les habitudes</option>{% for habitude in habitudeChoices %}<option value="{{ habitude.idHabitude }}" {{ rappelFilters.habitude == (habitude.idHabitude ~ '') ? 'selected' : '' }}>{{ habitude.nom }}</option>{% endfor %}</select>
+                <select name="rappel_actif"><option value="">Tous</option><option value="1" {{ rappelFilters.actif == '1' ? 'selected' : '' }}>Actif</option><option value="0" {{ rappelFilters.actif == '0' ? 'selected' : '' }}>Inactif</option></select>
+                <select name="rappel_sort"><option value="created" {{ rappelFilters.sort == 'created' ? 'selected' : '' }}>Tri: creation</option><option value="heure" {{ rappelFilters.sort == 'heure' ? 'selected' : '' }}>Tri: heure</option><option value="actif" {{ rappelFilters.sort == 'actif' ? 'selected' : '' }}>Tri: actif</option><option value="habitude" {{ rappelFilters.sort == 'habitude' ? 'selected' : '' }}>Tri: habitude</option></select>
+                <select name="rappel_direction"><option value="DESC" {{ rappelFilters.direction == 'DESC' ? 'selected' : '' }}>Decroissant</option><option value="ASC" {{ rappelFilters.direction == 'ASC' ? 'selected' : '' }}>Croissant</option></select>
+            </div>
+            <div class="filter-actions"><button class="btn btn-secondary" type="submit">Appliquer</button><button class="btn btn-secondary" type="button" data-live-reset>Reinitialiser</button></div>
+        </form>
+        {% if rappels is empty %}
+            <div class="empty-state">Aucun rappel disponible.</div>
+        {% else %}
+            <div class="table-shell">
+                <table>
+                    <thead><tr><th>ID</th><th>Habitude</th><th>Heure</th><th>Jours</th><th>Etat</th><th>Message</th><th>Creation</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        {% for rappel in rappels %}
+                            <tr>
+                                <td>#{{ rappel.idRappel }}</td>
+                                <td>{{ rappel.idHabitude ? rappel.idHabitude.nom : 'N/A' }}</td>
+                                <td>{{ rappel.heureRappel }}</td>
+                                <td>{{ rappel.jours }}</td>
+                                <td><span class="pill {{ rappel.actif ? 'pill-success' : 'pill-warn' }}">{{ rappel.actif ? 'Actif' : 'Inactif' }}</span></td>
+                                <td>{{ rappel.message }}</td>
+                                <td>{{ rappel.createdAt ? rappel.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                                <td><div class="table-actions"><a class="btn btn-secondary" href="{{ path('admin_gestion_suivi_habitudes_rappel_edit', {idRappel: rappel.idRappel}) }}">Modifier</a><form class="inline-form" method="post" action="{{ path('admin_gestion_suivi_habitudes_rappel_delete', {idRappel: rappel.idRappel}) }}" onsubmit="return confirm('Supprimer ce rappel ?');"><input type="hidden" name="_token" value="{{ csrf_token('delete_rappel_' ~ rappel.idRappel) }}"><button class="btn btn-danger" type="submit">Supprimer</button></form></div></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </article>
+</section>

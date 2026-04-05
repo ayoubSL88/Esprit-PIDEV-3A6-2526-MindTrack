@@ -1,0 +1,123 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .crud-shell { max-width: 760px; margin: 0 auto; padding: 2rem 0; }
+        .crud-card { background: linear-gradient(180deg, #ffffff 0%, #f8fbfd 100%); border: 1px solid #d8e3ea; border-radius: 24px; padding: 2rem; box-shadow: 0 24px 60px rgba(31,111,120,.09); }
+        .crud-eyebrow { display: inline-flex; padding: .35rem .8rem; border-radius: 999px; background: #dff3f5; color: #174b52; font-size: .82rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+        .crud-card h1 { margin: 1rem 0 .5rem; font-size: clamp(1.8rem, 3vw, 2.4rem); }
+        form[name] { display: grid; gap: 1rem; }
+        form[name] > div { display: grid; gap: .45rem; }
+        label { font-weight: 600; }
+        input, select, textarea { width: 100%; padding: .85rem 1rem; border-radius: 14px; border: 1px solid #c9d8e1; background: #fff; font: inherit; }
+        .form-actions { display: flex; gap: .75rem; margin-top: 1rem; flex-wrap: wrap; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: .85rem 1.15rem; border-radius: 999px; text-decoration: none; border: none; cursor: pointer; font: inherit; font-weight: 700; }
+        .btn-primary { color: #fff; background: linear-gradient(135deg, #1f6f78 0%, #2d8f9b 100%); }
+        .btn-secondary { color: #1a3a3f; background: #ebf4f6; }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const typeField = document.querySelector('[data-habit-type-field]');
+            let targetField = document.querySelector('[data-target-value-field]');
+            const unitField = document.querySelector('[data-unit-field]');
+
+            if (!typeField || !targetField || !unitField) {
+                return;
+            }
+
+            const container = targetField.parentElement;
+            const unitContainer = unitField.parentElement;
+            const label = document.querySelector(`label[for="${targetField.id}"]`);
+            const help = document.getElementById(`${targetField.id}_help`);
+
+            const buildNumericField = (value) => {
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.name = targetField.name;
+                input.id = targetField.id;
+                input.value = value;
+                input.min = '0';
+                input.step = '1';
+                input.inputMode = 'numeric';
+                input.dataset.targetValueField = '1';
+
+                return input;
+            };
+
+            const buildBooleanField = (value) => {
+                const select = document.createElement('select');
+                select.name = targetField.name;
+                select.id = targetField.id;
+                select.dataset.targetValueField = '1';
+
+                [
+                    { value: '1', label: 'True' },
+                    { value: '0', label: 'False' },
+                ].forEach(optionData => {
+                    const option = document.createElement('option');
+                    option.value = optionData.value;
+                    option.textContent = optionData.label;
+                    option.selected = String(value) === optionData.value;
+                    select.appendChild(option);
+                });
+
+                return select;
+            };
+
+            const syncField = () => {
+                const currentValue = targetField.value === '' ? '0' : targetField.value;
+                const nextField = typeField.value === 'BOOLEAN'
+                    ? buildBooleanField(currentValue === '0' ? '0' : '1')
+                    : buildNumericField(currentValue);
+
+                container.replaceChild(nextField, targetField);
+                targetField = nextField;
+
+                if (label) {
+                    label.textContent = typeField.value === 'BOOLEAN' ? 'Valeur cible (True / False)' : 'Valeur cible';
+                }
+
+                if (help) {
+                    help.textContent = typeField.value === 'BOOLEAN'
+                        ? 'Choisissez True ou False pour une habitude booleenne.'
+                        : 'Saisissez un nombre pour une habitude numerique.';
+                }
+
+                if (typeField.value === 'BOOLEAN') {
+                    unitContainer.style.display = 'none';
+                    unitField.value = '';
+                } else {
+                    unitContainer.style.display = '';
+                }
+            };
+
+            typeField.addEventListener('change', syncField);
+            syncField();
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    <section class="crud-shell">
+        <div class="crud-card">
+            <span class="crud-eyebrow">Admin habitudes</span>
+            <h1>{{ page_title }}</h1>
+            <p>Formulaire de gestion pour {{ entity_label }}.</p>
+
+            {{ form_start(form) }}
+                {{ form_widget(form) }}
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">Enregistrer</button>
+                    <a class="btn btn-secondary" href="{{ path(back_route) }}">Retour a la liste</a>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </section>
+{% endblock %}

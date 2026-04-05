@@ -1,0 +1,123 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .flow-shell { max-width: 760px; margin: 0 auto; padding: 1.5rem 0 2rem; }
+        .flow-card { border-radius: 28px; padding: 2rem; background: linear-gradient(180deg, #ffffff 0%, #fbf8ef 100%); border: 1px solid #eadfcb; box-shadow: 0 24px 60px rgba(179, 132, 50, .12); }
+        .flow-badge { display: inline-flex; padding: .35rem .8rem; border-radius: 999px; background: #fff2cf; color: #7b5d16; font-size: .82rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+        h1 { margin: 1rem 0 .5rem; font-size: clamp(1.9rem, 3vw, 2.5rem); }
+        form[name] { display: grid; gap: 1rem; }
+        form[name] > div { display: grid; gap: .45rem; }
+        label { font-weight: 700; }
+        input, select, textarea { width: 100%; padding: .9rem 1rem; border-radius: 16px; border: 1px solid #dfd4c1; background: #fffefb; font: inherit; }
+        .actions { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: .5rem; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: .85rem 1.15rem; border-radius: 999px; text-decoration: none; border: none; cursor: pointer; font: inherit; font-weight: 700; }
+        .btn-primary { color: #fff; background: linear-gradient(135deg, #bc8a28 0%, #dfb55f 100%); }
+        .btn-secondary { color: #5b4a26; background: #f6ecd3; }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const typeField = document.querySelector('[data-habit-type-field]');
+            let targetField = document.querySelector('[data-target-value-field]');
+            const unitField = document.querySelector('[data-unit-field]');
+
+            if (!typeField || !targetField || !unitField) {
+                return;
+            }
+
+            const container = targetField.parentElement;
+            const unitContainer = unitField.parentElement;
+            const label = document.querySelector(`label[for="${targetField.id}"]`);
+            const help = document.getElementById(`${targetField.id}_help`);
+
+            const buildNumericField = (value) => {
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.name = targetField.name;
+                input.id = targetField.id;
+                input.value = value;
+                input.min = '0';
+                input.step = '1';
+                input.inputMode = 'numeric';
+                input.dataset.targetValueField = '1';
+
+                return input;
+            };
+
+            const buildBooleanField = (value) => {
+                const select = document.createElement('select');
+                select.name = targetField.name;
+                select.id = targetField.id;
+                select.dataset.targetValueField = '1';
+
+                [
+                    { value: '1', label: 'True' },
+                    { value: '0', label: 'False' },
+                ].forEach(optionData => {
+                    const option = document.createElement('option');
+                    option.value = optionData.value;
+                    option.textContent = optionData.label;
+                    option.selected = String(value) === optionData.value;
+                    select.appendChild(option);
+                });
+
+                return select;
+            };
+
+            const syncField = () => {
+                const currentValue = targetField.value === '' ? '0' : targetField.value;
+                const nextField = typeField.value === 'BOOLEAN'
+                    ? buildBooleanField(currentValue === '0' ? '0' : '1')
+                    : buildNumericField(currentValue);
+
+                container.replaceChild(nextField, targetField);
+                targetField = nextField;
+
+                if (label) {
+                    label.textContent = typeField.value === 'BOOLEAN' ? 'Valeur cible (True / False)' : 'Valeur cible';
+                }
+
+                if (help) {
+                    help.textContent = typeField.value === 'BOOLEAN'
+                        ? 'Choisissez True ou False pour une habitude booleenne.'
+                        : 'Saisissez un nombre pour une habitude numerique.';
+                }
+
+                if (typeField.value === 'BOOLEAN') {
+                    unitContainer.style.display = 'none';
+                    unitField.value = '';
+                } else {
+                    unitContainer.style.display = '';
+                }
+            };
+
+            typeField.addEventListener('change', syncField);
+            syncField();
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    <section class="flow-shell">
+        <div class="flow-card">
+            <span class="flow-badge">Mon espace habitudes</span>
+            <h1>{{ page_title }}</h1>
+            <p>{{ helper_text }}</p>
+
+            {{ form_start(form) }}
+                {{ form_widget(form) }}
+                <div class="actions">
+                    <button class="btn btn-primary" type="submit">Enregistrer</button>
+                    <a class="btn btn-secondary" href="{{ path(back_route) }}">Retour</a>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </section>
+{% endblock %}
