@@ -1,0 +1,25 @@
+{% if habitudes is empty %}
+    <p class="table-empty">Aucune habitude trouvee. Creez votre premiere routine pour commencer.</p>
+{% else %}
+    <div class="grid gap-4 sm:grid-cols-2">
+        {% for habitude in habitudes %}
+            <article class="rounded-3xl border border-border bg-white/90 p-5 shadow-soft">
+                <div class="mb-3 flex flex-wrap gap-2">
+                    <span class="inline-flex rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-emphasis">{{ habitude.frequence|title }}</span>
+                    <span class="inline-flex rounded-full bg-success-soft px-3 py-1 text-xs font-semibold text-success">{{ habitude.habitType }}</span>
+                </div>
+                <h3 class="text-lg font-semibold text-ink">{{ habitude.nom }}</h3>
+                <p class="mt-1 text-sm text-muted">{{ habitude.objectif }}</p>
+                <p class="mt-2 text-sm text-muted"><strong class="text-ink">Cible :</strong> {{ habitude.targetValue }} {{ habitude.unit }}</p>
+                <div class="button-row mt-4">
+                    <a class="btn-secondary px-4 py-2" href="{{ path('front_gestion_suivi_habitudes_habitude_edit', {idHabitude: habitude.idHabitude}) }}">Modifier</a>
+                    <a class="btn-secondary px-4 py-2" href="{{ path('front_gestion_suivi_habitudes_suivi_new') }}">Suivre</a>
+                    <form method="post" action="{{ path('front_gestion_suivi_habitudes_habitude_delete', {idHabitude: habitude.idHabitude}) }}" onsubmit="return confirm('Supprimer cette habitude ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_habitude_' ~ habitude.idHabitude) }}">
+                        <button class="btn-danger px-4 py-2" type="submit">Supprimer</button>
+                    </form>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% endif %}
