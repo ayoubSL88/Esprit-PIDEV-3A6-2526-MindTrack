@@ -1,0 +1,35 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}Modifier l'exercice{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Modifier exercice</h1>
+        <a href="{{ path('app_exercice_index') }}" class="btn btn-secondary">Retour</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            {{ form_start(form) }}
+                {{ form_errors(form) }}
+                
+                <div class="row">
+                    <div class="col-md-6">{{ form_row(form.nom) }}</div>
+                    <div class="col-md-6">{{ form_row(form.type) }}</div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">{{ form_row(form.duree) }}</div>
+                    <div class="col-md-6">{{ form_row(form.difficulte) }}</div>
+                </div>
+                {{ form_row(form.description) }}
+                {{ form_row(form.demarche) }}
+                <div class="row">
+                    <div class="col-md-6">{{ form_row(form.date_creation) }}</div>
+                    <div class="col-md-6">{{ form_row(form.date_modification) }}</div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Mettre à jour</button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
