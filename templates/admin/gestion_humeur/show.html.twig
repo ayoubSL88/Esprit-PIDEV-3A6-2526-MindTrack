@@ -30,7 +30,7 @@
         </div>
 
         <div class="button-row">
-            {% include 'humeur/_delete_form.html.twig' with {
+            {% include 'admin/gestion_humeur/humeur/_delete_form.html.twig' with {
                 delete_path: path('admin_gestion_humeur_delete', {idH: humeur.idH}),
                 csrf_token: csrf_token('delete_humeur_' ~ humeur.idH),
                 button_label: 'Delete humeur'
