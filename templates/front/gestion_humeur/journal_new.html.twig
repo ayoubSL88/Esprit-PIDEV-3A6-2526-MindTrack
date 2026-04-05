@@ -3,20 +3,22 @@
 {% block page_title %}New Journal{% endblock %}
 
 {% block content %}
-    {% include 'humeur/_crud_styles.html.twig' %}
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Mood',
+            title: 'Add a journal entry',
+            copy: 'Capture your thoughts and emotions in your journal.'
+        }) }}
 
-    <section class="crud-header">
-        <div>
-            <h1>Add a journal entry</h1>
-            <p>Capture your thoughts and emotions in your journal.</p>
-        </div>
-        <a class="button-secondary" href="{{ path('front_gestion_humeur_journal_index') }}">Back to list</a>
-    </section>
+        {{ component('FlashStack') }}
 
-    <div class="card-shell form-shell">
         {% include 'journalemotionnel/_form.html.twig' with {
             form: form,
             button_label: 'Save journal'
         } only %}
+
+        <div class="button-row">
+            <a class="btn-secondary" href="{{ path('front_gestion_humeur_journal_index') }}">Back to list</a>
+        </div>
     </div>
 {% endblock %}

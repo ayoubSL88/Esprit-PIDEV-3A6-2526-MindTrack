@@ -1,33 +1,54 @@
-{{ form_start(form, { attr: { class: 'crud-form', novalidate: 'novalidate' } }) }}
-    {% if not form.vars.valid %}
-        <div class="form-error-summary">
-            <div>!</div>
-            <div>
-                <strong>Submission failed</strong>
-                <div>Please correct the highlighted fields before continuing.</div>
-            </div>
+{% set formSubmitted = form.vars.submitted %}
+
+{{ form_start(form, { attr: { class: 'form-stack max-w-3xl', novalidate: 'novalidate' } }) }}
+    {% if formSubmitted and not form.vars.valid %}
+        <div class="flash flash-error">
+            Please correct the highlighted fields before continuing.
         </div>
     {% endif %}
 
-    <div class="field-grid">
-        <div class="form-row{{ form.date.vars.valid ? '' : ' has-error' }}">
-            {{ form_label(form.date) }}
-            {{ form_widget(form.date) }}
-            <div class="form-field-errors">{{ form_errors(form.date) }}</div>
+    <div class="form-grid">
+        <div class="field">
+            {{ form_label(form.date, null, { label_attr: { class: 'field-label' } }) }}
+            {{ form_widget(form.date, {
+                attr: {
+                    class: 'field-input ' ~ (formSubmitted ? (form.date.vars.valid ? 'field-input-valid' : 'field-input-invalid') : '')
+                }
+            }) }}
+            {% if formSubmitted and form.date.vars.errors|length %}
+                <div class="field-error">{{ form_errors(form.date) }}</div>
+            {% endif %}
         </div>
 
-        <div class="form-row{{ form.typeHumeur.vars.valid ? '' : ' has-error' }}">
-            {{ form_label(form.typeHumeur) }}
-            {{ form_widget(form.typeHumeur) }}
-            <div class="form-field-errors">{{ form_errors(form.typeHumeur) }}</div>
-        </div>
-
-        <div class="form-row{{ form.intensite.vars.valid ? '' : ' has-error' }}">
-            {{ form_label(form.intensite) }}
-            {{ form_widget(form.intensite) }}
-            <div class="form-help">{{ form_help(form.intensite) }}</div>
-            <div class="form-field-errors">{{ form_errors(form.intensite) }}</div>
+        <div class="field">
+            {{ form_label(form.typeHumeur, null, { label_attr: { class: 'field-label' } }) }}
+            {{ form_widget(form.typeHumeur, {
+                attr: {
+                    class: 'field-select ' ~ (formSubmitted ? (form.typeHumeur.vars.valid ? 'field-input-valid' : 'field-input-invalid') : '')
+                }
+            }) }}
+            {% if formSubmitted and form.typeHumeur.vars.errors|length %}
+                <div class="field-error">{{ form_errors(form.typeHumeur) }}</div>
+            {% endif %}
         </div>
     </div>
-    <button class="button-primary" type="submit">{{ button_label }}</button>
+
+    <div class="field">
+        {{ form_label(form.intensite, null, { label_attr: { class: 'field-label' } }) }}
+        {{ form_widget(form.intensite, {
+            attr: {
+                class: 'field-input ' ~ (formSubmitted ? (form.intensite.vars.valid ? 'field-input-valid' : 'field-input-invalid') : '')
+            }
+        }) }}
+        <div class="text-xs text-muted">
+            {{ form_help(form.intensite) }}
+        </div>
+        {% if formSubmitted and form.intensite.vars.errors|length %}
+            <div class="field-error">{{ form_errors(form.intensite) }}</div>
+        {% endif %}
+    </div>
+
+    <div class="button-row">
+        <button class="btn-primary" type="submit">{{ button_label }}</button>
+    </div>
 {{ form_end(form) }}

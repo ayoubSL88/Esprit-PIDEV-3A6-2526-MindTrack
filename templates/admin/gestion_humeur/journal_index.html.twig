@@ -3,82 +3,90 @@
 {% block page_title %}Journal Emotionnel{% endblock %}
 
 {% block content %}
-    {% include 'humeur/_crud_styles.html.twig' %}
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Administration',
+            title: 'Journal emotionnel',
+            copy: "View and delete users' journal entries from the admin area."
+        }) }}
 
-    <section class="crud-header">
-        <div>
-            <h1>Journal emotionnel</h1>
-            <p>View and delete users' journal entries from the admin area.</p>
-        </div>
-    </section>
+        {{ component('FlashStack') }}
 
-    {% include 'humeur/_flash_messages.html.twig' %}
-
-    <div class="card-shell">
         {% if journals is empty %}
-            <p>No journal entries found yet.</p>
+            <p class="text-sm text-muted">No journal entries found yet.</p>
         {% else %}
-            <div class="search-panel">
-                <label for="admin-journal-search">Search journal</label>
-                <p>Search dynamically by journal ID or note content.</p>
-                <div class="search-toolbar">
-                    <input
-                        id="admin-journal-search"
-                        class="search-input"
-                        type="search"
-                        placeholder="Search by ID or note..."
-                        data-search-target="admin-journal-table"
-                        data-empty-target="admin-journal-empty"
-                    >
-                    <div class="sort-group">
-                        <label for="admin-journal-sort">Sort by date</label>
-                        <select id="admin-journal-sort" class="sort-select">
+            <div class="panel-section space-y-4">
+                <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-end">
+                    <div class="field">
+                        <label class="field-label" for="admin-journal-search">Search</label>
+                        <input
+                            id="admin-journal-search"
+                            class="field-input"
+                            type="search"
+                            placeholder="Search by ID or note..."
+                            data-search-target="admin-journal-table"
+                            data-empty-target="admin-journal-empty"
+                        >
+                        <p class="text-xs text-muted">Search dynamically by journal ID or note content.</p>
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="admin-journal-sort">Sort by date</label>
+                        <select id="admin-journal-sort" class="field-select">
                             <option value="latest">Latest</option>
                             <option value="oldest">Oldest</option>
                         </select>
                     </div>
                 </div>
-                <div class="filter-toolbar">
-                    <div class="sort-group">
-                        <label for="admin-journal-filter-type">Filter by</label>
-                        <select id="admin-journal-filter-type" class="sort-select">
+
+                <div class="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-end">
+                    <div class="field">
+                        <label class="field-label" for="admin-journal-filter-type">Filter by</label>
+                        <select id="admin-journal-filter-type" class="field-select">
                             <option value="date">Date</option>
                         </select>
                     </div>
-                    <div class="sort-group">
-                        <label for="admin-journal-filter-value">Filter value</label>
-                        <input id="admin-journal-filter-value" class="filter-input" type="date">
+                    <div class="field">
+                        <label class="field-label" for="admin-journal-filter-value">Filter value</label>
+                        <input id="admin-journal-filter-value" class="field-input" type="date">
                     </div>
                 </div>
             </div>
-            <table class="crud-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Note</th>
-                        <th>Date creation</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-journal-table">
-                    {% for journal in journals %}
-                        <tr data-search-value="{{ journal.idJ }} {{ journal.notePersonnelle|lower }}" data-date-value="{{ journal.dateCreation|date('c') }}">
-                            <td>{{ journal.idJ }}</td>
-                            <td>{{ journal.notePersonnelle|length > 80 ? journal.notePersonnelle|slice(0, 80) ~ '...' : journal.notePersonnelle }}</td>
-                            <td>{{ journal.dateCreation|date('Y-m-d H:i') }}</td>
-                            <td class="actions-cell">
-                                <a href="{{ path('admin_gestion_humeur_journal_show', {idJ: journal.idJ}) }}">View</a>
-                                {% include 'journalemotionnel/_delete_form.html.twig' with {
-                                    delete_path: path('admin_gestion_humeur_journal_delete', {idJ: journal.idJ}),
-                                    csrf_token: csrf_token('delete_journal_' ~ journal.idJ),
-                                    button_label: 'Delete'
-                                } only %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <div id="admin-journal-empty" class="search-empty">No journal matches your search.</div>
+
+            <div class="table-shell">
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead class="table-head">
+                            <tr>
+                                <th class="table-th">ID</th>
+                                <th class="table-th">Note</th>
+                                <th class="table-th">Date creation</th>
+                                <th class="table-th">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-journal-table">
+                            {% for journal in journals %}
+                                <tr data-search-value="{{ journal.idJ }} {{ journal.notePersonnelle|lower }}" data-date-value="{{ journal.dateCreation|date('c') }}">
+                                    <td class="table-td">{{ journal.idJ }}</td>
+                                    <td class="table-td">{{ journal.notePersonnelle|length > 80 ? journal.notePersonnelle|slice(0, 80) ~ '...' : journal.notePersonnelle }}</td>
+                                    <td class="table-td">{{ journal.dateCreation|date('Y-m-d H:i') }}</td>
+                                    <td class="table-td">
+                                        <div class="button-row">
+                                            <a class="btn-secondary px-4 py-2" href="{{ path('admin_gestion_humeur_journal_show', {idJ: journal.idJ}) }}">View</a>
+                                            {% include 'journalemotionnel/_delete_form.html.twig' with {
+                                                delete_path: path('admin_gestion_humeur_journal_delete', {idJ: journal.idJ}),
+                                                csrf_token: csrf_token('delete_journal_' ~ journal.idJ),
+                                                button_label: 'Delete'
+                                            } only %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <p id="admin-journal-empty" class="mt-4 text-sm text-muted hidden">No journal matches your search.</p>
         {% endif %}
     </div>
 

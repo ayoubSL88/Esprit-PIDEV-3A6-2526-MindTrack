@@ -1,27 +1,40 @@
-{{ form_start(form, { attr: { class: 'crud-form', novalidate: 'novalidate' } }) }}
-    {% if not form.vars.valid %}
-        <div class="form-error-summary">
-            <div>!</div>
-            <div>
-                <strong>Submission failed</strong>
-                <div>Please fix the errors below before saving your journal.</div>
-            </div>
+{% set formSubmitted = form.vars.submitted %}
+
+{{ form_start(form, { attr: { class: 'form-stack max-w-3xl', novalidate: 'novalidate' } }) }}
+    {% if formSubmitted and not form.vars.valid %}
+        <div class="flash flash-error">
+            Please fix the errors below before saving your journal.
         </div>
     {% endif %}
 
-    <div class="field-grid">
-        <div class="form-row{{ form.notePersonnelle.vars.valid ? '' : ' has-error' }}">
-            {{ form_label(form.notePersonnelle) }}
-            {{ form_widget(form.notePersonnelle) }}
-            <div class="form-help">{{ form_help(form.notePersonnelle) }}</div>
-            <div class="form-field-errors">{{ form_errors(form.notePersonnelle) }}</div>
+    <div class="field">
+        {{ form_label(form.notePersonnelle, null, { label_attr: { class: 'field-label' } }) }}
+        {{ form_widget(form.notePersonnelle, {
+            attr: {
+                class: 'field-input ' ~ (formSubmitted ? (form.notePersonnelle.vars.valid ? 'field-input-valid' : 'field-input-invalid') : '')
+            }
+        }) }}
+        <div class="text-xs text-muted">
+            {{ form_help(form.notePersonnelle) }}
         </div>
-
-        <div class="form-row{{ form.dateCreation.vars.valid ? '' : ' has-error' }}">
-            {{ form_label(form.dateCreation) }}
-            {{ form_widget(form.dateCreation) }}
-            <div class="form-field-errors">{{ form_errors(form.dateCreation) }}</div>
-        </div>
+        {% if formSubmitted and form.notePersonnelle.vars.errors|length %}
+            <div class="field-error">{{ form_errors(form.notePersonnelle) }}</div>
+        {% endif %}
     </div>
-    <button class="button-primary" type="submit">{{ button_label }}</button>
+
+    <div class="field">
+        {{ form_label(form.dateCreation, null, { label_attr: { class: 'field-label' } }) }}
+        {{ form_widget(form.dateCreation, {
+            attr: {
+                class: 'field-input ' ~ (formSubmitted ? (form.dateCreation.vars.valid ? 'field-input-valid' : 'field-input-invalid') : '')
+            }
+        }) }}
+        {% if formSubmitted and form.dateCreation.vars.errors|length %}
+            <div class="field-error">{{ form_errors(form.dateCreation) }}</div>
+        {% endif %}
+    </div>
+
+    <div class="button-row">
+        <button class="btn-primary" type="submit">{{ button_label }}</button>
+    </div>
 {{ form_end(form) }}

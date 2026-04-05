@@ -3,35 +3,35 @@
 {% block page_title %}Journal Details{% endblock %}
 
 {% block content %}
-    {% include 'humeur/_crud_styles.html.twig' %}
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Mood',
+            title: 'Journal entry',
+            copy: 'Review your journal entry in detail.'
+        }) }}
 
-    <section class="crud-header">
-        <div>
-            <h1>Journal entry</h1>
-            <p>Review your journal entry in detail.</p>
+        <div class="button-row">
+            <a class="btn-secondary" href="{{ path('front_gestion_humeur_journal_index') }}">Back to list</a>
+            <a class="btn-primary" href="{{ path('front_gestion_humeur_journal_edit', {idJ: journal.idJ}) }}">Edit</a>
         </div>
-        <div class="header-actions">
-            <a class="button-secondary" href="{{ path('front_gestion_humeur_journal_index') }}">Back to list</a>
-            <a class="button-primary" href="{{ path('front_gestion_humeur_journal_edit', {idJ: journal.idJ}) }}">Edit</a>
-        </div>
-    </section>
 
-    <div class="card-shell details-grid">
-        <div>
-            <span class="detail-label">Date creation</span>
-            <strong>{{ journal.dateCreation|date('Y-m-d H:i') }}</strong>
+        <div class="panel-section grid gap-4 sm:grid-cols-2">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Date creation</p>
+                <p class="mt-2 text-sm font-semibold text-ink">{{ journal.dateCreation|date('Y-m-d H:i') }}</p>
+            </div>
+            <div class="sm:col-span-2">
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Note personnelle</p>
+                <p class="mt-2 text-sm text-ink">{{ journal.notePersonnelle }}</p>
+            </div>
         </div>
-        <div style="grid-column: 1 / -1;">
-            <span class="detail-label">Note personnelle</span>
-            <strong>{{ journal.notePersonnelle }}</strong>
-        </div>
-    </div>
 
-    <div class="danger-zone">
-        {% include 'journalemotionnel/_delete_form.html.twig' with {
-            delete_path: path('front_gestion_humeur_journal_delete', {idJ: journal.idJ}),
-            csrf_token: csrf_token('delete_journal_' ~ journal.idJ),
-            button_label: 'Delete journal'
-        } only %}
+        <div class="button-row">
+            {% include 'journalemotionnel/_delete_form.html.twig' with {
+                delete_path: path('front_gestion_humeur_journal_delete', {idJ: journal.idJ}),
+                csrf_token: csrf_token('delete_journal_' ~ journal.idJ),
+                button_label: 'Delete journal'
+            } only %}
+        </div>
     </div>
 {% endblock %}
