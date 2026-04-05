@@ -6,10 +6,11 @@ use Doctrine\ORM\Mapping as ORM;
 
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Profilpsychologique;
+use App\Repository\UtilisateurRepository;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
 
@@ -190,13 +191,11 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        $roles = ['ROLE_USER'];
-
         if ($this->roleU === 'ADMIN' || $this->roleU === 'ROLE_ADMIN') {
-            $roles[] = 'ROLE_ADMIN';
+            return ['ROLE_ADMIN'];
         }
 
-        return array_values(array_unique($roles));
+        return ['ROLE_USER'];
     }
 
     public function getPassword(): string

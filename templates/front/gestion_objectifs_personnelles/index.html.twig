@@ -3,6 +3,11 @@
 {% block page_title %}Mes Objectifs{% endblock %}
 
 {% block content %}
-    <h1>Mes Objectifs</h1>
-    <p>Entities: Jalonprogression, Objectif, Planificateurintelligent, Planaction.</p>
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Front Office',
+            title: 'Mes Objectifs',
+            copy: 'Entities: Jalonprogression, Objectif, Planificateurintelligent, Planaction.'
+        }) }}
+    </div>
 {% endblock %}

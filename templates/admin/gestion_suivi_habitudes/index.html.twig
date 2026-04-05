@@ -3,6 +3,11 @@
 {% block page_title %}Gestion Suivi Habitudes{% endblock %}
 
 {% block content %}
-    <h1>Gestion Suivi Habitudes</h1>
-    <p>Entities: Habitude, Rappel_habitude, Suivihabitude.</p>
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Administration',
+            title: 'Gestion Suivi Habitudes',
+            copy: 'Entities: Habitude, Rappel_habitude, Suivihabitude.'
+        }) }}
+    </div>
 {% endblock %}

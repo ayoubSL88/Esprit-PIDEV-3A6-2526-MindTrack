@@ -3,6 +3,11 @@
 {% block page_title %}Gestion Humeur{% endblock %}
 
 {% block content %}
-    <h1>Gestion Humeur</h1>
-    <p>Entities: Journalemotionnel, Humeur.</p>
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Administration',
+            title: 'Gestion Humeur',
+            copy: 'Entities: Journalemotionnel, Humeur.'
+        }) }}
+    </div>
 {% endblock %}

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
+use App\Service\UserInputValidationService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,6 +21,7 @@ final class RegisterController extends AbstractController
         EntityManagerInterface $entityManager,
         Connection $connection,
         UserPasswordHasherInterface $passwordHasher,
+        UserInputValidationService $inputValidation,
     ): Response|RedirectResponse {
         if ($this->getUser() !== null) {
             return $this->isGranted('ROLE_ADMIN')
@@ -33,45 +35,51 @@ final class RegisterController extends AbstractController
             'email' => '',
             'age' => '',
         ];
+        $fieldErrors = [];
+        $formSubmitted = false;
 
         if ($request->isMethod('POST')) {
+            $formSubmitted = true;
             $csrfToken = (string) $request->request->get('_csrf_token', '');
             if (!$this->isCsrfTokenValid('register', $csrfToken)) {
                 $this->addFlash('error', 'Invalid form token. Please try again.');
                 return $this->redirectToRoute('app_register');
             }
 
-            $formData['nom'] = trim((string) $request->request->get('nom', ''));
-            $formData['prenom'] = trim((string) $request->request->get('prenom', ''));
-            $formData['email'] = strtolower(trim((string) $request->request->get('email', '')));
-            $formData['age'] = trim((string) $request->request->get('age', ''));
-            $plainPassword = (string) $request->request->get('password', '');
+            $validated = $inputValidation->validate([
+                'nom' => $request->request->get('nom', ''),
+                'prenom' => $request->request->get('prenom', ''),
+                'email' => $request->request->get('email', ''),
+                'age' => $request->request->get('age', ''),
+                'password' => $request->request->get('password', ''),
+            ], true, false);
 
-            if ($formData['nom'] === '' || $formData['prenom'] === '' || $formData['email'] === '' || $formData['age'] === '' || $plainPassword === '') {
-                $this->addFlash('error', 'All fields are required.');
-                return $this->render('security/register.html.twig', ['form' => $formData]);
+            $formData['nom'] = (string) $validated['data']['nom'];
+            $formData['prenom'] = (string) $validated['data']['prenom'];
+            $formData['email'] = (string) $validated['data']['email'];
+            $formData['age'] = (string) (($validated['data']['age'] ?? '') ?: '');
+
+            if ($validated['errors'] !== []) {
+                $fieldErrors = $validated['fieldErrors'];
+
+                return $this->render('security/register.html.twig', [
+                    'form' => $formData,
+                    'fieldErrors' => $fieldErrors,
+                    'formSubmitted' => $formSubmitted,
+                ]);
             }
 
-            if (!filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
-                $this->addFlash('error', 'Please provide a valid email address.');
-                return $this->render('security/register.html.twig', ['form' => $formData]);
-            }
-
-            $age = (int) $formData['age'];
-            if ($age < 10 || $age > 120) {
-                $this->addFlash('error', 'Please provide a valid age.');
-                return $this->render('security/register.html.twig', ['form' => $formData]);
-            }
-
-            if (mb_strlen($plainPassword) < 6) {
-                $this->addFlash('error', 'Password must contain at least 6 characters.');
-                return $this->render('security/register.html.twig', ['form' => $formData]);
-            }
+            $plainPassword = (string) $validated['data']['password'];
+            $age = (int) $validated['data']['age'];
 
             $existing = $entityManager->getRepository(Utilisateur::class)->findOneBy(['emailU' => $formData['email']]);
             if ($existing !== null) {
-                $this->addFlash('error', 'This email is already used.');
-                return $this->render('security/register.html.twig', ['form' => $formData]);
+                $fieldErrors['email'] = 'This email is already used.';
+                return $this->render('security/register.html.twig', [
+                    'form' => $formData,
+                    'fieldErrors' => $fieldErrors,
+                    'formSubmitted' => $formSubmitted,
+                ]);
             }
 
             $user = new Utilisateur();
@@ -99,6 +107,10 @@ final class RegisterController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        return $this->render('security/register.html.twig', ['form' => $formData]);
+        return $this->render('security/register.html.twig', [
+            'form' => $formData,
+            'fieldErrors' => $fieldErrors,
+            'formSubmitted' => $formSubmitted,
+        ]);
     }
 }

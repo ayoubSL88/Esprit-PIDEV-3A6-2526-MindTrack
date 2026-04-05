@@ -3,6 +3,11 @@
 {% block page_title %}Gestion Exercices{% endblock %}
 
 {% block content %}
-    <h1>Gestion Exercices</h1>
-    <p>Entities: Session, Exercice, Progression, Todo.</p>
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Administration',
+            title: 'Gestion Exercices',
+            copy: 'Entities: Session, Exercice, Progression, Todo.'
+        }) }}
+    </div>
 {% endblock %}

@@ -10,6 +10,18 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 final class LoginController extends AbstractController
 {
+    #[Route('/post-login', name: 'app_post_login')]
+    public function postLogin(): RedirectResponse
+    {
+        if ($this->getUser() === null) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        return $this->isGranted('ROLE_ADMIN')
+            ? $this->redirectToRoute('admin_dashboard')
+            : $this->redirectToRoute('front_home');
+    }
+
     #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response|RedirectResponse
     {

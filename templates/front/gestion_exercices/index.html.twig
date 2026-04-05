@@ -3,6 +3,11 @@
 {% block page_title %}Mes Exercices{% endblock %}
 
 {% block content %}
-    <h1>Mes Exercices</h1>
-    <p>Entities: Session, Exercice, Progression, Todo.</p>
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Front Office',
+            title: 'Mes Exercices',
+            copy: 'Entities: Session, Exercice, Progression, Todo.'
+        }) }}
+    </div>
 {% endblock %}

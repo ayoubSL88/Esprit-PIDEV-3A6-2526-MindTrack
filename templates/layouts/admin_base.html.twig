@@ -5,7 +5,11 @@
 {% block body %}
     {% include 'shared/_navbar.html.twig' with { office: 'admin' } %}
 
-    <main class="container">
-        {% block content %}{% endblock %}
+    <main class="page-shell">
+        <div class="app-shell">
+            <section class="page-card">
+                {% block content %}{% endblock %}
+            </section>
+        </div>
     </main>
 {% endblock %}

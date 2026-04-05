@@ -3,6 +3,11 @@
 {% block page_title %}Gestion Objectifs Personnelles{% endblock %}
 
 {% block content %}
-    <h1>Gestion Objectifs Personnelles</h1>
-    <p>Entities: Jalonprogression, Objectif, Planificateurintelligent, Planaction.</p>
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Administration',
+            title: 'Gestion Objectifs Personnelles',
+            copy: 'Entities: Jalonprogression, Objectif, Planificateurintelligent, Planaction.'
+        }) }}
+    </div>
 {% endblock %}

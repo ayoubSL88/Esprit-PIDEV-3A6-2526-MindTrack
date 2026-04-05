@@ -3,6 +3,11 @@
 {% block page_title %}Mes Habitudes{% endblock %}
 
 {% block content %}
-    <h1>Mes Habitudes</h1>
-    <p>Entities: Habitude, Rappel_habitude, Suivihabitude.</p>
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Front Office',
+            title: 'Mes Habitudes',
+            copy: 'Entities: Habitude, Rappel_habitude, Suivihabitude.'
+        }) }}
+    </div>
 {% endblock %}
