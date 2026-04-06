@@ -36,7 +36,6 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Nom</th>
                 <th>Type</th>
                 <th>Durée</th>
@@ -47,7 +46,6 @@
         <tbody>
         {% for exercice in exercices %}
             <tr>
-                <td>{{ exercice.idEx }}</td>
                 <td>{{ exercice.nom }}</td>
                 <td>{{ exercice.type }}</td>
                 <td>{{ exercice.duree }} min</td>
