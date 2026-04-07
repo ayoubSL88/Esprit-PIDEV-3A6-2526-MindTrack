@@ -39,19 +39,19 @@ class Exercice
     #[Assert\Choice(choices: ["FACILE", "MOYEN", "DIFFICILE"], message: "Difficulté invalide")]
     private string $difficulte;
 
-    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    #[ORM\Column(type: "text")]
     #[Assert\NotBlank(message: "La description est obligatoire")]
-    private ?string $description = null;
+    private string $description;
 
-    #[ORM\Column(type: "text", nullable: true)]
+    #[ORM\Column(type: "text")]
     #[Assert\NotBlank(message: "La démarche est obligatoire")]
-    private ?string $demarche = null;
+    private string $demarche;
 
     #[ORM\Column(type: "datetime")]
-    private ?\DateTimeInterface $date_creation = null;
+    private \DateTimeInterface $date_creation;
 
-    #[ORM\Column(type: "datetime", nullable: true)]
-    private ?\DateTimeInterface $date_modification = null;
+    #[ORM\Column(type: "datetime")]
+    private \DateTimeInterface $date_modification;
 
     #[ORM\OneToMany(mappedBy: "idEx", targetEntity: Session::class)]
     private Collection $sessions;
@@ -64,34 +64,29 @@ class Exercice
     {
         $this->sessions = new ArrayCollection();
         $this->todos = new ArrayCollection();
-        $this->date_creation = new \DateTime(); // Date automatique à la création
-        // $this->date_modification = null; // Pas de date de modification à la création
+        $now = new \DateTime();
+        $this->date_creation = $now;
+        $this->date_modification = $now;
     }
-    //Appelé automatiquement avant la persistance (création)
+
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
-        $this->date_creation = new \DateTime();
-        // $this->date_modification = null; // Pas de date de modification à la création
+        $now = new \DateTime();
+        $this->date_creation = $now;
+        $this->date_modification = $now;
     }
 
-    // Met à jour automatiquement la date de modification
     #[ORM\PreUpdate]
     public function updateDateModification(): void
     {
         $this->date_modification = new \DateTime();
     }
-    // Getters et setters
+
     public function getIdEx()
     {
         return $this->idEx;
     }
-
-    /*public function setIdEx($value)
-    {
-        $this->idEx = $value;
-        return $this;
-    }*/
 
     public function getNom()
     {
@@ -159,14 +154,38 @@ class Exercice
         return $this;
     }
 
-    public function getDateCreation(): ?\DateTimeInterface
+    public function getDateCreation(): \DateTimeInterface
     {
         return $this->date_creation;
     }
 
-    public function getDateModification(): ?\DateTimeInterface
+    public function setDateCreation(\DateTimeInterface $value): self
+    {
+        $this->date_creation = $value;
+
+        return $this;
+    }
+
+    public function setDate_creation(\DateTimeInterface $value): self
+    {
+        return $this->setDateCreation($value);
+    }
+
+    public function getDateModification(): \DateTimeInterface
     {
         return $this->date_modification;
+    }
+
+    public function setDateModification(\DateTimeInterface $value): self
+    {
+        $this->date_modification = $value;
+
+        return $this;
+    }
+
+    public function setDate_modification(\DateTimeInterface $value): self
+    {
+        return $this->setDateModification($value);
     }
 
     // Méthodes pour les sessions
@@ -186,11 +205,8 @@ class Exercice
 
     public function removeSession(Session $session): self
     {
-        if ($this->sessions->removeElement($session)) {
-            if ($session->getIdEx() === $this) {
-                $session->setIdEx(null);
-            }
-        }
+        $this->sessions->removeElement($session);
+
         return $this;
     }
 
@@ -211,11 +227,8 @@ class Exercice
 
     public function removeTodo(Todo $todo): self
     {
-        if ($this->todos->removeElement($todo)) {
-            if ($todo->getIdExercice() === $this) {
-                $todo->setIdExercice(null);
-            }
-        }
+        $this->todos->removeElement($todo);
+
         return $this;
     }
     
