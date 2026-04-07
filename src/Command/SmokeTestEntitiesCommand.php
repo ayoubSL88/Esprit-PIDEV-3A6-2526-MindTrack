@@ -236,11 +236,9 @@ final class SmokeTestEntitiesCommand extends Command
 
             $io->section('Testing Exercice + Session relation');
 
-            $nextExerciceId = (int) $this->connection->fetchOne('SELECT COALESCE(MAX(id_ex), 0) + 1 FROM exercice');
             $nextSessionId = (int) $this->connection->fetchOne('SELECT COALESCE(MAX(id_session), 0) + 1 FROM session');
 
             $exercice = new Exercice();
-            $exercice->setIdEx($nextExerciceId);
             $exercice->setNom('Smoke exercice');
             $exercice->setType('Smoke type');
             $exercice->setDuree(10);
@@ -264,6 +262,8 @@ final class SmokeTestEntitiesCommand extends Command
             $this->entityManager->persist($exercice);
             $this->entityManager->persist($session);
             $this->entityManager->flush();
+
+            $nextExerciceId = $exercice->getIdEx();
 
             /** @var Session|null $reloadedSession */
             $reloadedSession = $this->entityManager->find(Session::class, $nextSessionId);
