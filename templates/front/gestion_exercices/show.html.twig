@@ -1,0 +1,28 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}Details de l'exercice{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ exercice.nom }}</h1>
+        <div>
+            <a href="{{ path('front_gestion_exercices_edit', {'idEx': exercice.idEx}) }}" class="btn btn-warning">Modifier</a>
+            <a href="{{ path('front_gestion_exercices_index') }}" class="btn btn-secondary">Retour</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table">
+                <tr><th>Nom</th><td>{{ exercice.nom }}</td></tr>
+                <tr><th>Type</th><td>{{ exercice.type }}</td></tr>
+                <tr><th>Duree</th><td>{{ exercice.duree }} minutes</td></tr>
+                <tr><th>Difficulte</th><td>{{ exercice.difficulte }}</td></tr>
+                <tr><th>Description</th><td>{{ exercice.description }}</td></tr>
+                <tr><th>Demarche</th><td>{{ exercice.demarche }}</td></tr>
+                <tr><th>Date creation</th><td>{{ exercice.dateCreation|date('d/m/Y H:i') }}</td></tr>
+                <tr><th>Date modification</th><td>{{ exercice.dateModification|date('d/m/Y H:i') }}</td></tr>
+            </table>
+        </div>
+    </div>
+{% endblock %}
