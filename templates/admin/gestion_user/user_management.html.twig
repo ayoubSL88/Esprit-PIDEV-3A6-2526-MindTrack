@@ -7,92 +7,203 @@
         {{ component('PageHeader', {
             eyebrow: 'Administration',
             title: 'User Management',
-            copy: 'Manage accounts from a shared table and form system that can be reused by future admin modules.'
+            copy: 'Manage accounts with fast filters, live search, and a stable admin flow that stays inside the current project shell.'
         }) }}
-
-        <div class="button-row">
-            <a class="btn-primary" href="{{ path('admin_gestion_user_create') }}">Create user</a>
-        </div>
 
         {{ component('FlashStack') }}
 
-        <form method="get" class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px_auto] lg:items-end">
-            <div class="field">
-                <label class="field-label" for="q">Search</label>
-                <input
-                    class="field-input"
-                    id="q"
-                    name="q"
-                    type="text"
-                    value="{{ filters.q }}"
-                    placeholder="Name or email"
-                >
+        <section class="panel-section page-stack">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="space-y-2">
+                    <p class="feature-label">Control Center</p>
+                    <h2 class="panel-title">Find and manage users quickly</h2>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex flex-wrap gap-3">
+                        <article class="rounded-2xl border border-[rgba(201,204,255,.8)] bg-white/70 px-4 py-3 shadow-sm">
+                            <p class="feature-label">Total</p>
+                            <p class="mt-2 text-2xl font-semibold text-[rgb(40,50,74)]">{{ stats.totalUsers }}</p>
+                            <p class="mt-1 text-xs text-[rgb(95,107,143)]">All accounts</p>
+                        </article>
+                        <article class="rounded-2xl border border-[rgba(201,204,255,.8)] bg-white/70 px-4 py-3 shadow-sm">
+                            <p class="feature-label">Admins</p>
+                            <p class="mt-2 text-2xl font-semibold text-[rgb(40,50,74)]">{{ stats.adminUsers }}</p>
+                            <p class="mt-1 text-xs text-[rgb(95,107,143)]">Privileged accounts</p>
+                        </article>
+                        <article class="rounded-2xl border border-[rgba(201,204,255,.8)] bg-white/70 px-4 py-3 shadow-sm">
+                            <p class="feature-label">Users</p>
+                            <p class="mt-2 text-2xl font-semibold text-[rgb(40,50,74)]">{{ stats.standardUsers }}</p>
+                            <p class="mt-1 text-xs text-[rgb(95,107,143)]">Standard accounts</p>
+                        </article>
+                        <article class="rounded-2xl border border-[rgba(162,164,242,.28)] bg-[rgba(162,164,242,.08)] px-4 py-3 shadow-sm">
+                            <p class="feature-label">Results</p>
+                            <p class="mt-2 text-2xl font-semibold text-[rgb(40,50,74)]">{{ stats.filteredUsers }}</p>
+                            <p class="mt-1 text-xs text-[rgb(95,107,143)]">Matches current filters</p>
+                        </article>
+                    </div>
+                    <a class="btn-primary" href="{{ path('admin_gestion_user_create') }}">Create user</a>
+                </div>
             </div>
 
-            <div class="field">
-                <label class="field-label" for="role">Role</label>
-                <select class="field-select" id="role" name="role">
-                    <option value="" {{ filters.role == '' ? 'selected' : '' }}>All</option>
-                    <option value="USER" {{ filters.role == 'USER' ? 'selected' : '' }}>USER</option>
-                    <option value="ADMIN" {{ filters.role == 'ADMIN' ? 'selected' : '' }}>ADMIN</option>
-                </select>
+            <form method="get" class="rounded-2xl border border-[rgba(201,204,255,.8)] bg-white/60 p-4">
+                <div class="flex flex-wrap items-end gap-4">
+                    <div class="field min-w-[260px] flex-1">
+                        <label class="field-label" for="q">Search</label>
+                        <input
+                            class="field-input"
+                            id="q"
+                            type="search"
+                            placeholder="Name or email"
+                            autocomplete="off"
+                            data-page-search-input
+                        >
+                    </div>
+
+                    <div class="field min-w-[150px] flex-1 sm:flex-none">
+                        <label class="field-label" for="role">Role</label>
+                        <select class="field-select" id="role" name="role">
+                            <option value="" {{ filters.role == '' ? 'selected' : '' }}>All</option>
+                            <option value="USER" {{ filters.role == 'USER' ? 'selected' : '' }}>USER</option>
+                            <option value="ADMIN" {{ filters.role == 'ADMIN' ? 'selected' : '' }}>ADMIN</option>
+                        </select>
+                    </div>
+
+                    <div class="field min-w-[150px] flex-1 sm:flex-none">
+                        <label class="field-label" for="sort">Sort by</label>
+                        <select class="field-select" id="sort" name="sort">
+                            <option value="id" {{ filters.sort == 'id' ? 'selected' : '' }}>Newest</option>
+                            <option value="name" {{ filters.sort == 'name' ? 'selected' : '' }}>Name</option>
+                            <option value="email" {{ filters.sort == 'email' ? 'selected' : '' }}>Email</option>
+                            <option value="age" {{ filters.sort == 'age' ? 'selected' : '' }}>Age</option>
+                        </select>
+                    </div>
+
+                    <div class="field min-w-[150px] flex-1 sm:flex-none">
+                        <label class="field-label" for="direction">Order</label>
+                        <select class="field-select" id="direction" name="direction">
+                            <option value="DESC" {{ filters.direction == 'DESC' ? 'selected' : '' }}>Descending</option>
+                            <option value="ASC" {{ filters.direction == 'ASC' ? 'selected' : '' }}>Ascending</option>
+                        </select>
+                    </div>
+
+                    <div class="button-row min-w-fit">
+                        <button class="btn-primary" type="submit">Apply</button>
+                        <a class="btn-secondary" href="{{ path('admin_gestion_user_index') }}">Reset</a>
+                    </div>
+                </div>
+            </form>
+
+            <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[rgba(201,204,255,.8)] bg-white/60 px-4 py-3">
+                <p class="text-sm text-[rgb(95,107,143)]" data-page-search-status>
+                    Showing {{ users|length }} of {{ pagination.total }} users.
+                </p>
             </div>
 
-            <div class="button-row">
-                <button class="btn-primary" type="submit">Filter</button>
-                <a class="btn-secondary" href="{{ path('admin_gestion_user_index') }}">Reset</a>
-            </div>
-        </form>
-
-        <div class="table-shell">
-            <div class="table-wrap">
-                <table class="table">
-                    <thead class="table-head">
-                        <tr>
-                            <th class="table-th">ID</th>
-                            <th class="table-th">Name</th>
-                            <th class="table-th">Email</th>
-                            <th class="table-th">Age</th>
-                            <th class="table-th">Role</th>
-                            <th class="table-th">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for user in users %}
+            <div class="table-shell">
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead class="table-head">
                             <tr>
-                                <td class="table-td">{{ user.idU }}</td>
-                                <td class="table-td">{{ user.prenomU }} {{ user.nomU }}</td>
-                                <td class="table-td">{{ user.emailU }}</td>
-                                <td class="table-td">{{ user.ageU }}</td>
-                                <td class="table-td">
-                                    <form method="post" action="{{ path('admin_gestion_user_change_role', { id: user.idU }) }}" class="flex flex-wrap items-center gap-2">
-                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('role_change_' ~ user.idU) }}">
-                                        <select class="field-select min-w-28 py-2" name="role">
-                                            <option value="USER" {{ user.roleU == 'USER' ? 'selected' : '' }}>USER</option>
-                                            <option value="ADMIN" {{ user.roleU == 'ADMIN' ? 'selected' : '' }}>ADMIN</option>
-                                        </select>
-                                        <button class="btn-secondary px-4 py-2" type="submit">Apply</button>
-                                    </form>
-                                </td>
-                                <td class="table-td">
-                                    <div class="button-row">
-                                        <a class="btn-secondary px-4 py-2" href="{{ path('admin_gestion_user_edit', { id: user.idU }) }}">Edit</a>
-
-                                        <form method="post" action="{{ path('admin_gestion_user_delete', { id: user.idU }) }}" onsubmit="return confirm('Delete this user? This action cannot be undone.');">
-                                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('delete_user_' ~ user.idU) }}">
-                                            <button class="btn-danger px-4 py-2" type="submit">Delete</button>
+                                <th class="table-th">ID</th>
+                                <th class="table-th">Name</th>
+                                <th class="table-th">Email</th>
+                                <th class="table-th">Age</th>
+                                <th class="table-th">Role</th>
+                                <th class="table-th">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                                <tr class="transition-colors duration-200 hover:bg-[rgba(162,164,242,.06)]" data-page-search-row data-page-search-value="{{ user.idU }} {{ user.prenomU|lower }} {{ user.nomU|lower }} {{ user.emailU|lower }}">
+                                    <td class="table-td">#{{ user.idU }}</td>
+                                    <td class="table-td">
+                                        <div class="space-y-1">
+                                            <p class="font-semibold text-[rgb(40,50,74)]">{{ user.prenomU }} {{ user.nomU }}</p>
+                                            <p class="text-xs uppercase tracking-[0.16em] text-[rgb(95,107,143)]">Account record</p>
+                                        </div>
+                                    </td>
+                                    <td class="table-td">{{ user.emailU }}</td>
+                                    <td class="table-td">{{ user.ageU }}</td>
+                                    <td class="table-td">
+                                        <form method="post" action="{{ path('admin_gestion_user_change_role', { id: user.idU, q: filters.q, role: filters.role, sort: filters.sort, direction: filters.direction, page: filters.page }) }}" class="flex flex-wrap items-center gap-2">
+                                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('role_change_' ~ user.idU) }}">
+                                            <select class="field-select min-w-28 py-2" name="role">
+                                                <option value="USER" {{ user.roleU == 'USER' ? 'selected' : '' }}>USER</option>
+                                                <option value="ADMIN" {{ user.roleU == 'ADMIN' ? 'selected' : '' }}>ADMIN</option>
+                                            </select>
+                                            <button class="btn-secondary px-4 py-2 transition-transform duration-200 hover:-translate-y-0.5" type="submit">Apply</button>
                                         </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% else %}
-                            <tr>
-                                <td class="table-empty" colspan="6">No users found for the current filters.</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                    </td>
+                                    <td class="table-td">
+                                        <div class="button-row">
+                                            <a class="btn-secondary px-4 py-2 transition-transform duration-200 hover:-translate-y-0.5" href="{{ path('admin_gestion_user_edit', { id: user.idU, q: filters.q, role: filters.role, sort: filters.sort, direction: filters.direction, page: filters.page }) }}">Edit</a>
+
+                                            <form method="post" action="{{ path('admin_gestion_user_delete', { id: user.idU, q: filters.q, role: filters.role, sort: filters.sort, direction: filters.direction, page: filters.page }) }}" onsubmit="return confirm('Delete this user? This action cannot be undone.');">
+                                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('delete_user_' ~ user.idU) }}">
+                                                <button class="btn-danger px-4 py-2 transition-transform duration-200 hover:-translate-y-0.5" type="submit">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td class="table-empty" colspan="6">No users found for the current filters.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+
+            {% if pagination.totalPages > 1 %}
+                <div class="button-row justify-between">
+                    <a
+                        class="btn-secondary {{ pagination.page <= 1 ? 'pointer-events-none opacity-50' : '' }}"
+                        href="{{ pagination.page > 1 ? path('admin_gestion_user_index', { q: filters.q, role: filters.role, sort: filters.sort, direction: filters.direction, page: pagination.page - 1 }) : '#' }}"
+                    >
+                        Previous
+                    </a>
+
+                    <a
+                        class="btn-secondary {{ pagination.page >= pagination.totalPages ? 'pointer-events-none opacity-50' : '' }}"
+                        href="{{ pagination.page < pagination.totalPages ? path('admin_gestion_user_index', { q: filters.q, role: filters.role, sort: filters.sort, direction: filters.direction, page: pagination.page + 1 }) : '#' }}"
+                    >
+                        Next
+                    </a>
+                </div>
+            {% endif %}
+        </section>
     </div>
+
+    <script>
+        (() => {
+            const searchInput = document.querySelector('[data-page-search-input]');
+            const status = document.querySelector('[data-page-search-status]');
+            const rows = Array.from(document.querySelectorAll('[data-page-search-row]'));
+
+            if (!searchInput || !status || rows.length === 0) {
+                return;
+            }
+
+            const baseCount = rows.length;
+
+            searchInput.addEventListener('input', () => {
+                const term = searchInput.value.trim().toLowerCase();
+                let visibleCount = 0;
+
+                rows.forEach((row) => {
+                    const searchable = row.dataset.pageSearchValue || '';
+                    const visible = term === '' || searchable.includes(term);
+                    row.style.display = visible ? '' : 'none';
+                    if (visible) {
+                        visibleCount += 1;
+                    }
+                });
+
+                status.textContent = term === ''
+                    ? `Showing ${baseCount} of {{ pagination.total }} users.`
+                    : `Showing ${visibleCount} of ${baseCount} users on this page.`;
+            });
+        })();
+    </script>
 {% endblock %}

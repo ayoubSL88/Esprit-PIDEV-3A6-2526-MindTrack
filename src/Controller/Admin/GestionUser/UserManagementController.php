@@ -17,6 +17,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class UserManagementController extends AbstractController
 {
+    private const USERS_PER_PAGE = 10;
+
     #[Route('/admin/users/create', name: 'admin_gestion_user_create', methods: ['GET', 'POST'])]
     public function create(
         Request $request,
@@ -103,18 +105,65 @@ final class UserManagementController extends AbstractController
     {
         $search = trim((string) $request->query->get('q', ''));
         $role = strtoupper(trim((string) $request->query->get('role', '')));
+        $sort = strtolower(trim((string) $request->query->get('sort', 'id')));
+        $direction = strtoupper(trim((string) $request->query->get('direction', 'DESC')));
+        $page = max(1, $request->query->getInt('page', 1));
 
         if ($role !== 'ADMIN' && $role !== 'USER') {
             $role = '';
         }
 
-        $users = $utilisateurRepository->findForAdminList($search, $role !== '' ? $role : null);
+        if (!in_array($sort, ['id', 'name', 'email', 'age'], true)) {
+            $sort = 'id';
+        }
+
+        if ($direction !== 'ASC' && $direction !== 'DESC') {
+            $direction = 'DESC';
+        }
+
+        $result = $utilisateurRepository->findForAdminList(
+            $search,
+            $role !== '' ? $role : null,
+            $sort,
+            $direction,
+            $page,
+            self::USERS_PER_PAGE,
+        );
+
+        $totalUsers = $result['total'];
+        $totalPages = max(1, (int) ceil($totalUsers / self::USERS_PER_PAGE));
+        if ($page > $totalPages) {
+            $page = $totalPages;
+            $result = $utilisateurRepository->findForAdminList(
+                $search,
+                $role !== '' ? $role : null,
+                $sort,
+                $direction,
+                $page,
+                self::USERS_PER_PAGE,
+            );
+        }
 
         return $this->render('admin/gestion_user/user_management.html.twig', [
-            'users' => $users,
+            'users' => $result['items'],
             'filters' => [
                 'q' => $search,
                 'role' => $role,
+                'sort' => $sort,
+                'direction' => $direction,
+                'page' => $page,
+            ],
+            'pagination' => [
+                'page' => $page,
+                'perPage' => self::USERS_PER_PAGE,
+                'total' => $totalUsers,
+                'totalPages' => $totalPages,
+            ],
+            'stats' => [
+                'totalUsers' => $utilisateurRepository->count([]),
+                'adminUsers' => $utilisateurRepository->count(['roleU' => 'ADMIN']),
+                'standardUsers' => $utilisateurRepository->count(['roleU' => 'USER']),
+                'filteredUsers' => $totalUsers,
             ],
         ]);
     }
@@ -180,7 +229,7 @@ final class UserManagementController extends AbstractController
                     $entityManager->flush();
                     $this->addFlash('success', 'User updated successfully.');
 
-                    return $this->redirectToRoute('admin_gestion_user_index');
+                    return $this->redirectToRoute('admin_gestion_user_index', $this->buildListRouteParams($request));
                 }
             }
         }
@@ -204,19 +253,19 @@ final class UserManagementController extends AbstractController
         $csrfToken = (string) $request->request->get('_csrf_token', '');
         if (!$this->isCsrfTokenValid('role_change_' . $user->getIdU(), $csrfToken)) {
             $this->addFlash('error', 'Invalid role-change token.');
-            return $this->redirectToRoute('admin_gestion_user_index');
+            return $this->redirectToRoute('admin_gestion_user_index', $this->buildListRouteParams($request));
         }
 
         $role = strtoupper(trim((string) $request->request->get('role', '')));
         if ($role !== 'ADMIN' && $role !== 'USER') {
             $this->addFlash('error', 'Invalid role value.');
-            return $this->redirectToRoute('admin_gestion_user_index');
+            return $this->redirectToRoute('admin_gestion_user_index', $this->buildListRouteParams($request));
         }
 
         $loggedUser = $this->getUser();
         if ($loggedUser instanceof Utilisateur && $loggedUser->getIdU() === $user->getIdU() && $role !== 'ADMIN') {
             $this->addFlash('error', 'You cannot remove your own admin role while logged in.');
-            return $this->redirectToRoute('admin_gestion_user_index');
+            return $this->redirectToRoute('admin_gestion_user_index', $this->buildListRouteParams($request));
         }
 
         $user->setRoleU($role);
@@ -224,7 +273,7 @@ final class UserManagementController extends AbstractController
 
         $this->addFlash('success', 'User role updated.');
 
-        return $this->redirectToRoute('admin_gestion_user_index');
+        return $this->redirectToRoute('admin_gestion_user_index', $this->buildListRouteParams($request));
     }
 
     #[Route('/admin/users/{id}/delete', name: 'admin_gestion_user_delete', methods: ['POST'])]
@@ -238,13 +287,13 @@ final class UserManagementController extends AbstractController
         $csrfToken = (string) $request->request->get('_csrf_token', '');
         if (!$this->isCsrfTokenValid('delete_user_' . $user->getIdU(), $csrfToken)) {
             $this->addFlash('error', 'Invalid delete token.');
-            return $this->redirectToRoute('admin_gestion_user_index');
+            return $this->redirectToRoute('admin_gestion_user_index', $this->buildListRouteParams($request));
         }
 
         $loggedUser = $this->getUser();
         if ($loggedUser instanceof Utilisateur && $loggedUser->getIdU() === $user->getIdU()) {
             $this->addFlash('error', 'You cannot delete your own account while logged in.');
-            return $this->redirectToRoute('admin_gestion_user_index');
+            return $this->redirectToRoute('admin_gestion_user_index', $this->buildListRouteParams($request));
         }
 
         $entityManager->remove($user);
@@ -252,6 +301,41 @@ final class UserManagementController extends AbstractController
 
         $this->addFlash('success', 'User deleted successfully.');
 
-        return $this->redirectToRoute('admin_gestion_user_index');
+        return $this->redirectToRoute('admin_gestion_user_index', $this->buildListRouteParams($request));
+    }
+
+    /**
+     * @return array{q?: string, role?: string, sort?: string, direction?: string, page?: int}
+     */
+    private function buildListRouteParams(Request $request): array
+    {
+        $params = [];
+
+        $query = trim((string) $request->query->get('q', ''));
+        if ($query !== '') {
+            $params['q'] = $query;
+        }
+
+        $role = strtoupper(trim((string) $request->query->get('role', '')));
+        if ($role === 'ADMIN' || $role === 'USER') {
+            $params['role'] = $role;
+        }
+
+        $sort = strtolower(trim((string) $request->query->get('sort', '')));
+        if (in_array($sort, ['id', 'name', 'email', 'age'], true)) {
+            $params['sort'] = $sort;
+        }
+
+        $direction = strtoupper(trim((string) $request->query->get('direction', '')));
+        if ($direction === 'ASC' || $direction === 'DESC') {
+            $params['direction'] = $direction;
+        }
+
+        $page = $request->query->getInt('page', 1);
+        if ($page > 1) {
+            $params['page'] = $page;
+        }
+
+        return $params;
     }
 }
