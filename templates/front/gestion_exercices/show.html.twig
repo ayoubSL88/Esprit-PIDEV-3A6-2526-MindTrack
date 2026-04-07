@@ -1,0 +1,134 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}{{ exercice.nom }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    {# Fil d'Ariane #}
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('front_gestion_exercices_index') }}">Mes Exercices</a></li>
+            <li class="breadcrumb-item active">{{ exercice.nom }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            {# Informations principales #}
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h1 class="card-title">{{ exercice.nom }}</h1>
+                        <span class="badge 
+                            {% if exercice.difficulte == 'FACILE' %}bg-success
+                            {% elseif exercice.difficulte == 'MOYEN' %}bg-warning text-dark
+                            {% else %}bg-danger
+                            {% endif %} px-3 py-2 fs-6">
+                            {{ exercice.difficulte|capitalize }}
+                        </span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <span class="badge bg-secondary me-2">
+                            <i class="bi bi-tag"></i> {{ exercice.type }}
+                        </span>
+                        <span class="badge bg-info">
+                            <i class="bi bi-clock"></i> {{ exercice.duree }} minutes
+                        </span>
+                    </div>
+                    
+                    <h5 class="mt-4">
+                        <i class="bi bi-file-text"></i> Description
+                    </h5>
+                    <hr>
+                    <p class="lead">{{ exercice.description|nl2br }}</p>
+                    
+                    <h5 class="mt-4">
+                        <i class="bi bi-list-check"></i> Démarche
+                    </h5>
+                    <hr>
+                    <div class="demarche-content">
+                        {{ exercice.demarche|nl2br }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            {# Carte d'information #}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informations</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <strong><i class="bi bi-clock-history"></i> Durée estimée :</strong><br>
+                            {{ exercice.duree }} minutes
+                        </li>
+                        <li class="mb-3">
+                            <strong><i class="bi bi-calendar-plus"></i> Date de création :</strong><br>
+                            {{ exercice.dateCreation|date('d/m/Y à H:i') }}
+                        </li>
+                        {% if exercice.dateModification %}
+                        <li class="mb-3">
+                            <strong><i class="bi bi-pencil-square"></i> Dernière modification :</strong><br>
+                            {{ exercice.dateModification|date('d/m/Y à H:i') }}
+                        </li>
+                        {% endif %}
+                    </ul>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button class="btn btn-success btn-lg" onclick="startExercice()">
+                            <i class="bi bi-play-fill"></i> Commencer l'exercice
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Imprimer
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            {# Conseils #}
+            <div class="card shadow-sm bg-light">
+                <div class="card-body">
+                    <h6><i class="bi bi-lightbulb"></i> Conseils</h6>
+                    <hr>
+                    <p class="small mb-0">
+                        Prenez votre temps, suivez la démarche étape par étape, 
+                        et n'hésitez pas à prendre des notes pour suivre votre progression.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function startExercice() {
+    // À implémenter : démarrer l'exercice avec timer et progression
+    alert('Fonctionnalité à venir : Timer, progression et suivi des sessions !');
+}
+</script>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .demarche-content {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            line-height: 1.8;
+        }
+        @media print {
+            .btn, .dropdown, nav, .bg-light {
+                display: none !important;
+            }
+            .card {
+                border: none !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+{% endblock %}
