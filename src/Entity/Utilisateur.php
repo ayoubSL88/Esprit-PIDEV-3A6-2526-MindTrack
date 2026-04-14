@@ -6,9 +6,10 @@ use Doctrine\ORM\Mapping as ORM;
 
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Profilpsychologique;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity]
-class Utilisateur
+class Utilisateur implements UserInterface
 {
 
     #[ORM\Id]
@@ -50,6 +51,65 @@ class Utilisateur
 
     #[ORM\Column(type: "boolean")]
     private bool $totp_enabled;
+
+    // ===== MÉTHODES REQUISES PAR UserInterface =====
+    
+    /**
+     * Retourne le mot de passe pour l'authentification
+     */
+    public function getPassword(): string
+    {
+        return $this->mdpsU;
+    }
+    
+    /**
+     * Retourne les rôles de l'utilisateur
+     */
+    public function getRoles(): array
+    {
+        // Garantir qu'il y a au moins ROLE_USER
+        $roles = [$this->roleU];
+        if (empty($roles) || !in_array('ROLE_USER', $roles)) {
+            $roles[] = 'ROLE_USER';
+        }
+        
+        return array_unique($roles);
+    }
+    
+    /**
+     * Retourne le salt (plus utilisé dans Symfony 5.3+, mais méthode requise)
+     */
+    public function getSalt(): ?string
+    {
+        return null;
+    }
+    
+    /**
+     * Retourne le nom d'utilisateur (méthode dépréciée mais requise pour compatibilité)
+     */
+    public function getUsername(): string
+    {
+        return $this->emailU;
+    }
+    
+    /**
+     * Retourne l'identifiant unique de l'utilisateur (Symfony 5.3+)
+     */
+    public function getUserIdentifier(): string
+    {
+        return $this->emailU;
+    }
+    
+    /**
+     * Efface les informations sensibles
+     */
+    public function eraseCredentials(): void
+    {
+        // Ne rien faire, mais méthode requise par l'interface
+        // Si vous avez des données temporaires sensibles, effacez-les ici
+    }
+    
+    // ===== FIN DES MÉTHODES UserInterface =====
 
     public function getIdU()
     {

@@ -1,0 +1,181 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}{{ exercice.nom }} - Session en cours{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">{{ exercice.nom }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>Description</h5>
+                        <p>{{ exercice.description|nl2br }}</p>
+                    </div>
+                    <div class="mb-4">
+                        <h5>Démarche à suivre</h5>
+                        <div class="p-3 bg-light rounded" id="stepsContainer">
+                            {% set steps = exercice.demarche|split("\n") %}
+                            {% for step in steps %}
+                                {% if step|trim is not empty %}
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input step-checkbox" type="checkbox" 
+                                               id="step{{ loop.index }}" value="{{ step|trim }}">
+                                        <label class="form-check-label" for="step{{ loop.index }}">
+                                            {{ step|trim }}
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Session en cours</h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-1 fw-bold mb-3" id="timer">00:00</div>
+                    
+                    <div class="mb-3">
+                        <label>Progression</label>
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar bg-success" id="progress-bar" 
+                                 role="progressbar" style="width: 0%">
+                                0%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Mon ressenti (1-5)</label>
+                        <select id="ressenti" class="form-select">
+                            <option value="">Sélectionner</option>
+                            <option value="1">⭐ - Très difficile</option>
+                            <option value="2">⭐⭐ - Difficile</option>
+                            <option value="3">⭐⭐⭐ - Moyen</option>
+                            <option value="4">⭐⭐⭐⭐ - Facile</option>
+                            <option value="5">⭐⭐⭐⭐⭐ - Très facile</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Notes personnelles</label>
+                        <textarea id="commentaires" class="form-control" rows="3" 
+                                  placeholder="Notez vos impressions, difficultés rencontrées..."></textarea>
+                    </div>
+                    
+                    <button class="btn btn-danger w-100" id="terminerBtn">
+                        <i class="bi bi-check-circle"></i> Terminer l'exercice
+                    </button>
+                    
+                    <button class="btn btn-secondary w-100 mt-2" id="sauvegarderBtn">
+                        <i class="bi bi-save"></i> Sauvegarder progression
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let startTime = new Date();
+let timerInterval;
+let currentProgress = {{ session.progress|default(0) }};
+
+function updateTimer() {
+    const now = new Date();
+    const elapsed = Math.floor((now - startTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    document.getElementById('timer').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function startTimer() {
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+function updateProgress(value) {
+    currentProgress = Math.min(100, Math.max(0, value));
+    document.getElementById('progress-bar').style.width = currentProgress + '%';
+    document.getElementById('progress-bar').textContent = currentProgress + '%';
+}
+
+function saveProgress() {
+    const stepsCompleted = [];
+    document.querySelectorAll('.step-checkbox:checked').forEach(checkbox => {
+        stepsCompleted.push(checkbox.nextElementSibling.textContent.trim());
+    });
+    
+    fetch('{{ path('front_session_save_progress', {'idSession': session.idSession}) }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ 
+            progress: currentProgress,
+            steps: stepsCompleted
+        })
+    }).catch(err => console.error('Erreur sauvegarde:', err));
+}
+
+// Calculer la progression en fonction des étapes cochées
+function calculateProgress() {
+    const total = document.querySelectorAll('.step-checkbox').length;
+    const checked = document.querySelectorAll('.step-checkbox:checked').length;
+    return Math.round((checked / total) * 100);
+}
+
+// Écouter les changements sur les checkboxes
+document.querySelectorAll('.step-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+        updateProgress(calculateProgress());
+        saveProgress();
+    });
+});
+
+document.getElementById('terminerBtn').addEventListener('click', () => {
+    const dureeReelle = Math.floor((new Date() - startTime) / 1000);
+    const ressenti = document.getElementById('ressenti').value;
+    const commentaires = document.getElementById('commentaires').value;
+    
+    let finalComment = commentaires;
+    if (ressenti) {
+        finalComment += (commentaires ? '\n\n' : '') + `Ressenti: ${ressenti}/5`;
+    }
+    
+    if (confirm('Terminer cet exercice ? Votre progression sera enregistrée définitivement.')) {
+        fetch('{{ path('front_session_finish', {'idSession': session.idSession}) }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                dureeReelle: dureeReelle,
+                resultat: currentProgress >= 80 ? 'Réussi' : (currentProgress >= 50 ? 'Partiellement réussi' : 'À refaire'),
+                commentaires: finalComment
+            })
+        }).then(response => response.json()).then(data => {
+            if (data.success) {
+                window.location.href = data.redirect;
+            }
+        });
+    }
+});
+
+document.getElementById('sauvegarderBtn').addEventListener('click', () => {
+    saveProgress();
+    alert('Progression sauvegardée !');
+});
+
+// Restaurer la progression sauvegardée
+updateProgress(currentProgress);
+
+// Démarrer le timer
+startTimer();
+</script>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}Détail de la séance - {{ session.exercice.nom }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="bi bi-journal-bookmark-fill text-primary"></i> 
+            Détail de ma séance
+        </h1>
+        <div>
+            <a href="{{ path('front_historique_index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Retour à l'historique
+            </a>
+            <a href="{{ path('front_session_start', {'idEx': session.exercice.idEx}) }}" class="btn btn-primary">
+                <i class="bi bi-arrow-repeat"></i> Refaire l'exercice
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-text"></i> {{ session.exercice.nom }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <span class="badge bg-secondary me-2">{{ session.exercice.type }}</span>
+                        <span class="badge bg-{{ session.exercice.difficulte == 'FACILE' ? 'success' : (session.exercice.difficulte == 'MOYEN' ? 'warning' : 'danger') }}">
+                            {{ session.exercice.difficulte }}
+                        </span>
+                        <span class="badge bg-info">{{ session.exercice.duree }} min estimées</span>
+                    </div>
+                    
+                    <h6>Description</h6>
+                    <p>{{ session.exercice.description|nl2br }}</p>
+                    
+                    <h6 class="mt-3">Démarche</h6>
+                    <div class="p-3 bg-light rounded">
+                        {{ session.exercice.demarche|nl2br }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-check"></i> Ma séance
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr><th>Date de début</th><td>{{ session.dateDebut|date('d/m/Y H:i:s') }}</td></tr>
+                        <tr><th>Date de fin</th><td>{{ session.dateFin|date('d/m/Y H:i:s') }}</td></tr>
+                        <tr>
+                            <th>Durée réelle</th>
+                            <td>
+                                {% if session.dureeReelle %}
+                                    <strong>{{ (session.dureeReelle / 60)|round }} minutes</strong>
+                                    ({{ session.dureeReelle }} secondes)
+                                {% else %} - {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Progression</th>
+                            <td>
+                                <div class="progress" style="height: 25px;">
+                                    <div class="progress-bar bg-{{ session.progress == 100 ? 'success' : 'primary' }}" 
+                                         style="width: {{ session.progress }}%">
+                                        {{ session.progress }}%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Résultat</th>
+                            <td>
+                                {% if session.resultat %}
+                                    <span class="badge bg-success">{{ session.resultat }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Terminé</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            {% if session.commentaires %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-chat-dots"></i> Mes notes</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ session.commentaires|nl2br }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

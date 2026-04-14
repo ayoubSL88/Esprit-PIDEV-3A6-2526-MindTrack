@@ -1,0 +1,113 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}Ma progression{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="bi bi-graph-up text-success"></i> 
+            Ma progression
+        </h1>
+        <a href="{{ path('front_gestion_exercices_index') }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i> Retour aux exercices
+        </a>
+    </div>
+
+    <!-- Progression globale -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-gradient-primary text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <h5 class="mb-0"><i class="bi bi-trophy-fill"></i> Vue d'ensemble</h5>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <div class="border-end">
+                        <h6 class="text-muted">Exercices terminés</h6>
+                        <h2 class="text-primary">{{ global_progression.sessionsTerminees|default(0) }}</h2>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border-end">
+                        <h6 class="text-muted">Temps total passé</h6>
+                        <h2 class="text-success">{{ (global_progression.tempsTotal|default(0) / 60)|round }} min</h2>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-muted">Progression moyenne</h6>
+                    <h2 class="text-info">
+                        {% set avg = 0 %}
+                        {% for item in sessions_by_exercice %}
+                            {% set avg = avg + item.moyenne_progression %}
+                        {% endfor %}
+                        {{ sessions_by_exercice|length > 0 ? (avg / sessions_by_exercice|length)|round : 0 }}%
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphique d'évolution -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-calendar-week"></i> Évolution des exercices (7 derniers jours)</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="evolutionChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- Progression par exercice -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-bar-chart-steps"></i> Progression par exercice</h5>
+        </div>
+        <div class="card-body">
+            {% if sessions_by_exercice is empty or sessions_by_exercice|filter(item => item.total_sessions > 0)|length == 0 %}
+                <div class="text-center py-5">
+                    <i class="bi bi-emoji-frown fs-1 text-muted"></i>
+                    <h4 class="mt-3">Aucune activité pour le moment</h4>
+                    <p>Commencez un exercice pour suivre votre progression ici.</p>
+                    <a href="{{ path('front_gestion_exercices_index') }}" class="btn btn-primary">
+                        <i class="bi bi-play-fill"></i> Découvrir les exercices
+                    </a>
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr><th>Exercice</th><th>Type</th><th>Difficulté</th><th>Sessions</th><th>Progression moyenne</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for item in sessions_by_exercice %}
+                                {% if item.total_sessions > 0 %}
+                                <tr>
+                                    <td><strong>{{ item.exercice.nom }}</strong></td>
+                                    <td>{{ item.exercice.type }}</td>
+                                    <td><span class="badge bg-{{ item.exercice.difficulte == 'FACILE' ? 'success' : (item.exercice.difficulte == 'MOYEN' ? 'warning' : 'danger') }}">{{ item.exercice.difficulte }}</span></td>
+                                    <td>{{ item.total_sessions }} session(s)</td>
+                                    <td><div class="progress" style="height: 25px; width: 150px;"><div class="progress-bar" style="width: {{ item.moyenne_progression }}%">{{ item.moyenne_progression }}%</div></div></td>
+                                    <td><a href="{{ path('front_session_start', {'idEx': item.exercice.idEx}) }}" class="btn btn-sm btn-outline-success"><i class="bi bi-play-fill"></i> Refaire</a></td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('evolutionChart').getContext('2d');
+    const evolutionData = {{ evolution|json_encode|raw }};
+    new Chart(ctx, { type: 'line', data: { labels: evolutionData.labels, datasets: [{ label: 'Exercices réalisés', data: evolutionData.data, backgroundColor: 'rgba(54, 162, 235, 0.2)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 2, tension: 0.3, fill: true }] }, options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
+});
+</script>
+{% endblock %}

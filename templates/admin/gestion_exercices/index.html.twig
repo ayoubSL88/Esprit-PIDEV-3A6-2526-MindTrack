@@ -37,8 +37,8 @@
             <tr>
                 <th>Nom</th>
                 <th>Type</th>
-                <th>Duree</th>
-                <th>Difficulte</th>
+                <th>Durée</th>
+                <th>Difficulté</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -50,7 +50,7 @@
                 <td>{{ exercice.duree }} min</td>
                 <td>
                     <span class="badge bg-{{ exercice.difficulte == 'FACILE' ? 'success' : (exercice.difficulte == 'MOYEN' ? 'warning' : 'danger') }}">
-                        {{ exercice.difficulte }}
+                    {{ exercice.difficulte }}
                     </span>
                 </td>
                 <td>

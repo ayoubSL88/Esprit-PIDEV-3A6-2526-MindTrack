@@ -11,7 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: ExerciceRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 class Exercice
 {
@@ -53,7 +53,7 @@ class Exercice
     #[ORM\Column(type: "datetime")]
     private \DateTimeInterface $date_modification;
 
-    #[ORM\OneToMany(mappedBy: "idEx", targetEntity: Session::class)]
+    #[ORM\OneToMany(mappedBy: "exercice", targetEntity: Session::class, cascade: ["remove"])]
     private Collection $sessions;
 
     #[ORM\OneToMany(mappedBy: "idExercice", targetEntity: Todo::class)]
@@ -93,7 +93,7 @@ class Exercice
         return $this->nom;
     }
 
-    public function setNom($value)
+    public function setNom($value): self
     {
         $this->nom = $value;
         return $this;
@@ -104,7 +104,7 @@ class Exercice
         return $this->type;
     }
 
-    public function setType($value)
+    public function setType($value): self
     {
         $this->type = $value;
         return $this;
@@ -115,7 +115,7 @@ class Exercice
         return $this->duree;
     }
 
-    public function setDuree($value)
+    public function setDuree($value):self
     {
         $this->duree = $value;
         return $this;
@@ -126,7 +126,7 @@ class Exercice
         return $this->difficulte;
     }
 
-    public function setDifficulte($value)
+    public function setDifficulte($value): self
     {
         $this->difficulte = $value;
         return $this;
@@ -137,7 +137,7 @@ class Exercice
         return $this->description;
     }
 
-    public function setDescription($value)
+    public function setDescription($value): self
     {
         $this->description = $value;
         return $this;
@@ -148,7 +148,7 @@ class Exercice
         return $this->demarche;
     }
 
-    public function setDemarche($value)
+    public function setDemarche($value): self
     {
         $this->demarche = $value;
         return $this;
@@ -198,7 +198,7 @@ class Exercice
     {
         if (!$this->sessions->contains($session)) {
             $this->sessions[] = $session;
-            $session->setIdEx($this);
+            $session->setExercice($this);
         }
         return $this;
     }

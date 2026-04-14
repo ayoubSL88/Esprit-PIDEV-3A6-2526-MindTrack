@@ -3,17 +3,21 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Exercice;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: SessionRepository::class)]
 class Session
 {
 
     #[ORM\Id]
     #[ORM\Column(type: "integer")]
     #[ORM\GeneratedValue(strategy: "IDENTITY")]
-    private int $idSession;
+    private ?int $idSession = null;
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "idU", nullable: false)]
+    private ?Utilisateur $user = null;
 
     #[ORM\Column(type: "date")]
     private \DateTimeInterface $dateSession;
@@ -22,7 +26,7 @@ class Session
     private \DateTimeInterface $dateDebut;
 
     #[ORM\Column(type: "datetime", nullable: true)]
-    private \DateTimeInterface $dateFin;
+    private ?\DateTimeInterface $dateFin = null;
 
     #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $Resultat;
@@ -31,10 +35,10 @@ class Session
     private ?string $commentaires;
 
     #[ORM\Column(type: "integer", nullable: true)]
-    private int $dureeReelle;
+    private ?int $dureeReelle = null;
 
     #[ORM\Column(type: "boolean")]
-    private bool $terminee;
+    private bool $terminee = false;
 
     #[ORM\Column(type: "integer", nullable: true)]
     private ?int $progress = 0;
@@ -43,12 +47,14 @@ class Session
     private ?array $steps = null;
 
     #[ORM\ManyToOne(targetEntity: Exercice::class, inversedBy: "sessions")]
-    #[ORM\JoinColumn(name: 'idEx', referencedColumnName: 'id_ex', onDelete: 'CASCADE')]
-    private ?Exercice $idEx = null;
+    #[ORM\JoinColumn(name: 'idEx', referencedColumnName: 'id_ex', nullable: false, onDelete: 'CASCADE')]
+    private ?Exercice $exercice = null;
 
     // Constructeur
     public function __construct()
     {
+        $this->dateSession = new \DateTime();
+        $this->dateDebut = new \DateTime();
         $this->steps = [];
         $this->progress = 0;
     }
@@ -164,14 +170,25 @@ class Session
         return $this;
     }
 
-    public function getIdEx(): Exercice
-    {
-        return $this->idEx;
-    }
+    public function getExercice(): ?Exercice
+{
+    return $this->exercice;
+}
 
-    public function setIdEx(?Exercice $idEx): self
-    {
-        $this->idEx = $idEx;
-        return $this;
-    }
+public function setExercice(?Exercice $exercice): self
+{
+    $this->exercice = $exercice;
+    return $this;
+}
+
+public function getUser(): ?Utilisateur 
+{ 
+    return $this->user; 
+}
+
+public function setUser(?Utilisateur $user): self 
+{ 
+    $this->user = $user; 
+    return $this; 
+}
 }

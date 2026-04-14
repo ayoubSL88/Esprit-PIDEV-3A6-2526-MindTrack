@@ -4,13 +4,16 @@ namespace App\Controller\Admin\GestionExercices;
 
 use App\Entity\Exercice;
 use App\Form\ExerciceType;
+use App\Repository\ExerciceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/admin/exercices')]
+#[IsGranted('ROLE_ADMIN')]
 final class ExerciceController extends AbstractController
 {
     #[Route('/', name: 'admin_gestion_exercices_index', methods: ['GET'])]
@@ -53,17 +56,16 @@ final class ExerciceController extends AbstractController
     {
         $exercice = new Exercice();
         $form = $this->createForm(ExerciceType::class, $exercice, [
-            'is_edit' => false
-        ]);
+            'is_edit' => false ]);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-        // Les dates sont automatiquement gérées par PrePersist
-        $entityManager->persist($exercice);
-        $entityManager->flush();
+            if ($form->isSubmitted() && $form->isValid()) {
+            // Les dates sont automatiquement gérées par PrePersist
+            $entityManager->persist($exercice);
+            $entityManager->flush();
         
-        $this->addFlash('success', 'Exercice créé avec succès !');
-        return $this->redirectToRoute('admin_gestion_exercices_index');
+            $this->addFlash('success', 'Exercice créé avec succès !');
+            return $this->redirectToRoute('admin_gestion_exercices_index');
         }
     
         return $this->render('admin/gestion_exercices/new.html.twig', [

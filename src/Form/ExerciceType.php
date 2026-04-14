@@ -19,12 +19,12 @@ class ExerciceType extends AbstractType
         $builder
             // ⚠️ On enlève idEx ! L'ID est auto-généré par la BDD
             ->add('nom', TextType::class, [
-                'label' => 'Nom',
-                'attr' => ['class' => 'form-control']
+                'label' => 'Nom de l\'exercice',
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Ex: Méditation respiratoire']
             ])
             ->add('type', TextType::class, [
                 'label' => 'Type',
-                'attr' => ['class' => 'form-control']
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Ex: Méditation, Respiration, Visualisation']
             ])
             ->add('duree', IntegerType::class, [
                 'label' => 'Durée (minutes)',

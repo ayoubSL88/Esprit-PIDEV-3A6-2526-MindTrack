@@ -21,11 +21,11 @@
                     <div class="col-md-6">{{ form_row(form.duree) }}</div>
                     <div class="col-md-6">{{ form_row(form.difficulte) }}</div>
                 </div>
-                {{ form_row(form.description) }}
-                {{ form_row(form.demarche) }}
+                {{ form_row(form.description, {'attr': {'rows': 5}}) }}
+                {{ form_row(form.demarche, {'attr': {'rows': 5}}) }}
 
                 <button type="submit" class="btn btn-primary">Enregistrer</button>
-            {{ form_end(form) }}
-        </div>
+                {{ form_end(form) }}
+                </div>
     </div>
 {% endblock %}

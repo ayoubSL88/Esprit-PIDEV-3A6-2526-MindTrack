@@ -1,0 +1,180 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}Gestion des sessions utilisateurs{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Toutes les sessions d'exercices</h1>
+    <div>
+        <a href="{{ path('admin_gestion_exercices_index') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour aux exercices
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3" id="filterForm">
+            <div class="col-md-4">
+                <input type="text" name="search" id="searchInput" class="form-control" 
+                       placeholder="Rechercher par utilisateur ou exercice..." 
+                       value="{{ app.request.query.get('search') }}">
+            </div>
+            <div class="col-md-3">
+                <select name="statut" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="terminee" {% if app.request.query.get('statut') == 'terminee' %}selected{% endif %}>Terminées</option>
+                    <option value="encours" {% if app.request.query.get('statut') == 'encours' %}selected{% endif %}>En cours</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="date_debut" class="form-control" placeholder="Date début"
+                       value="{{ app.request.query.get('date_debut') }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-secondary w-100">Filtrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Utilisateur</th>
+                        <th>Exercice</th>
+                        <th>Date début</th>
+                        <th>Date fin</th>
+                        <th>Durée réelle</th>
+                        <th>Progression</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for session in sessions %}
+                    <tr>
+                        <td>#{{ session.idSession }}</td>
+                        <td>
+                            <strong>{{ session.user.nomU }} {{ session.user.prenomU }}</strong><br>
+                            <small class="text-muted">{{ session.user.emailU }}</small>
+                        </td>
+                        <td>
+                            <strong>{{ session.exercice.nom }}</strong><br>
+                            <small class="text-muted">{{ session.exercice.type }}</small>
+                        </td>
+                        <td>{{ session.dateDebut|date('d/m/Y H:i') }}</td>
+                        <td>
+                            {% if session.dateFin %}
+                                {{ session.dateFin|date('d/m/Y H:i') }}
+                            {% else %}
+                                <span class="badge bg-warning">En cours</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if session.dureeReelle %}
+                                {{ (session.dureeReelle / 60)|round }} min
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-{{ session.progress == 100 ? 'success' : 'primary' }}" 
+                                     style="width: {{ session.progress }}%">
+                                    {{ session.progress }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if session.terminee %}
+                                <span class="badge bg-success">Terminée</span>
+                            {% else %}
+                                <span class="badge bg-warning">En cours</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ path('admin_sessions_show', {'idSession': session.idSession}) }}" 
+                               class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i> Détail
+                            </a>
+                            <a href="{{ path('admin_sessions_user', {'idU': session.user.idU}) }}" 
+                               class="btn btn-sm btn-secondary">
+                                <i class="bi bi-person"></i> Voir user
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">Aucune session trouvée</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques rapides -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total sessions</h5>
+                <h2 class="mb-0">{{ sessions|length }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Terminées</h5>
+                <h2 class="mb-0">{{ sessions|filter(s => s.terminee)|length }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <h5 class="card-title">En cours</h5>
+                <h2 class="mb-0">{{ sessions|filter(s => not s.terminee)|length }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Progression moyenne</h5>
+                <h2 class="mb-0">
+                    {% set avg = 0 %}
+                    {% for s in sessions %}
+                        {% set avg = avg + s.progress %}
+                    {% endfor %}
+                    {{ sessions|length > 0 ? (avg / sessions|length)|round : 0 }}%
+                </h2>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    // Recherche automatique après 300ms d'inactivité
+    let timeout = null;
+    document.getElementById('searchInput').addEventListener('input', function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            document.getElementById('filterForm').submit();
+        }, 300);
+    });
+</script>
+{% endblock %}
