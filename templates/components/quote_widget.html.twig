@@ -1,0 +1,126 @@
+<div
+    id="quote-widget"
+    data-quote-endpoint="{{ path('api_quotes_random') }}"
+>
+    <div class="qw-accent"></div>
+
+    <div class="qw-header">
+        <div class="qw-label">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Citation du moment
+        </div>
+        <div class="qw-actions">
+            <button class="qw-btn" id="quote-save" type="button" title="Sauvegarder">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                <span>Sauvegarder</span>
+            </button>
+            <button class="qw-btn" id="quote-refresh" type="button" title="Nouvelle citation">
+                <svg id="refresh-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Nouvelle
+            </button>
+        </div>
+    </div>
+
+    <div class="qw-body">
+        <div class="qw-mark">
+            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+        </div>
+        <p id="quote-text" class="qw-text">
+            <span class="qw-skeleton qw-sk-long"></span>
+            <span class="qw-skeleton qw-sk-short"></span>
+        </p>
+        <div class="qw-author" id="quote-author">
+            <div class="qw-author-dash"></div>
+            <span class="qw-author-name">
+                <span class="qw-skeleton qw-sk-name"></span>
+            </span>
+        </div>
+    </div>
+</div>
+<script>
+(() => {
+    const widget = document.getElementById('quote-widget');
+    if (!widget || widget.dataset.initialized === 'true') return;
+    widget.dataset.initialized = 'true';
+
+    const textEl      = document.getElementById('quote-text');
+    const authorEl    = document.getElementById('quote-author');
+    const refreshBtn  = document.getElementById('quote-refresh');
+    const refreshIcon = document.getElementById('refresh-icon');
+    const saveBtn     = document.getElementById('quote-save');
+    const endpoint    = widget.dataset.quoteEndpoint;
+    let currentQuote  = null;
+
+    const FALLBACK = {
+        q: 'La discipline est le pont entre les objectifs et les accomplissements.',
+        a: 'Jim Rohn',
+    };
+
+    const render = (quote) => {
+        textEl.textContent = quote.q;
+        authorEl.querySelector('.qw-author-name').textContent = quote.a;
+        textEl.classList.remove('loading');
+        authorEl.classList.remove('loading');
+    };
+
+    const setLoading = () => {
+        textEl.classList.add('loading');
+        authorEl.classList.add('loading');
+        refreshIcon.classList.add('qw-rotate');
+    };
+
+    const resetSave = () => {
+        const span = saveBtn.querySelector('span');
+        const svg  = saveBtn.querySelector('svg');
+        if (span) span.textContent = 'Sauvegarder';
+        if (svg) {
+            svg.setAttribute('fill', 'none');
+            svg.setAttribute('stroke', 'currentColor');
+            svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>';
+        }
+        saveBtn.classList.remove('saved');
+    };
+
+    const fetchQuote = async () => {
+        setLoading();
+        try {
+            const res = await fetch(endpoint, { headers: { Accept: 'application/json' } });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            currentQuote = { q: data.q || FALLBACK.q, a: data.a || FALLBACK.a };
+        } catch {
+            currentQuote = FALLBACK;
+        }
+        setTimeout(() => {
+            render(currentQuote);
+            refreshIcon.classList.remove('qw-rotate');
+            resetSave();
+        }, 320);
+    };
+
+    const saveQuote = () => {
+        if (!currentQuote) return;
+        try {
+            const saved = JSON.parse(localStorage.getItem('mindtrack_quotes') || '[]');
+            if (!saved.find(q => q.q === currentQuote.q)) {
+                saved.push(currentQuote);
+                localStorage.setItem('mindtrack_quotes', JSON.stringify(saved));
+            }
+        } catch {}
+        const span = saveBtn.querySelector('span');
+        const svg  = saveBtn.querySelector('svg');
+        if (span) span.textContent = 'Sauvegardée';
+        if (svg) {
+            svg.setAttribute('fill', 'currentColor');
+            svg.setAttribute('stroke', 'none');
+            svg.innerHTML = '<path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>';
+        }
+        saveBtn.classList.add('saved');
+        setTimeout(resetSave, 2000);
+    };
+
+    refreshBtn.addEventListener('click', fetchQuote);
+    saveBtn.addEventListener('click', saveQuote);
+    fetchQuote();
+})();
+</script>

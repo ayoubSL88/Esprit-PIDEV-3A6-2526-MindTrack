@@ -1,23 +1,186 @@
 {% if habitudes is empty %}
-    <p class="table-empty">Aucune habitude trouvee. Creez votre premiere routine pour commencer.</p>
+    <div class="mt-habitudes-empty">
+        <p>Aucune habitude trouvée. Créez votre première routine pour commencer.</p>
+    </div>
 {% else %}
-    <div class="grid gap-4 sm:grid-cols-2">
+    <div class="mt-habitudes-grid">
         {% for habitude in habitudes %}
-            <article class="rounded-3xl border border-border bg-white/90 p-5 shadow-soft">
-                <div class="mb-3 flex flex-wrap gap-2">
-                    <span class="inline-flex rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-emphasis">{{ habitude.frequence|title }}</span>
-                    <span class="inline-flex rounded-full bg-success-soft px-3 py-1 text-xs font-semibold text-success">{{ habitude.habitType }}</span>
+            {% set insight = advancedInsights[habitude.idHabitude] ?? null %}
+            {% set risk = insight.risk ?? null %}
+            {% set progress = insight.progress ?? null %}
+            {% set streak = insight.streak ?? null %}
+            {% set recommendation = insight.recommendation ?? null %}
+            {% set mood = insight.moodCorrelation ?? null %}
+            {% set reminder = insight.smartReminder ?? null %}
+            {% set completion = progress ? progress.completionRate : 0 %}
+            {% set targetReach = progress ? progress.averageTargetReach : 0 %}
+
+            {% set riskLevel = risk ? risk.riskLevel : 'BAS' %}
+            {% set riskBadgeClass = riskLevel == 'ELEVE'
+                ? 'mt-badge-risk-high'
+                : (riskLevel == 'MOYEN'
+                    ? 'mt-badge-risk-med'
+                    : 'mt-badge-risk-ok') %}
+            {% set riskLabel = riskLevel == 'ELEVE'
+                ? 'Risque élevé'
+                : (riskLevel == 'MOYEN'
+                    ? 'Risque moyen'
+                    : 'Routine stable') %}
+            {% set riskBlockClass = riskLevel == 'ELEVE'
+                ? 'mt-risk-high'
+                : (riskLevel == 'MOYEN'
+                    ? 'mt-risk-med'
+                    : 'mt-risk-ok') %}
+
+            <article class="mt-card">
+
+                {# EN-TÊTE #}
+                <div class="mt-card-header">
+                    <div class="mt-badges">
+                        <span class="mt-badge mt-badge-freq">{{ habitude.frequence|title }}</span>
+                        <span class="mt-badge mt-badge-type">{{ habitude.habitType }}</span>
+                        <span class="mt-badge {{ riskBadgeClass }}">{{ riskLabel }}</span>
+                    </div>
+                    <div class="mt-header-main">
+                        <div class="mt-header-info">
+                            <h3 class="mt-habit-title">{{ habitude.nom }}</h3>
+                            <p class="mt-habit-goal">{{ habitude.objectif }}</p>
+                            <p class="mt-habit-target">
+                                <strong>Cible :</strong> {{ habitude.targetValue }} {{ habitude.unit }}
+                            </p>
+                        </div>
+                        <div class="mt-streak-box">
+                            <p class="mt-streak-label">Streak</p>
+                            <p class="mt-streak-num">{{ streak ? streak.currentStreak : 0 }}</p>
+                        </div>
+                    </div>
                 </div>
-                <h3 class="text-lg font-semibold text-ink">{{ habitude.nom }}</h3>
-                <p class="mt-1 text-sm text-muted">{{ habitude.objectif }}</p>
-                <p class="mt-2 text-sm text-muted"><strong class="text-ink">Cible :</strong> {{ habitude.targetValue }} {{ habitude.unit }}</p>
-                <div class="button-row mt-4">
-                    <a class="btn-secondary px-4 py-2" href="{{ path('front_gestion_suivi_habitudes_habitude_edit', {idHabitude: habitude.idHabitude}) }}">Modifier</a>
-                    <a class="btn-secondary px-4 py-2" href="{{ path('front_gestion_suivi_habitudes_suivi_new') }}">Suivre</a>
-                    <form method="post" action="{{ path('front_gestion_suivi_habitudes_habitude_delete', {idHabitude: habitude.idHabitude}) }}" onsubmit="return confirm('Supprimer cette habitude ?');">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete_habitude_' ~ habitude.idHabitude) }}">
-                        <button class="btn-danger px-4 py-2" type="submit">Supprimer</button>
-                    </form>
+
+                {# CORPS #}
+                <div class="mt-card-body">
+
+                    {# Barres de progression #}
+                    <div class="mt-progress-grid">
+                        <div class="mt-progress-box">
+                            <div class="mt-prog-header">
+                                <span class="mt-prog-label">Progression</span>
+                                <span class="mt-prog-val">{{ completion }}%</span>
+                            </div>
+                            <div class="mt-bar-track">
+                                <div class="mt-bar-fill-blue" style="width: {{ completion > 100 ? 100 : completion }}%"></div>
+                            </div>
+                            <p class="mt-prog-sub">
+                                {{ progress ? progress.completedEntries : 0 }}/{{ progress ? progress.trackedEntries : 0 }} suivis complétés
+                            </p>
+                        </div>
+
+                        <div class="mt-progress-box">
+                            <div class="mt-prog-header">
+                                <span class="mt-prog-label">Atteinte moyenne</span>
+                                <span class="mt-prog-val">{{ targetReach }}%</span>
+                            </div>
+                            <div class="mt-bar-track">
+                                <div class="mt-bar-fill-amber" style="width: {{ targetReach > 100 ? 100 : targetReach }}%"></div>
+                            </div>
+                            <p class="mt-prog-sub">
+                                Moyenne {{ progress ? progress.averageValue : 0 }} {{ progress ? progress.unit : '' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    {# Boutons d action #}
+                    <div class="mt-actions">
+                        <a class="mt-btn" href="{{ path('front_gestion_suivi_habitudes_habitude_edit', {idHabitude: habitude.idHabitude}) }}">
+                            Modifier
+                        </a>
+                        <a class="mt-btn" href="{{ path('front_gestion_suivi_habitudes_suivi_new') }}">
+                            Suivre
+                        </a>
+                        <form method="post"
+                              action="{{ path('front_gestion_suivi_habitudes_habitude_delete', {idHabitude: habitude.idHabitude}) }}"
+                              onsubmit="return confirm(&quot;Supprimer cette habitude ?&quot;);"
+                              style="display:inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_habitude_' ~ habitude.idHabitude) }}">
+                            <button class="mt-btn mt-btn-del" type="submit">Supprimer</button>
+                        </form>
+                    </div>
+
+                    {# PANNEAU INSIGHTS #}
+                    <section class="mt-insights-panel">
+
+                        <div class="mt-insights-head">
+                            <div>
+                                <p class="mt-insights-title">Insights avancés</p>
+                                <p class="mt-insights-sub">Analyse structurée de cette habitude</p>
+                            </div>
+                            <span class="mt-insights-badge">IA</span>
+                        </div>
+
+                        {# Action recommandee #}
+                        <div class="mt-insight-block">
+                            <p class="mt-i-label mt-label-blue">Action recommandée</p>
+                            <p class="mt-i-text">
+                                {{ recommendation ? recommendation.recommendations|first : 'Continuer la routine actuelle.' }}
+                            </p>
+                        </div>
+
+                        {# Rappel + Humeur cote a cote #}
+                        <div class="mt-insight-row">
+                            <div class="mt-insight-half">
+                                <div class="mt-reminder-header">
+                                    <div>
+                                        <p class="mt-i-label mt-label-green">Rappel intelligent</p>
+                                        <p class="mt-i-text">
+                                            {{ reminder ? reminder.strategy : 'Ajoutez un rappel pour renforcer la régularité.' }}
+                                        </p>
+                                    </div>
+                                    <div class="mt-reminder-time-box">
+                                        <p class="mt-reminder-time-label">Heure</p>
+                                        <p class="mt-reminder-time">{{ reminder ? reminder.suggestedHour : '08:00' }}</p>
+                                    </div>
+                                </div>
+                                <p class="mt-i-muted">
+                                    {{ reminder ? reminder.suggestedDays|join(', ') : 'Lun, Mar, Mer, Jeu, Ven' }}
+                                </p>
+                            </div>
+
+                            <div class="mt-insight-half">
+                                <div class="mt-mood-header">
+                                    <p class="mt-i-label mt-label-amber">Impact humeur</p>
+                                    <span class="mt-mood-val">
+                                        {% if mood and mood.difference is not null %}
+                                            {{ mood.difference > 0 ? '+' : '' }}{{ mood.difference }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <p class="mt-i-muted" style="margin-top: 8px">
+                                    {% if mood and mood.samplesWithHabit > 0 %}
+                                        {{ mood.samplesWithHabit }} mesure(s) avec habitude complétée.
+                                    {% else %}
+                                        Pas assez de données pour une analyse fiable.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+
+                        {# Etat de suivi #}
+                        <div class="mt-insight-block {{ riskBlockClass }}">
+                            <p class="mt-i-label mt-risk-label">État de suivi</p>
+                            <p class="mt-risk-text mt-risk-text-val">
+                                {{ risk and risk.daysSinceLastTrack is not null
+                                    ? risk.daysSinceLastTrack ~ ' jours depuis le dernier suivi'
+                                    : 'Suivi récent et stable' }}
+                            </p>
+                            <p class="mt-risk-sub">
+                                {{ risk ? risk.failedInRow : 0 }} échec(s) consécutif(s)
+                            </p>
+                        </div>
+
+                    </section>
+                    {# FIN INSIGHTS #}
+
                 </div>
             </article>
         {% endfor %}

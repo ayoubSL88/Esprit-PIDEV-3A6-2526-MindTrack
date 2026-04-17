@@ -4,6 +4,7 @@ namespace App\Form\Admin\GestionSuiviHabitudes;
 
 use App\Entity\Habitude;
 use App\Entity\Rappel_habitude;
+use App\Entity\Utilisateur;
 use App\Repository\HabitudeRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -17,13 +18,26 @@ class RappelHabitudeType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        /** @var Utilisateur|null $currentUser */
+        $currentUser = $options['current_user'];
+
         $builder
             ->add('idHabitude', EntityType::class, [
                 'class' => Habitude::class,
                 'choice_label' => 'nom',
                 'label' => 'Habitude',
                 'placeholder' => 'Choisir une habitude',
-                'query_builder' => static fn (HabitudeRepository $repository) => $repository->createQueryBuilder('h')->orderBy('h.nom', 'ASC'),
+                'query_builder' => static function (HabitudeRepository $repository) use ($currentUser) {
+                    $qb = $repository->createQueryBuilder('h')->orderBy('h.nom', 'ASC');
+
+                    if ($currentUser instanceof Utilisateur) {
+                        $qb
+                            ->andWhere('h.idU = :owner')
+                            ->setParameter('owner', $currentUser);
+                    }
+
+                    return $qb;
+                },
             ])
             ->add('heureRappel', TextType::class, ['label' => 'Heure (HH:MM)'])
             ->add('jours', TextType::class, [
@@ -49,6 +63,9 @@ class RappelHabitudeType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Rappel_habitude::class,
+            'current_user' => null,
         ]);
+
+        $resolver->setAllowedTypes('current_user', ['null', Utilisateur::class]);
     }
 }

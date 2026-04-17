@@ -4,6 +4,11 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    app.badcontent.api_key: '%env(default::BADCONTENT_API_KEY)%'
+    app.badcontent.model: '%env(default::BADCONTENT_MODEL)%'
+    app.badcontent.api_url: '%env(default::BADCONTENT_API_URL)%'
+    app.badcontent.site_url: '%env(default::BADCONTENT_SITE_URL)%'
+    app.badcontent.site_name: '%env(default::BADCONTENT_SITE_NAME)%'
 
 services:
     # default configuration for services in *this* file
@@ -19,6 +24,14 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    App\Service\Habitude\BadContentDetectionService:
+        arguments:
+            $apiKey: '%app.badcontent.api_key%'
+            $model: '%app.badcontent.model%'
+            $apiUrl: '%app.badcontent.api_url%'
+            $siteUrl: '%app.badcontent.site_url%'
+            $siteName: '%app.badcontent.site_name%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

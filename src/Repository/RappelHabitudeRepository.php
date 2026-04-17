@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Rappel_habitude;
+use App\Entity\Utilisateur;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -36,6 +37,12 @@ class RappelHabitudeRepository extends ServiceEntityRepository
             ->leftJoin('r.idHabitude', 'h')
             ->addSelect('h');
 
+        if (($filters['owner'] ?? null) instanceof Utilisateur) {
+            $qb
+                ->andWhere('h.idU = :owner')
+                ->setParameter('owner', $filters['owner']);
+        }
+
         if (($filters['habitude'] ?? '') !== '') {
             $qb->andWhere('IDENTITY(r.idHabitude) = :habitude')->setParameter('habitude', (int) $filters['habitude']);
         }
@@ -53,6 +60,29 @@ class RappelHabitudeRepository extends ServiceEntityRepository
         $qb->orderBy($allowedSorts[$sort] ?? 'r.createdAt', $direction);
 
         return $qb->getQuery()->getResult();
+    }
+
+    public function countAllForUser(Utilisateur $user): int
+    {
+        return (int) $this->createQueryBuilder('r')
+            ->select('COUNT(r.idRappel)')
+            ->innerJoin('r.idHabitude', 'h')
+            ->andWhere('h.idU = :owner')
+            ->setParameter('owner', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countActiveForUser(Utilisateur $user): int
+    {
+        return (int) $this->createQueryBuilder('r')
+            ->select('COUNT(r.idRappel)')
+            ->innerJoin('r.idHabitude', 'h')
+            ->andWhere('h.idU = :owner')
+            ->andWhere('r.actif = true')
+            ->setParameter('owner', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     public function nextId(): int

@@ -137,6 +137,40 @@
     @apply text-xs font-medium text-danger;
   }
 
+  .form-stack ul {
+    @apply m-0 list-none p-0;
+  }
+
+  .form-stack ul li {
+    margin-top: 0.5rem;
+    border: 1px solid rgba(220, 38, 38, 0.18);
+    border-radius: 0.9rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 245, 245, 0.96)),
+      linear-gradient(135deg, rgba(254, 226, 226, 0.82), rgba(255, 237, 213, 0.45));
+    box-shadow: 0 12px 24px -20px rgba(185, 28, 28, 0.45);
+    color: rgb(185 28 28);
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.3rem;
+    padding: 0.62rem 0.85rem;
+  }
+
+  .form-stack ul li::before {
+    content: "Mauvais contenu";
+    display: inline-flex;
+    margin-right: 0.5rem;
+    border-radius: 9999px;
+    background: rgba(220, 38, 38, 0.12);
+    color: rgb(153 27 27);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    padding: 0.1rem 0.48rem;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+
   .flash {
     @apply mb-4 rounded-2xl border px-4 py-3 text-sm font-medium shadow-sm;
   }

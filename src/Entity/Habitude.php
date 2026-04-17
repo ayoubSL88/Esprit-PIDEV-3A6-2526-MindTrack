@@ -45,6 +45,10 @@ class Habitude
     #[Assert\Length(max: 20, maxMessage: 'L unite ne doit pas depasser 20 caracteres.')]
     private string $unit = '';
 
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'habitudes')]
+    #[ORM\JoinColumn(name: 'idU', referencedColumnName: 'id_u', nullable: true, onDelete: 'SET NULL')]
+    private ?Utilisateur $idU = null;
+
     /** @var Collection<int, Rappel_habitude> */
     #[ORM\OneToMany(mappedBy: 'idHabitude', targetEntity: Rappel_habitude::class)]
     private Collection $rappel_habitudes;
@@ -144,6 +148,18 @@ class Habitude
     public function setUnit(?string $value): self
     {
         $this->unit = $value ?? '';
+
+        return $this;
+    }
+
+    public function getIdU(): ?Utilisateur
+    {
+        return $this->idU;
+    }
+
+    public function setIdU(?Utilisateur $value): self
+    {
+        $this->idU = $value;
 
         return $this;
     }
