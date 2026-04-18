@@ -10,13 +10,14 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/admin/sessions')]
-#[IsGranted('ROLE_ADMIN')]
+//#[IsGranted('ROLE_ADMIN')]
 final class SessionController extends AbstractController
 {
     #[Route('/', name: 'admin_sessions_index')]
     public function index(SessionRepository $sessionRepository): Response
     {
-        $sessions = $sessionRepository->findAllSessionsForAdmin();
+        //$sessions = $sessionRepository->findAllSessionsForAdmin();
+        $sessions = [];
         
         return $this->render('admin/gestion_exercices/sessions_index.html.twig', [
             'sessions' => $sessions

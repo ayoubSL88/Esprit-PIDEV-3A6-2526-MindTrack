@@ -3,7 +3,6 @@ namespace App\Controller\Front\GestionExercices;
 
 use App\Entity\Exercice;
 use App\Entity\Session;
-use App\Form\SessionType;
 use App\Repository\ProgressionRepository;
 use App\Repository\SessionRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,31 +11,15 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/app/session')]
-#[IsGranted('ROLE_USER')]
 final class SessionController extends AbstractController
 {
     #[Route('/start/{idEx}', name: 'front_session_start')]
     public function start(Exercice $exercice, EntityManagerInterface $em): Response
     {
-        $user = $this->getUser();
-        
-        // Vérifier si une session non terminée existe déjà
-        $existingSession = $em->getRepository(Session::class)->findOneBy([
-            'user' => $user,
-            'exercice' => $exercice,
-            'terminee' => false
-        ]);
-        
-        if ($existingSession) {
-            return $this->redirectToRoute('front_session_current', ['idSession' => $existingSession->getIdSession()]);
-        }
-        
         // Créer une nouvelle session
         $session = new Session();
-        $session->setUser($user);
         $session->setExercice($exercice);
         $session->setDateDebut(new \DateTime());
         $session->setTerminee(false);
@@ -52,11 +35,6 @@ final class SessionController extends AbstractController
     #[Route('/current/{idSession}', name: 'front_session_current')]
     public function current(Session $session): Response
     {
-        // Vérifier que la session appartient à l'utilisateur connecté
-        if ($session->getUser() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette session.');
-        }
-        
         $exercice = $session->getExercice();
         
         return $this->render('front/gestion_exercices/session_active.html.twig', [
@@ -68,11 +46,6 @@ final class SessionController extends AbstractController
     #[Route('/save-progress/{idSession}', name: 'front_session_save_progress', methods: ['POST'])]
     public function saveProgress(Session $session, Request $request, EntityManagerInterface $em): JsonResponse
     {
-        // Vérifier l'accès
-        if ($session->getUser() !== $this->getUser()) {
-            return $this->json(['error' => 'Accès non autorisé'], 403);
-        }
-        
         $data = json_decode($request->getContent(), true);
         
         if (isset($data['progress'])) {
@@ -90,13 +63,8 @@ final class SessionController extends AbstractController
     }
     
     #[Route('/finish/{idSession}', name: 'front_session_finish', methods: ['POST'])]
-    public function finish(Session $session, Request $request, EntityManagerInterface $em, ProgressionRepository $progressionRepo): JsonResponse
+    public function finish(Session $session, Request $request, EntityManagerInterface $em): JsonResponse
     {
-        // Vérifier l'accès
-        if ($session->getUser() !== $this->getUser()) {
-            return $this->json(['error' => 'Accès non autorisé'], 403);
-        }
-        
         $data = json_decode($request->getContent(), true);
         
         $session->setTerminee(true);
@@ -121,27 +89,6 @@ final class SessionController extends AbstractController
         
         $em->flush();
         
-        // Mettre à jour la progression globale de l'utilisateur
-        $this->updateUserProgression($session->getUser(), $em, $progressionRepo);
-        
         return $this->json(['success' => true, 'redirect' => $this->generateUrl('front_historique_index')]);
-    }
-    
-    private function updateUserProgression($user, EntityManagerInterface $em, ProgressionRepository $progressionRepo): void
-    {
-        $progression = $progressionRepo->findOrCreateForUser($user);
-        
-        // Compter les sessions terminées
-        $sessionsTerminees = $em->getRepository(Session::class)->count([
-            'user' => $user,
-            'terminee' => true
-        ]);
-        
-        $progression->setSessionsTerminees($sessionsTerminees);
-        $progression->setTotalSessions($sessionsTerminees);
-        $progression->setDerniereActivite(new \DateTime());
-        
-        $em->persist($progression);
-        $em->flush();
     }
 }

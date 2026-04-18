@@ -93,7 +93,7 @@
                         <tbody>
                             {% for session in recent_sessions|default([]) %}
                             <tr>
-                                <td>{{ session.user.nomU }} {{ session.user.prenomU }}</td>
+                                <td>Utilisateur #{{ session.idSession }}</td>
                                 <td>{{ session.exercice.nom }}</td>
                                 <td>{{ session.dateDebut|date('d/m H:i') }}</td>
                                 <td>

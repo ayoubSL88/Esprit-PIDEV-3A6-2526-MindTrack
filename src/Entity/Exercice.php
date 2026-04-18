@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use App\Entity\Todo;
 use App\Entity\Session;
+use App\Repository\ExerciceRepository;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
@@ -16,7 +17,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Exercice
 {
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(name:"id_ex", type: "integer")]
     #[ORM\GeneratedValue(strategy: "IDENTITY")]
     private int $idEx;
 
@@ -47,11 +48,11 @@ class Exercice
     #[Assert\NotBlank(message: "La démarche est obligatoire")]
     private string $demarche;
 
-    #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $date_creation;
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private ?\DateTimeInterface $date_creation = null;
 
-    #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $date_modification;
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private ?\DateTimeInterface $date_modification = null;
 
     #[ORM\OneToMany(mappedBy: "exercice", targetEntity: Session::class, cascade: ["remove"])]
     private Collection $sessions;
@@ -154,36 +155,36 @@ class Exercice
         return $this;
     }
 
-    public function getDateCreation(): \DateTimeInterface
+    public function getDateCreation(): ?\DateTimeInterface
     {
         return $this->date_creation;
     }
 
-    public function setDateCreation(\DateTimeInterface $value): self
+    public function setDateCreation(?\DateTimeInterface $value): self
     {
         $this->date_creation = $value;
 
         return $this;
     }
 
-    public function setDate_creation(\DateTimeInterface $value): self
+    public function setDate_creation(?\DateTimeInterface $value): self
     {
         return $this->setDateCreation($value);
     }
 
-    public function getDateModification(): \DateTimeInterface
+    public function getDateModification(): ?\DateTimeInterface
     {
         return $this->date_modification;
     }
 
-    public function setDateModification(\DateTimeInterface $value): self
+    public function setDateModification(?\DateTimeInterface $value): self
     {
         $this->date_modification = $value;
 
         return $this;
     }
 
-    public function setDate_modification(\DateTimeInterface $value): self
+    public function setDate_modification(?\DateTimeInterface $value): self
     {
         return $this->setDateModification($value);
     }

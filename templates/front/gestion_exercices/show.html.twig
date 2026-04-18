@@ -4,13 +4,21 @@
 
 {% block content %}
 <div class="container py-4">
-    {# Fil d'Ariane #}
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ path('front_gestion_exercices_index') }}">Mes Exercices</a></li>
-            <li class="breadcrumb-item active">{{ exercice.nom }}</li>
-        </ol>
-    </nav>
+    {# Fil d'Ariane + Retour #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{{ path('front_gestion_exercices_index') }}" class="text-decoration-none text-primary">
+                <i class="bi bi-folder"></i> Mes Exercices
+            </a>
+            <span class="mx-2 text-muted">›</span>
+            <span class="text-secondary">{{ exercice.nom }}</span>
+        </div>
+        <div>
+            <a href="{{ path('front_gestion_exercices_index') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
 
     <div class="row">
         <div class="col-lg-8">
@@ -48,7 +56,7 @@
                     </h5>
                     <hr>
                     <div class="demarche-content">
-                        {{ exercice.demarche|nl2br }}
+                        {{ exercice.demarche|raw }}
                     </div>
                 </div>
             </div>

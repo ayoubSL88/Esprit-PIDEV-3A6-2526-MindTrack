@@ -16,7 +16,7 @@
                 <a href="{{ path('admin_dashboard') }}">Admin</a>
                 <a href="{{ path('front_gestion_objectifs_personnelles_index') }}">Objectifs</a>
                 <a href="{{ path('front_gestion_suivi_habitudes_index') }}">Habitudes</a>
-                <a href="{{ path('front_gestion_exercices_index') }}" class="nav-link {% if app.request.get('_route') starts with 'front_gestion_exercices' %}active{% endif %}"><i class="bi bi-bar-chart-steps"></i> Exercices</a>
+                <a href="{{ path('front_gestion_exercices_home') }}"> Exercices</a>
                 <a href="{{ path('front_gestion_humeur_index') }}">Humeur</a>
                 <a href="{{ path('front_gestion_user_index') }}">Profil</a>
             {% endif %}

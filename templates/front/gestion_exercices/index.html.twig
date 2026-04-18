@@ -5,7 +5,13 @@
 {% block content %}
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Mes Exercices</h1>
+        <div class="d-flex align-items-center gap-3">
+            {# Bouton Retour - redirige vers l'accueil général #}
+                <a href="{{ path('front_gestion_exercices_home') }}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Retour à l'espace d'exercices
+                </a>
+            <h1 class="mb-0">Mes Exercices</h1>
+        </div>
         <div class="dropdown">
             <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                 <i class="bi bi-funnel"></i> Filtrer

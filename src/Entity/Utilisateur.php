@@ -6,15 +6,19 @@ use Doctrine\ORM\Mapping as ORM;
 
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Profilpsychologique;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity]
-class Utilisateur implements UserInterface
+#[UniqueEntity(fields: ['emailU'], message: 'There is already an account with this emailU')]
+class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
 
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
-    private int $idU;
+    #[ORM\GeneratedValue(strategy: "IDENTITY")]
+    #[ORM\Column(name: "id_u", type: "integer")]
+    private ?int $idU = null;
 
     #[ORM\Column(type: "string", length: 255)]
     private string $nomU;
@@ -111,14 +115,15 @@ class Utilisateur implements UserInterface
     
     // ===== FIN DES MÉTHODES UserInterface =====
 
-    public function getIdU()
+    public function getIdU(): ?int
     {
         return $this->idU;
     }
 
-    public function setIdU($value)
+    public function setIdU($value): self
     {
         $this->idU = $value;
+        return $this;
     }
 
     public function getNomU()

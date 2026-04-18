@@ -18,7 +18,7 @@ final class DashboardController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         // Récupérer le repository Utilisateur via l'EntityManager
-        $userRepo = $entityManager->getRepository(Utilisateur::class);
+        // $userRepo = $entityManager->getRepository(Utilisateur::class);
 
         // Compter les exercices
         $exercicesCount = $exerciceRepo->count([]);
@@ -27,7 +27,8 @@ final class DashboardController extends AbstractController
         $sessionsCount = $sessionRepo->count([]);
         
         // Compter les utilisateurs
-        $usersCount = $userRepo->count([]);
+        //$usersCount = $userRepo->count([]);
+        $usersCount = 0;
         
         // Calculer la progression moyenne
         $allSessions = $sessionRepo->findAll();

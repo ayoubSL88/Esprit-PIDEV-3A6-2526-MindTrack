@@ -23,8 +23,8 @@ class Profilpsychologique
     #[ORM\Column(type: "string", length: 255)]
     private string $Description;
 
-        #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "profilpsychologiques")]
-    #[ORM\JoinColumn(name: 'idU', referencedColumnName: 'id_u', onDelete: 'CASCADE')]
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "profilpsychologiques")]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id_u', onDelete: 'CASCADE')]
     private Utilisateur $idU;
 
     public function getIdP()

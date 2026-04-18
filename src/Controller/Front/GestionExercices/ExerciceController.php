@@ -4,6 +4,8 @@ namespace App\Controller\Front\GestionExercices;
 
 use App\Entity\Exercice;
 use App\Form\ExerciceType;
+use App\Repository\ExerciceRepository;
+use App\Repository\SessionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,7 +15,37 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/app/exercices')]
 final class ExerciceController extends AbstractController
 {
-    #[Route('/', name: 'front_gestion_exercices_index', methods: ['GET'])]
+    #[Route('/', name: 'front_gestion_exercices_home')]
+    public function home(ExerciceRepository $exerciceRepo, SessionRepository $sessionRepo): Response
+    {   
+        $user = $this->getUser();
+        
+        $recentExercices = $exerciceRepo->findBy([], ['date_creation' => 'DESC'], 6);
+        
+        $stats = null;
+        if ($user) {
+            $sessions = $sessionRepo->findBy(['user' => $user, 'terminee' => true]);
+            $totalSessions = count($sessions);
+            $totalTemps = array_sum(array_map(fn($s) => $s->getDureeReelle() ?? 0, $sessions));
+            $moyenneProgress = $totalSessions > 0 
+                ? array_sum(array_map(fn($s) => $s->getProgress() ?? 0, $sessions)) / $totalSessions 
+                : 0;
+            
+            $stats = [
+                'total' => $totalSessions,
+                'temps' => round($totalTemps / 60),
+                'moyenne' => round($moyenneProgress, 1),
+                'recent_sessions' => $sessionRepo->findBy(['user' => $user, 'terminee' => true], ['dateFin' => 'DESC'], 5)
+            ];
+        }
+        
+        return $this->render('front/gestion_exercices/home.html.twig', [
+            'recent_exercices' => $recentExercices,
+            'stats' => $stats
+        ]);
+    }
+
+    #[Route('/list', name: 'front_gestion_exercices_index', methods: ['GET'])]
     public function index(Request $request, EntityManagerInterface $entityManager): Response
     {
         // Récupérer les paramètres de filtrage

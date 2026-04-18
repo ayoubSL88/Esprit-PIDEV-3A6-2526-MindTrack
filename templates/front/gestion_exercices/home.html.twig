@@ -1,0 +1,152 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}Espace Exercices{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Hero Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">🧘 Espace Exercices</h1>
+        <p class="lead">Développement personnel et bien-être</p>
+        <hr class="w-50 mx-auto">
+            <a href="{{ path('front_home') }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i> Retour
+            </a>
+    </div>
+
+    <!-- Dashboard public (sans condition de connexion) -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="bi bi-speedometer2"></i> Votre tableau de bord</h2>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-check-circle fs-1"></i>
+                    <h3 class="mt-2">{{ stats.total|default(0) }}</h3>
+                    <p class="mb-0">Exercices terminés</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-stopwatch fs-1"></i>
+                    <h3 class="mt-2">{{ stats.temps|default(0) }} min</h3>
+                    <p class="mb-0">Temps total passé</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up fs-1"></i>
+                    <h3 class="mt-2">{{ stats.moyenne|default(0) }}%</h3>
+                    <p class="mb-0">Progression moyenne</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation rapide -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="bi bi-compass"></i> Accès rapide</h2>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-files fs-1 text-primary"></i>
+                    <h4 class="mt-3">Tous les exercices</h4>
+                    <p>Découvrez notre catalogue d'exercices</p>
+                    <a href="{{ path('front_gestion_exercices_index') }}" class="btn btn-outline-primary">
+                        Voir les exercices →
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-clock-history fs-1 text-success"></i>
+                    <h4 class="mt-3">Mon historique</h4>
+                    <p>Consultez vos séances passées</p>
+                    <a href="{{ path('front_historique_index') }}" class="btn btn-outline-success">
+                        Voir l'historique →
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-graph-up fs-1 text-info"></i>
+                    <h4 class="mt-3">Ma progression</h4>
+                    <p>Suivez votre évolution</p>
+                    <a href="{{ path('front_progression_index') }}" class="btn btn-outline-info">
+                        Voir la progression →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dernières sessions (si existantes) -->
+    {% if stats.recent_sessions is defined and stats.recent_sessions|length > 0 %}
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="bi bi-clock-history"></i> Dernières séances</h2>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Exercice</th>
+                            <th>Date</th>
+                            <th>Progression</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in stats.recent_sessions %}
+                        <tr>
+                            <td><strong>{{ session.exercice.nom }}</strong></td>
+                            <td>{{ session.dateFin|date('d/m/Y H:i') }}</td>
+                            <td>
+                                <div class="progress" style="height: 20px; width: 100px;">
+                                    <div class="progress-bar" style="width: {{ session.progress }}%">
+                                        {{ session.progress }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="{{ path('front_historique_show', {'idSession': session.idSession}) }}" 
+                                   class="btn btn-sm btn-info">Détail</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Aperçu des derniers exercices -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="bi bi-star"></i> Découvrez nos exercices</h2>
+        </div>
+        {% for exercice in recent_exercices %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ exercice.nom }}</h5>
+                    <p class="card-text text-muted small">{{ exercice.description|slice(0, 80) }}...</p>
+                    <a href="{{ path('front_gestion_exercices_show', {'idEx': exercice.idEx}) }}" class="btn btn-sm btn-outline-primary">Voir l'exercice</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
