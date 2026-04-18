@@ -1,0 +1,98 @@
+[
+    {
+        "nom": "Relaxation",
+        "type": "Meditation",
+        "duree": 3,
+        "difficulte": "FACILE",
+        "description": "Exercice de respiration contrôlée pour calmer le système nerveux et réduire l’anxiété rapidement.",
+        "demarche": "Asseyez-vous confortablement, le dos droit.\n\nInspirez silencieusement par le nez pendant 4 secondes.\n\nRetenez votre souffle pendant 7 secondes.\n\nExpirez complètement par la bouche pendant 8 secondes (faire un léger sifflement).\n\nRépétez le cycle 4 à 8 fois. Souriez !"
+    },
+    {
+        "nom": "Les 3 bonnes choses du jour",
+        "type": "Gratitude \/ Pensée positive",
+        "duree": 5,
+        "difficulte": "FACILE",
+        "description": "Entraînement quotidien à repérer les aspects positifs de sa journée pour lutter contre le biais de négativité.",
+        "demarche": "Chaque soir, prenez votre carnet ou une note.\n\nNotez 3 choses qui se sont bien passées aujourd’hui (même petites).\n\nPour chacune, écrivez pourquoi cela s’est produit (ex. « J’ai eu un bon café parce que j’ai pris le temps de le préparer »).\n\nRelisez rapidement une fois par semaine."
+    },
+    {
+        "nom": "Scan corporel guidé (auto-administré)",
+        "type": "Pleine conscience \/ Relaxation",
+        "duree": 10,
+        "difficulte": "FACILE",
+        "description": "Moyenne (nécessite de la concentration)\nDescription : Balayage mental du corps de la tête aux pieds pour prendre conscience des sensations physiques sans jugement.",
+        "demarche": "Allongez-vous sur le dos, bras le long du corps.\n\nFermez les yeux. Portez l’attention sur la respiration quelques instants.\n\nDéplacez lentement votre attention : pieds → chevilles → jambes → bassin → ventre → dos → mains → bras → épaules → cou → visage → sommet du crâne.\n\nPour chaque zone, observez les sensations (chaleur, picotement, contact) sans vouloir les changer."
+    },
+    {
+        "nom": "Journal de l’auto-compassion",
+        "type": "Émotionnel \/ Estime de soi",
+        "duree": 8,
+        "difficulte": "MOYEN",
+        "description": "Se parler à soi-même comme on parlerait à un ami en difficulté.",
+        "demarche": "Identifiez un moment récent où vous avez été dur envers vous-même.\n\nNotez ce que vous vous êtes dit.\n\nRéécrivez ces phrases en les adressant à un ami cher dans la même situation (ex. « Tu as le droit d’être fatigué » au lieu de « Je suis nul »).\n\nLisez à voix haute la version bienveillante.\n\nSans jugement, notez comment cela modifie votre ressenti."
+    },
+    {
+        "nom": "STOP (outil de pause mentale)",
+        "type": "Régulation émotionnelle",
+        "duree": 2,
+        "difficulte": "FACILE",
+        "description": "Technique brève à faire en pleine action (travail, repas, conflit) pour retrouver son calme.",
+        "demarche": "S → Stop : interrompez ce que vous faites.\n\nT → Take a breath : respirez profondément une fois.\n\nO → Observe : notez vos pensées, émotions et sensations corporelles (sans agir).\n\nP → Proceed : reprenez votre activité avec plus de conscience."
+    },
+    {
+        "nom": "La roue des émotions – identification précise",
+        "type": "Intelligence émotionnelle",
+        "duree": 6,
+        "difficulte": "FACILE",
+        "description": "Nommer une émotion avec précision pour diminuer son intensité et mieux comprendre son déclencheur.",
+        "demarche": "Prenez une liste d’émotions (ex. : joie, tristesse, colère, peur, honte, surprise, dégoût).\n\nChoisissez une situation récente où vous avez ressenti une émotion forte.\n\nCherchez un mot plus précis que « bien » ou « mal » (ex. : « découragé » plutôt que « triste », « mépris » plutôt que « colère »).\n\nNotez : « Je me sens [émotion précise] parce que [fait objectif bref] ».\n\nSans chercher à résoudre, gardez ce constat 30 secondes."
+    },
+    {
+        "nom": "Détente musculaire séquentielle",
+        "type": "Relaxation \/ Sommeil",
+        "duree": 10,
+        "difficulte": "FACILE",
+        "description": "Relâchement volontaire des groupes musculaires pour préparer le corps et l’esprit au sommeil.",
+        "demarche": "Allongé dans votre lit, yeux fermés.\n\nContractez très fort les orteils pendant 5 secondes → relâchez (sentez la différence).\n\nRemontez : pieds → mollets → cuisses → fessiers → ventre → mains → bras → épaules → mâchoire → yeux.\n\nAprès chaque groupe, soufflez doucement par la bouche.\n\nTerminez par 5 respirations lentes."
+    },
+    {
+        "nom": "Trois preuves de compétence",
+        "type": "Estime de soi \/ Confiance",
+        "duree": 5,
+        "difficulte": "FACILE",
+        "description": "Chaque soir, prouvez-vous par des faits que vous êtes capable.",
+        "demarche": "Notez 3 choses que vous avez réussies aujourd’hui (même minimes : se lever à l’heure, envoyer un mail, faire une lessive).\n\nPour chacune, ajoutez : « Je suis fier\/fière d’avoir fait ça parce que… »\n\nRelisez ces listes chaque dimanche."
+    },
+    {
+        "nom": "5-4-3-2-1 (retour au présent)",
+        "type": "Gestion de l’anxiété \/ Pleine conscience",
+        "duree": 3,
+        "difficulte": "FACILE",
+        "description": "Technique d’urgence pour interrompre une montée d’angoisse en mobilisant les sens.",
+        "demarche": "Inspirez une fois profondément.\n\nNommez 5 choses que vous voyez autour de vous.\n\n4 choses que vous touchez (texture, température).\n\n3 choses que vous entendez (bruits proches ou lointains).\n\n2 choses que vous sentez (odeurs).\n\n1 chose que vous goûtez (salive, arrière-goût de dentifrice, eau).\n\nRespirez normalement"
+    },
+    {
+        "nom": "Micro-focus 5-1",
+        "type": "Attention \/ Concentration",
+        "duree": 6,
+        "difficulte": "MOYEN",
+        "description": "Entraînement à maintenir l’attention sur une seule tâche pendant un court laps de temps.",
+        "demarche": "Choisissez une action simple (lire une page, ranger un tiroir, écrire 3 phrases).\n\nLancez un minuteur pour 5 minutes.\n\nPendant ces 5 min, faites uniquement cette action. Si une pensée parasite vient, notez-la sur un papier à côté et revenez.\n\nÀ la sonnerie, posez l’action et fermez les yeux 1 minute sans rien faire.\n\nAugmentez progressivement à 10-15-20 minutes."
+    },
+    {
+        "nom": "Phrase d’affirmation personnalisée",
+        "type": "Auto-compassion \/ Paroles valorisantes",
+        "duree": 5,
+        "difficulte": "MOYEN",
+        "description": "Se dire à voix haute des phrases bienveillantes et réalistes pour renforcer son dialogue intérieur.",
+        "demarche": "Devant un miroir (ou seul, enregistreur vocal).\n\nComplétez ces 3 amorces :\n\n« Une chose que j’apprécie chez moi est… »\n\n« Aujourd’hui, j’ai le droit de… » (ex. : me reposer, ne pas être parfait)\n\n« Je suis quelqu’un qui… » (valeur personnelle, ex. : persévère)\n\nDites chaque phrase 3 fois lentement, comme à un ami.\n\nTerminez par : « Et ça suffit. »"
+    },
+    {
+        "nom": "Planification à vue d’ensemble",
+        "type": "Organisation \/ Clarté mentale",
+        "duree": 25,
+        "difficulte": "DIFFICILE",
+        "description": "Structure visuelle simple pour équilibrer l’urgent, l’important et le plaisir sur trois échelles de temps.",
+        "demarche": "Prenez une feuille. Dessinez 3 colonnes :\n\nJour (aujourd’hui)\n\nSemaine (7 jours)\n\nMois (30 jours)\n\nDans chaque colonne, notez :\n\n1 chose obligatoire (travail\/administratif)\n\n1 chose importante pour vous (sport, relation, projet perso)\n\n1 chose agréable (plaisir simple)\n\nBarrez ce qui est fait chaque soir.\n\nUne fois par semaine, déplacez les non-faits d’une colonne vers la droite (du jour → semaine → mois → abandon ou report)."
+    }
+]
