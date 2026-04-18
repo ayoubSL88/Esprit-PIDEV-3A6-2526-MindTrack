@@ -22,30 +22,24 @@ class Exercice
     private int $idEx;
 
     #[ORM\Column(type: "string", length: 255)]
-    #[Assert\NotBlank(message: "Le nom est obligatoire")]
     #[Assert\Length(min: 3, max: 255, minMessage: "Minimum 3 caractères")]
     private string $nom;
 
     #[ORM\Column(type: "string", length: 255)]
-    #[Assert\NotBlank(message: "Le type est obligatoire")]
     private string $type;
 
     #[ORM\Column(type: "integer")]
-    #[Assert\NotBlank(message: "La durée est obligatoire")]
     #[Assert\Positive(message: "La durée doit être un nombre positif")]
     private int $duree;
 
     #[ORM\Column(type: "string", length: 50)]
-    #[Assert\NotBlank(message: "La difficulté est obligatoire")]
     #[Assert\Choice(choices: ["FACILE", "MOYEN", "DIFFICILE"], message: "Difficulté invalide")]
     private string $difficulte;
 
     #[ORM\Column(type: "text")]
-    #[Assert\NotBlank(message: "La description est obligatoire")]
     private string $description;
 
     #[ORM\Column(type: "text")]
-    #[Assert\NotBlank(message: "La démarche est obligatoire")]
     private string $demarche;
 
     #[ORM\Column(type: "datetime", nullable: true)]
@@ -81,9 +75,10 @@ class Exercice
     #[ORM\PreUpdate]
     public function updateDateModification(): void
     {
+        // Force la mise à jour de la date même si Doctrine ne détecte pas de changement
         $this->date_modification = new \DateTime();
     }
-
+    
     public function getIdEx()
     {
         return $this->idEx;

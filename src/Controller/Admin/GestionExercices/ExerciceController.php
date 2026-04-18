@@ -93,8 +93,8 @@ final class ExerciceController extends AbstractController
         
         if ($form->isSubmitted() && $form->isValid()) {
             // La date de modification est automatiquement mise à jour par PreUpdate
+            $exercice->setDateModification(new \DateTime());
             $entityManager->flush();
-            
             $this->addFlash('success', 'Exercice modifié avec succès !');
             return $this->redirectToRoute('admin_gestion_exercices_index');
         }
