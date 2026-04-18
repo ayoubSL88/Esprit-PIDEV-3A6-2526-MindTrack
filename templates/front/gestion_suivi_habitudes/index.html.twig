@@ -211,11 +211,60 @@
     <div class="page-stack">
         {% include 'components/quote_widget.html.twig' %}
 
-        {{ component('PageHeader', {
-            eyebrow: 'Habitudes',
-            title: 'Construisez votre routine',
-            copy: 'Suivez vos habitudes, gardez vos rappels visibles et mesurez votre progression sans quitter votre espace personnel.'
-        }) }}
+        {% set weatherTemp = weather.temperature is not null ? weather.temperature|round(0, 'common') : null %}
+        {% set weatherBandClass = weatherTemp is null
+            ? 'wb-nice'
+            : (weatherTemp >= 28
+                ? 'wb-hot'
+                : (weatherTemp >= 18
+                    ? 'wb-nice'
+                    : (weatherTemp >= 8 ? 'wb-fresh' : 'wb-cold'))) %}
+        {% set weatherIcon = weatherTemp is null
+            ? '🌤️'
+            : (weather.condition matches '/pluie|orage/i'
+                ? '🌧️'
+                : (weatherTemp >= 28
+                    ? '☀️'
+                    : (weatherTemp >= 18
+                        ? '🌤️'
+                        : (weatherTemp >= 8 ? '🍃' : '❄️')))) %}
+        {% set weatherAdvice = weatherTemp is null
+            ? 'Chargement de la meteo...'
+            : (weatherTemp >= 28
+                ? 'Il fait chaud. Bois de l eau et fais 10 min d etirements.'
+                : (weatherTemp >= 18
+                    ? 'Meteo agreable. Une marche de 15 min serait parfaite.'
+                    : (weatherTemp >= 8
+                        ? 'Il fait frais. 5 min de respiration + une petite routine a la maison.'
+                        : 'Il fait froid. Reste au chaud : 5 min de meditation + planifie tes habitudes.'))) %}
+
+        <div id="weather-band" class="wb-band {{ weatherBandClass }}">
+            <span class="wb-icon" aria-hidden="true">{{ weatherIcon }}</span>
+
+            <div class="wb-city-block">
+                <div class="wb-temp">{{ weatherTemp is not null ? weatherTemp ~ '°C' : '--°C' }}</div>
+                <div class="wb-city">{{ weather.locationLabel }}</div>
+            </div>
+
+            <div class="wb-sep"></div>
+
+            <div class="wb-metas">
+                <div class="wb-meta-item">
+                    <span class="wb-meta-val">{{ weather.humidity is not null ? weather.humidity ~ '%' : '--' }}</span>
+                    <span class="wb-meta-key">Humidite</span>
+                </div>
+                <div class="wb-meta-item">
+                    <span class="wb-meta-val">{{ weather.windSpeed is not null ? weather.windSpeed|round(0, 'common') ~ ' km/h' : '--' }}</span>
+                    <span class="wb-meta-key">Vent</span>
+                </div>
+            </div>
+
+            <div class="wb-sep2"></div>
+
+            <div class="wb-advice">{{ weatherAdvice }}</div>
+
+            <a href="{{ path('front_gestion_suivi_habitudes_index') }}" class="wb-link">Voir meteo ›</a>
+        </div>
 
         <div class="button-row">
             <a class="btn-primary" href="{{ path('front_gestion_suivi_habitudes_habitude_new') }}">Nouvelle habitude</a>
@@ -245,35 +294,35 @@
        <section class="mt-overview-section">
     <div class="mt-overview-grid">
 
-        {# ── COLONNE GAUCHE : KPIs + légende ──────────────────────────────── #}
+        {# â”€â”€ COLONNE GAUCHE : KPIs + lÃ©gende â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ #}
         <div class="mt-left-col">
 
             {# Bloc principal KPIs #}
             <div class="mt-kpi-panel">
                 <p class="mt-section-eyebrow">Tableau de bord</p>
                 <h2 class="mt-section-title">Vue rapide pour mieux piloter vos habitudes</h2>
-                <p class="mt-section-desc">Les indicateurs les plus importants sont regroupés ici pour voir tout de suite ce qui va bien, ce qui ralentit et ce qu'il faut corriger aujourd'hui.</p>
+                <p class="mt-section-desc">Les indicateurs les plus importants sont regroupÃ©s ici pour voir tout de suite ce qui va bien, ce qui ralentit et ce qu'il faut corriger aujourd'hui.</p>
 
                 <div class="mt-kpi-grid">
                     <article class="mt-kpi-card mt-kpi-neutral">
-                        <p class="mt-kpi-label">Meilleure série</p>
+                        <p class="mt-kpi-label">Meilleure sÃ©rie</p>
                         <p class="mt-kpi-value">{{ advancedSummary.bestStreak }}</p>
-                        <p class="mt-kpi-sub">jours consécutifs</p>
+                        <p class="mt-kpi-sub">jours consÃ©cutifs</p>
                     </article>
                     <article class="mt-kpi-card mt-kpi-warning">
-                        <p class="mt-kpi-label">À surveiller</p>
+                        <p class="mt-kpi-label">Ã€ surveiller</p>
                         <p class="mt-kpi-value">{{ advancedSummary.highRiskHabits }}</p>
-                        <p class="mt-kpi-sub">habitudes à risque élevé</p>
+                        <p class="mt-kpi-sub">habitudes Ã  risque Ã©levÃ©</p>
                     </article>
                     <article class="mt-kpi-card mt-kpi-success">
-                        <p class="mt-kpi-label">En contrôle</p>
+                        <p class="mt-kpi-label">En contrÃ´le</p>
                         <p class="mt-kpi-value">{{ advancedSummary.stableHabits }}</p>
                         <p class="mt-kpi-sub">habitudes stables</p>
                     </article>
                 </div>
             </div>
 
-            {# Légende des couleurs #}
+            {# LÃ©gende des couleurs #}
             <article class="mt-legend-card">
                 <p class="mt-legend-eyebrow">Lecture rapide</p>
                 <ul class="mt-legend-list">
@@ -283,28 +332,28 @@
                     </li>
                     <li>
                         <span class="mt-dot mt-dot-amber"></span>
-                        <span>L'orange attire l'attention sur les habitudes à reprendre vite.</span>
+                        <span>L'orange attire l'attention sur les habitudes Ã  reprendre vite.</span>
                     </li>
                     <li>
                         <span class="mt-dot mt-dot-blue"></span>
-                        <span>Les recommandations et rappels intelligents donnent l'action à faire ensuite.</span>
+                        <span>Les recommandations et rappels intelligents donnent l'action Ã  faire ensuite.</span>
                     </li>
                 </ul>
             </article>
         </div>
 
-        {# ── COLONNE DROITE : Badges ───────────────────────────────────────── #}
+        {# â”€â”€ COLONNE DROITE : Badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ #}
         <article class="mt-badges-card">
             <div class="mt-badges-head">
                 <div>
-                    <p class="mt-badges-eyebrow">Récompenses</p>
-                    <h3 class="mt-badges-title">Badges débloqués</h3>
+                    <p class="mt-badges-eyebrow">RÃ©compenses</p>
+                    <h3 class="mt-badges-title">Badges dÃ©bloquÃ©s</h3>
                 </div>
                 <span class="mt-badges-count">{{ badges|length }}</span>
             </div>
 
             {% if badges is empty %}
-                <p class="mt-badges-empty">Aucun badge pour le moment. Une routine plus régulière fera remonter ici vos premières récompenses.</p>
+                <p class="mt-badges-empty">Aucun badge pour le moment. Une routine plus rÃ©guliÃ¨re fera remonter ici vos premiÃ¨res rÃ©compenses.</p>
             {% else %}
                 <div class="mt-badges-list">
                     {% for badge in badges|slice(0, 3) %}
@@ -317,7 +366,7 @@
                         </div>
                     {% endfor %}
                     {% if badges|length > 3 %}
-                        <p class="mt-badges-more">+{{ badges|length - 3 }} badge(s) supplémentaire(s)</p>
+                        <p class="mt-badges-more">+{{ badges|length - 3 }} badge(s) supplÃ©mentaire(s)</p>
                     {% endif %}
                 </div>
             {% endif %}
@@ -325,9 +374,6 @@
 
     </div>
 </section>
-
-
-
 
         <section class="hero-grid">
             <article class="panel-section">

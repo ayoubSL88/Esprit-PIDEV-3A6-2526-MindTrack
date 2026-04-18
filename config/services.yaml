@@ -9,6 +9,9 @@ parameters:
     app.badcontent.api_url: '%env(default::BADCONTENT_API_URL)%'
     app.badcontent.site_url: '%env(default::BADCONTENT_SITE_URL)%'
     app.badcontent.site_name: '%env(default::BADCONTENT_SITE_NAME)%'
+    app.weather.latitude: 36.8
+    app.weather.longitude: 10.18
+    app.weather.location_label: 'Tunis'
 
 services:
     # default configuration for services in *this* file
@@ -32,6 +35,12 @@ services:
             $apiUrl: '%app.badcontent.api_url%'
             $siteUrl: '%app.badcontent.site_url%'
             $siteName: '%app.badcontent.site_name%'
+
+    App\Service\Habitude\OpenMeteoWeatherService:
+        arguments:
+            $latitude: '%app.weather.latitude%'
+            $longitude: '%app.weather.longitude%'
+            $locationLabel: '%app.weather.location_label%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

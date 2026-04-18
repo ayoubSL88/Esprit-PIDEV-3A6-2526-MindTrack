@@ -21,6 +21,7 @@ use App\Service\Habitude\HabitRecommendationService;
 use App\Service\Habitude\HabitRiskAnalyzerService;
 use App\Service\Habitude\HabitStreakService;
 use App\Service\Habitude\MoodHabitCorrelationService;
+use App\Service\Habitude\OpenMeteoWeatherService;
 use App\Service\Habitude\SmartReminderService;
 use App\Service\Security\CurrentUtilisateurResolver;
 use Doctrine\ORM\EntityManagerInterface;
@@ -50,9 +51,11 @@ final class OverviewController extends AbstractController
         SmartReminderService $smartReminderService,
         MoodHabitCorrelationService $moodCorrelationService,
         BadgeSystemService $badgeSystemService,
+        OpenMeteoWeatherService $weatherService,
         CurrentUtilisateurResolver $currentUtilisateurResolver,
     ): Response {
         $currentUser = $currentUtilisateurResolver->resolve();
+        $weather = $weatherService->getCurrentWeather();
 
         $habitudeFilters = [
             'q' => (string) $request->query->get('q', ''),
@@ -152,6 +155,7 @@ final class OverviewController extends AbstractController
                 'suivis_completed' => $currentUser instanceof Utilisateur ? $suivihabitudeRepository->countCompletedForUser($currentUser) : 0,
                 'suivis_total' => $currentUser instanceof Utilisateur ? $suivihabitudeRepository->countAllForUser($currentUser) : 0,
             ],
+            'weather' => $weather,
             'currentUserResolved' => $currentUser instanceof Utilisateur,
         ]);
     }
