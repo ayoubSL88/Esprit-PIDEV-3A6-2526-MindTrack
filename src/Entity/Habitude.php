@@ -17,7 +17,7 @@ class Habitude
     private int $idHabitude;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
+    #[Assert\NotBlank(message: 'Le nommmmmmm est obligatoire.')]
     #[Assert\Length(max: 255, maxMessage: 'Le nom ne doit pas depasser 255 caracteres.')]
     private string $nom = '';
 
