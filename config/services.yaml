@@ -9,6 +9,8 @@ parameters:
     app.badcontent.api_url: '%env(default::BADCONTENT_API_URL)%'
     app.badcontent.site_url: '%env(default::BADCONTENT_SITE_URL)%'
     app.badcontent.site_name: '%env(default::BADCONTENT_SITE_NAME)%'
+    app.ollama.url: '%env(default::OLLAMA_API_URL)%'
+    app.ollama.model: '%env(default::OLLAMA_MODEL)%'
     app.weather.latitude: 36.8
     app.weather.longitude: 10.18
     app.weather.location_label: 'Tunis'
@@ -41,6 +43,11 @@ services:
             $latitude: '%app.weather.latitude%'
             $longitude: '%app.weather.longitude%'
             $locationLabel: '%app.weather.location_label%'
+
+    App\Service\Chat\OllamaChatService:
+        arguments:
+            $apiUrl: '%app.ollama.url%'
+            $model: '%app.ollama.model%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

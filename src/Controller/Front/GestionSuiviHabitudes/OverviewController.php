@@ -13,6 +13,7 @@ use App\Form\Admin\GestionSuiviHabitudes\SuivihabitudeType;
 use App\Repository\HabitudeRepository;
 use App\Repository\RappelHabitudeRepository;
 use App\Repository\SuivihabitudeRepository;
+use App\Service\Chat\OllamaChatService;
 use App\Service\Habitude\BadgeSystemService;
 use App\Service\Habitude\BadContentDetectionService;
 use App\Service\Habitude\HabitChatbotService;
@@ -176,6 +177,7 @@ final class OverviewController extends AbstractController
         CurrentUtilisateurResolver $currentUtilisateurResolver,
         HabitChatbotService $habitChatbotService,
         BadContentDetectionService $badContentDetectionService,
+        OllamaChatService $ollamaChatService,
     ): JsonResponse {
         $payload = json_decode($request->getContent(), true);
         $message = trim((string) ($payload['message'] ?? ''));
@@ -235,7 +237,18 @@ final class OverviewController extends AbstractController
             static fn (Suivihabitude $suivi): bool => $suivi->getDate()?->format('Y-m-d') === $todayKey
         ));
 
-        return new JsonResponse($habitChatbotService->buildReply($message, $habitudes, $rappels, $todaySuivis, $advancedInsights));
+        $fallbackReply = $habitChatbotService->buildReply($message, $habitudes, $rappels, $todaySuivis, $advancedInsights);
+        $ollamaReply = $ollamaChatService->generateHabitReply(
+            $message,
+            $habitudes,
+            $rappels,
+            $todaySuivis,
+            $advancedInsights,
+            $fallbackReply['reply'],
+            $fallbackReply['highlights']
+        );
+
+        return new JsonResponse($ollamaReply ?? ($fallbackReply + ['source' => 'fallback']));
     }
 
     #[Route('/habitude/new', name: 'habitude_new', methods: ['GET', 'POST'])]

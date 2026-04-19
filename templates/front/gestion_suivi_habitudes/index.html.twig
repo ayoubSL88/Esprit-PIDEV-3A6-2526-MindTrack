@@ -294,35 +294,35 @@
        <section class="mt-overview-section">
     <div class="mt-overview-grid">
 
-        {# â”€â”€ COLONNE GAUCHE : KPIs + lÃ©gende â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ #}
+        {# COLONNE GAUCHE : KPIs + légende #}
         <div class="mt-left-col">
 
             {# Bloc principal KPIs #}
             <div class="mt-kpi-panel">
                 <p class="mt-section-eyebrow">Tableau de bord</p>
                 <h2 class="mt-section-title">Vue rapide pour mieux piloter vos habitudes</h2>
-                <p class="mt-section-desc">Les indicateurs les plus importants sont regroupÃ©s ici pour voir tout de suite ce qui va bien, ce qui ralentit et ce qu'il faut corriger aujourd'hui.</p>
+                <p class="mt-section-desc">Les indicateurs les plus importants sont regroupés ici pour voir tout de suite ce qui va bien, ce qui ralentit et ce qu'il faut corriger aujourd'hui.</p>
 
                 <div class="mt-kpi-grid">
                     <article class="mt-kpi-card mt-kpi-neutral">
-                        <p class="mt-kpi-label">Meilleure sÃ©rie</p>
+                        <p class="mt-kpi-label">Meilleure série</p>
                         <p class="mt-kpi-value">{{ advancedSummary.bestStreak }}</p>
-                        <p class="mt-kpi-sub">jours consÃ©cutifs</p>
+                        <p class="mt-kpi-sub">jours consécutifs</p>
                     </article>
                     <article class="mt-kpi-card mt-kpi-warning">
-                        <p class="mt-kpi-label">Ã€ surveiller</p>
+                        <p class="mt-kpi-label">À surveiller</p>
                         <p class="mt-kpi-value">{{ advancedSummary.highRiskHabits }}</p>
-                        <p class="mt-kpi-sub">habitudes Ã  risque Ã©levÃ©</p>
+                        <p class="mt-kpi-sub">habitudes à risque élevé</p>
                     </article>
                     <article class="mt-kpi-card mt-kpi-success">
-                        <p class="mt-kpi-label">En contrÃ´le</p>
+                        <p class="mt-kpi-label">En contrôle</p>
                         <p class="mt-kpi-value">{{ advancedSummary.stableHabits }}</p>
                         <p class="mt-kpi-sub">habitudes stables</p>
                     </article>
                 </div>
             </div>
 
-            {# LÃ©gende des couleurs #}
+            {# Légende des couleurs #}
             <article class="mt-legend-card">
                 <p class="mt-legend-eyebrow">Lecture rapide</p>
                 <ul class="mt-legend-list">
@@ -332,28 +332,28 @@
                     </li>
                     <li>
                         <span class="mt-dot mt-dot-amber"></span>
-                        <span>L'orange attire l'attention sur les habitudes Ã  reprendre vite.</span>
+                        <span>L'orange attire l'attention sur les habitudes à reprendre vite.</span>
                     </li>
                     <li>
                         <span class="mt-dot mt-dot-blue"></span>
-                        <span>Les recommandations et rappels intelligents donnent l'action Ã  faire ensuite.</span>
+                        <span>Les recommandations et rappels intelligents donnent l'action à faire ensuite.</span>
                     </li>
                 </ul>
             </article>
         </div>
 
-        {# â”€â”€ COLONNE DROITE : Badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ #}
+        {# COLONNE DROITE : Badges #}
         <article class="mt-badges-card">
             <div class="mt-badges-head">
                 <div>
-                    <p class="mt-badges-eyebrow">RÃ©compenses</p>
-                    <h3 class="mt-badges-title">Badges dÃ©bloquÃ©s</h3>
+                    <p class="mt-badges-eyebrow">Récompenses</p>
+                    <h3 class="mt-badges-title">Badges débloqués</h3>
                 </div>
                 <span class="mt-badges-count">{{ badges|length }}</span>
             </div>
 
             {% if badges is empty %}
-                <p class="mt-badges-empty">Aucun badge pour le moment. Une routine plus rÃ©guliÃ¨re fera remonter ici vos premiÃ¨res rÃ©compenses.</p>
+                <p class="mt-badges-empty">Aucun badge pour le moment. Une routine plus régulière fera remonter ici vos premières récompenses.</p>
             {% else %}
                 <div class="mt-badges-list">
                     {% for badge in badges|slice(0, 3) %}
@@ -366,7 +366,7 @@
                         </div>
                     {% endfor %}
                     {% if badges|length > 3 %}
-                        <p class="mt-badges-more">+{{ badges|length - 3 }} badge(s) supplÃ©mentaire(s)</p>
+                        <p class="mt-badges-more">+{{ badges|length - 3 }} badge(s) supplémentaire(s)</p>
                     {% endif %}
                 </div>
             {% endif %}

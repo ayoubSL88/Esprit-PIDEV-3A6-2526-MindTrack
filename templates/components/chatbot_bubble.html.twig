@@ -67,7 +67,7 @@
             <div style="flex: 1; min-width: 0;">
                 <p style="font-size: 14px; font-weight: 500; color: #e8e4ff; margin: 0;">MindBot</p>
                 <p id="mindbot-status-text" style="font-size: 11px; color: rgba(255,255,255,.35); margin: 2px 0 0;">
-                    Propulse par badcontent + MindBot
+                    Propulse par Ollama
                 </p>
             </div>
 
@@ -298,8 +298,8 @@
     const setStatus = online => {
         el.statusDot.style.background = online ? '#22c55e' : '#6b7280';
         el.statusText.innerHTML = online
-            ? '<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#22c55e;margin-right:4px;"></span>En ligne - badcontent'
-            : 'Propulse par badcontent + MindBot';
+            ? '<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#22c55e;margin-right:4px;"></span>En ligne - Ollama'
+            : 'Propulse par Ollama';
     };
 
     const autoResize = () => {
