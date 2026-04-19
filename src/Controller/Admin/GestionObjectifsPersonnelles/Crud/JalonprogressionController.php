@@ -62,4 +62,6 @@ final class JalonprogressionController extends AbstractController
             'status' => trim((string) $request->query->get('status', '')),
         ];
     }
+
+    
 }

@@ -2,86 +2,358 @@
 
 {% block page_title %}Planificateurs intelligents{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* STYLE FRONT - CARTES MODERNES POUR PLANIFICATEURS */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+        
+        .page-header p {
+            color: #64748b;
+            margin-top: 8px;
+        }
+        
+        .filter-bar {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 32px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            border: 1px solid #f1f5f9;
+        }
+        
+        .filter-bar > div {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .filter-bar label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        
+        .filter-bar input, .filter-bar select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+        
+        .filter-bar input:focus, .filter-bar select:focus {
+            border-color: #6366f1;
+            outline: none;
+            background: white;
+        }
+        
+        /* GRILLE DE CARTES */
+        .planificateurs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        .planificateur-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        
+        .planificateur-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15);
+        }
+        
+        .planificateur-header {
+            padding: 20px 20px 12px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .planificateur-objectif {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6366f1;
+            margin-bottom: 8px;
+        }
+        
+        .planificateur-body {
+            padding: 16px 20px;
+        }
+        
+        .mode-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .mode-flexible {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .mode-equilibre {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .mode-intensif {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .capacity-section {
+            margin-bottom: 16px;
+        }
+        
+        .capacity-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .progress-bar-bg {
+            background: #e2e8f0;
+            height: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            transition: width 0.5s ease;
+        }
+        
+        .capacity-value {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        
+        .last-gen {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .planificateur-actions {
+            padding: 16px 20px 20px;
+            display: flex;
+            gap: 12px;
+            border-top: 1px solid #f1f5f9;
+            background: #fafcff;
+        }
+        
+        .btn-front {
+            padding: 8px 16px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-edit {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .btn-edit:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+        
+        .btn-delete {
+            background: #fef2f2;
+            color: #dc2626;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-delete:hover {
+            background: #fee2e2;
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary-front {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary-front:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99,102,241,0.3);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            background: #f8fafc;
+            border-radius: 24px;
+            color: #94a3b8;
+        }
+        
+        .inline-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        @media (max-width: 640px) {
+            .planificateurs-grid {
+                grid-template-columns: 1fr;
+            }
+            .filter-bar {
+                flex-direction: column;
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
     {% include 'front/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
 
-    <section class="page-header">
-        <div>
-            <h1>Liste des planificateurs intelligents</h1>
-            <p>Recherche par objectif ou mode, tri par date ou statut, et filtrage du mode d’organisation.</p>
-        </div>
-        <div class="actions">
-            <a class="btn btn-secondary" href="{{ path('front_gestion_objectifs_personnelles_index') }}">Retour au module</a>
-            <a class="btn btn-primary" href="{{ path('front_planificateurintelligent_create') }}">Ajouter</a>
-        </div>
-    </section>
+    <div style="max-width: 1280px; margin: 0 auto; padding: 20px;">
+        <section class="page-header">
+            <div>
+                <h1>🤖 Liste des planificateurs intelligents</h1>
+                <p>🔍 Recherche par objectif ou mode, tri et filtrage du mode d'organisation.</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <a class="btn-front btn-edit" href="{{ path('front_gestion_objectifs_personnelles_index') }}">← Retour au module</a>
+                <a class="btn-primary-front" href="{{ path('front_planificateurintelligent_create') }}">+ Ajouter un planificateur</a>
+            </div>
+        </section>
 
-    <form method="get" class="table-card filter-bar">
-        <div>
-            <label for="planificateur_q">Mot-clé</label>
-            <input id="planificateur_q" type="text" name="q" value="{{ filters.q }}" placeholder="Mode ou objectif">
-        </div>
-        <div>
-            <label for="planificateur_sort">Tri</label>
-            <select id="planificateur_sort" name="sort">
-                {% for label, value in sort_choices %}
-                    <option value="{{ value }}" {{ filters.sort == value ? 'selected' : '' }}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div>
-            <label for="planificateur_status">Statut</label>
-            <select id="planificateur_status" name="status">
-                <option value="">Tous</option>
-                {% for label, value in status_choices %}
-                    <option value="{{ value }}" {{ filters.status == value ? 'selected' : '' }}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="actions">
-            <button class="btn btn-primary" type="submit">Filtrer</button>
-            <a class="btn btn-secondary" href="{{ path('front_planificateurintelligent_index') }}">Réinitialiser</a>
-        </div>
-    </form>
+        <form method="get" class="filter-bar">
+            <div>
+                <label for="planificateur_q">🔍 Mot-clé</label>
+                <input id="planificateur_q" type="text" name="q" value="{{ filters.q }}" placeholder="Mode ou objectif">
+            </div>
+            <div>
+                <label for="planificateur_sort">📊 Tri</label>
+                <select id="planificateur_sort" name="sort">
+                    {% for label, value in sort_choices %}
+                        <option value="{{ value }}" {{ filters.sort == value ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="planificateur_status">🏷️ Mode</label>
+                <select id="planificateur_status" name="status">
+                    <option value="">Tous</option>
+                    {% for label, value in status_choices %}
+                        <option value="{{ value }}" {{ filters.status == value ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="actions" style="display: flex; gap: 8px;">
+                <button class="btn-primary-front" type="submit" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; padding: 10px 20px; border-radius: 40px; color: white; cursor: pointer;">Filtrer</button>
+                <a class="btn-front btn-edit" href="{{ path('front_planificateurintelligent_index') }}" style="padding: 10px 20px;">Réinitialiser</a>
+            </div>
+        </form>
 
-    <section class="table-card">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Objectif</th>
-                    <th>Mode</th>
-                    <th>Capacité</th>
-                    <th>Dernière génération</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for planificateur in planificateurs %}
-                    <tr>
-                        <td>{{ planificateur.idPlanificateur }}</td>
-                        <td>{{ planificateur.idObj.titre }}</td>
-                        <td>{{ planificateur.modeOrganisation|title }}</td>
-                        <td>{{ planificateur.capaciteQuotidienne }} h</td>
-                        <td>{{ planificateur.derniereGeneration|date('d/m/Y H:i') }}</td>
-                        <td><span class="badge">{{ planificateur.modeOrganisation|title }}</span></td>
-                        <td>
-                            <div class="inline-actions">
-                                <a class="btn btn-secondary" href="{{ path('front_planificateurintelligent_edit', {idPlanificateur: planificateur.idPlanificateur}) }}">Modifier</a>
-                                <form method="post" action="{{ path('front_planificateurintelligent_delete', {idPlanificateur: planificateur.idPlanificateur}) }}" onsubmit="return confirm('Supprimer ce planificateur ?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_planificateur_' ~ planificateur.idPlanificateur) }}">
-                                    <button class="btn btn-danger" type="submit">Supprimer</button>
-                                </form>
+        <div class="planificateurs-grid">
+            {% for planificateur in planificateurs %}
+                <div class="planificateur-card">
+                    <div class="planificateur-header">
+                        <div class="planificateur-objectif">🎯 {{ planificateur.idObj.titre }}</div>
+                    </div>
+                    <div class="planificateur-body">
+                        <div class="mode-badge 
+                            {% if planificateur.modeOrganisation == 'flexible' %}mode-flexible
+                            {% elseif planificateur.modeOrganisation == 'equilibre' %}mode-equilibre
+                            {% else %}mode-intensif{% endif %}">
+                            {% if planificateur.modeOrganisation == 'flexible' %}🔄 Flexible
+                            {% elseif planificateur.modeOrganisation == 'equilibre' %}⚖️ Équilibré
+                            {% else %}⚡ Intensif{% endif %}
+                        </div>
+                        <div class="capacity-section">
+                            <div class="capacity-label">
+                                <span>📊 Capacité quotidienne</span>
+                                <span class="capacity-value">{{ planificateur.capaciteQuotidienne }}h</span>
                             </div>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="7" class="muted">Aucun planificateur trouvé.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </section>
+                            <div class="progress-bar-bg">
+                                <div class="progress-fill" style="width: {{ (planificateur.capaciteQuotidienne / 12) * 100 }}%"></div>
+                            </div>
+                        </div>
+                        <div class="last-gen">
+                            <span>🕐 Dernière génération</span>
+                            <span>{{ planificateur.derniereGeneration|date('d/m/Y H:i') }}</span>
+                        </div>
+                    </div>
+                    <div class="planificateur-actions">
+                        <div class="inline-actions">
+                            <a class="btn-front btn-edit" href="{{ path('front_planificateurintelligent_edit', {idPlanificateur: planificateur.idPlanificateur}) }}">✏️ Modifier</a>
+                            <form method="post" action="{{ path('front_planificateurintelligent_delete', {idPlanificateur: planificateur.idPlanificateur}) }}" onsubmit="return confirm('Supprimer ce planificateur ?');" style="margin: 0;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_planificateur_' ~ planificateur.idPlanificateur) }}">
+                                <button class="btn-front btn-delete" type="submit">🗑️ Supprimer</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>📭 Aucun planificateur trouvé.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
 {% endblock %}

@@ -1,0 +1,23 @@
+<h2>Liste des objectifs</h2>
+
+<table border="1" width="100%" cellpadding="5">
+    <tr>
+        <th>ID</th>
+        <th>Titre</th>
+        <th>Description</th>
+        <th>Début</th>
+        <th>Fin</th>
+        <th>Statut</th>
+    </tr>
+
+    {% for o in objectifs %}
+        <tr>
+            <td>{{ o.idObj }}</td>
+            <td>{{ o.titre }}</td>
+            <td>{{ o.descriprion }}</td>
+            <td>{{ o.dateDebut|date('Y-m-d') }}</td>
+            <td>{{ o.dateFin|date('Y-m-d') }}</td>
+            <td>{{ o.statut }}</td>
+        </tr>
+    {% endfor %}
+</table>

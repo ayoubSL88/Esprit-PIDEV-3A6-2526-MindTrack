@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[Route('/app/objectifs/objectif', name: 'front_objectif_')]
 final class ObjectifController extends AbstractController
@@ -121,4 +122,24 @@ final class ObjectifController extends AbstractController
             'status' => trim((string) $request->query->get('status', '')),
         ];
     }
+    #[Route('/calendar', name: 'calendar', methods: ['GET'])]
+public function calendar(ObjectifRepository $repository): JsonResponse
+{
+    $objectifs = $repository->findAll();
+
+    $data = [];
+
+    foreach ($objectifs as $objectif) {
+        $data[] = [
+            'id' => $objectif->getIdObj(),
+            'title' => $objectif->getTitre(), // ou nom objectif
+            'start' => $objectif->getDateDebut()->format('Y-m-d'),
+            'end' => $objectif->getDateFin()->format('Y-m-d'),
+            'status' => $objectif->getStatut(),
+        ];
+    }
+
+    return $this->json($data);
+}
+    
 }

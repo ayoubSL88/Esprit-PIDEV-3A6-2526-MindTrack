@@ -2,82 +2,226 @@
 
 {% block page_title %}Jalons{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* STYLE ADMIN - TABLEAU PROFESSIONNEL */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .page-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .filter-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+        }
+        
+        .filter-bar > div {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .filter-bar label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+        
+        .filter-bar input, .filter-bar select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+        
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead th {
+            background: #f8f9fa;
+            padding: 14px 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        tbody td {
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .badge {
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-warning {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        
+        .btn-danger {
+            background: #dc2626;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 6px;
+            color: white;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+        
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .muted {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
     {% include 'admin/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
 
-    <section class="page-header">
-        <div>
-            <h1>Liste admin des jalons de progression</h1>
-            <p>L’admin peut consulter, filtrer et supprimer les jalons enregistrés.</p>
-        </div>
-        <a class="btn btn-secondary" href="{{ path('admin_gestion_objectifs_personnelles_index') }}">Retour au module</a>
-    </section>
+    <div style="padding: 20px;">
+        <section class="page-header">
+            <div>
+                <h1>📋 Liste admin des jalons de progression</h1>
+                <p style="color: #6c757d; margin-top: 4px;">L'admin peut consulter, filtrer et supprimer les jalons enregistrés.</p>
+            </div>
+            <a class="btn-secondary" href="{{ path('admin_gestion_objectifs_personnelles_index') }}">← Retour au module</a>
+        </section>
 
-    <form method="get" class="table-card filter-bar">
-        <div>
-            <label for="admin_jalon_q">Mot-clé</label>
-            <input id="admin_jalon_q" type="text" name="q" value="{{ filters.q }}" placeholder="Titre du jalon ou objectif">
-        </div>
-        <div>
-            <label for="admin_jalon_sort">Tri</label>
-            <select id="admin_jalon_sort" name="sort">
-                {% for label, value in sort_choices %}
-                    <option value="{{ value }}" {{ filters.sort == value ? 'selected' : '' }}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div>
-            <label for="admin_jalon_status">Statut</label>
-            <select id="admin_jalon_status" name="status">
-                <option value="">Tous</option>
-                {% for label, value in status_choices %}
-                    <option value="{{ value }}" {{ filters.status == value ? 'selected' : '' }}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="actions">
-            <button class="btn btn-primary" type="submit">Filtrer</button>
-            <a class="btn btn-secondary" href="{{ path('admin_jalonprogression_index') }}">Réinitialiser</a>
-        </div>
-    </form>
+        <form method="get" class="filter-bar">
+            <div>
+                <label for="admin_jalon_q">Mot-clé</label>
+                <input id="admin_jalon_q" type="text" name="q" value="{{ filters.q }}" placeholder="Titre du jalon ou objectif">
+            </div>
+            <div>
+                <label for="admin_jalon_sort">Tri</label>
+                <select id="admin_jalon_sort" name="sort">
+                    {% for label, value in sort_choices %}
+                        <option value="{{ value }}" {{ filters.sort == value ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="admin_jalon_status">Statut</label>
+                <select id="admin_jalon_status" name="status">
+                    <option value="">Tous</option>
+                    {% for label, value in status_choices %}
+                        <option value="{{ value }}" {{ filters.status == value ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn-secondary" type="submit" style="background: #0d6efd;">Filtrer</button>
+                <a class="btn-secondary" href="{{ path('admin_jalonprogression_index') }}">Réinitialiser</a>
+            </div>
+        </form>
 
-    <section class="table-card">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Objectif</th>
-                    <th>Titre</th>
-                    <th>Date cible</th>
-                    <th>Date atteinte</th>
-                    <th>Progression</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for jalon in jalons %}
+        <section class="table-card">
+            <table>
+                <thead>
                     <tr>
-                        <td>{{ jalon.idJalon }}</td>
-                        <td>{{ jalon.idObj.titre }}</td>
-                        <td>{{ jalon.titre }}</td>
-                        <td>{{ jalon.dateCible|date('d/m/Y') }}</td>
-                        <td>{{ jalon.dateAtteinte|date('d/m/Y') }}</td>
-                        <td>{{ jalon.pourcentageProgression }}%</td>
-                        <td><span class="badge">{{ jalon.atteint ? 'Atteint' : 'En cours' }}</span></td>
-                        <td>
-                            <form method="post" action="{{ path('admin_jalonprogression_delete', {idJalon: jalon.idJalon}) }}" onsubmit="return confirm('Supprimer ce jalon ?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete_jalon_' ~ jalon.idJalon) }}">
-                                <button class="btn btn-danger" type="submit">Supprimer</button>
-                            </form>
-                        </td>
+                        <th>ID</th>
+                        <th>Objectif</th>
+                        <th>Titre</th>
+                        <th>Date cible</th>
+                        <th>Date atteinte</th>
+                        <th>Progression</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
                     </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="8" class="muted">Aucun jalon trouvé.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </section>
+                </thead>
+                <tbody>
+                    {% for jalon in jalons %}
+                        <tr>
+                            <td>{{ jalon.idJalon }}</td>
+                            <td>{{ jalon.idObj.titre }}</td>
+                            <td>{{ jalon.titre }}</td>
+                            <td>{{ jalon.dateCible|date('d/m/Y') }}</td>
+                            <td>{{ jalon.dateAtteinte|date('d/m/Y') }}</td>
+                            <td>{{ jalon.pourcentageProgression }}%</td>
+                            <td>
+                                <span class="badge {% if jalon.atteint %}badge-success{% else %}badge-warning{% endif %}">
+                                    {{ jalon.atteint ? 'Atteint' : 'En cours' }}
+                                </span>
+                            </td>
+                            <td>
+                                <form method="post" action="{{ path('admin_jalonprogression_delete', {idJalon: jalon.idJalon}) }}" onsubmit="return confirm('Supprimer ce jalon ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_jalon_' ~ jalon.idJalon) }}">
+                                    <button class="btn-danger" type="submit">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="muted">Aucun jalon trouvé.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </div>
 {% endblock %}

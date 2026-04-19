@@ -9,6 +9,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Dompdf\Dompdf;
 
 #[Route('/admin/objectifs/plans-actions', name: 'admin_planaction_')]
 final class PlanactionController extends AbstractController
@@ -62,4 +64,54 @@ final class PlanactionController extends AbstractController
             'status' => trim((string) $request->query->get('status', '')),
         ];
     }
+    #[Route('/export/csv', name: 'export_csv', methods: ['GET'])]
+public function exportCsv(PlanactionRepository $repository): Response
+{
+    $planactions = $repository->findAll();
+
+    $response = new StreamedResponse(function () use ($planactions) {
+        $handle = fopen('php://output', 'w+');
+
+        // Header CSV
+        fputcsv($handle, ['ID', 'Titre', 'Description', 'Date début', 'Date fin', 'Statut']);
+
+        foreach ($planactions as $p) {
+            fputcsv($handle, [
+                $p->getId(),
+                $p->getTitre(),
+                $p->getDescription(),
+                $p->getDateDebut()?->format('Y-m-d'),
+                $p->getDateFin()?->format('Y-m-d'),
+                $p->getStatut()
+            ]);
+        }
+
+        fclose($handle);
+    });
+
+    $response->headers->set('Content-Type', 'text/csv');
+    $response->headers->set('Content-Disposition', 'attachment; filename="planactions.csv"');
+
+    return $response;
+}#[Route('/export/pdf', name: 'export_pdf', methods: ['GET'])]
+public function exportPdf(PlanactionRepository $repository): Response
+{
+    $planactions = $repository->findAll();
+
+    $html = $this->renderView('admin/gestion_objectifs_personnelles/planaction/pdf.html.twig', [
+        'planactions' => $planactions
+    ]);
+
+    $dompdf = new Dompdf();
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    return new Response($dompdf->output(), 200, [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => 'attachment; filename="planactions.pdf"',
+    ]);
+}
+
+    
 }

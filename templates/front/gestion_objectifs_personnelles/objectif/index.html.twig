@@ -2,86 +2,518 @@
 
 {% block page_title %}Objectifs{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+
+    <style>
+        /* STYLE FRONT - CARTES MODERNES POUR OBJECTIFS */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+        
+        .page-header p {
+            color: #64748b;
+            margin-top: 8px;
+        }
+        
+        .filter-bar {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 32px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            border: 1px solid #f1f5f9;
+        }
+        
+        .filter-bar > div {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .filter-bar label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        
+        .filter-bar input, .filter-bar select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+        
+        .filter-bar input:focus, .filter-bar select:focus {
+            border-color: #6366f1;
+            outline: none;
+            background: white;
+        }
+        
+        /* GRILLE DE CARTES */
+        .objectifs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        .objectif-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        
+        .objectif-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15);
+        }
+        
+        .objectif-header {
+            padding: 20px 20px 12px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .objectif-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 4px 0;
+        }
+        
+        .objectif-description {
+            font-size: 0.85rem;
+            color: #64748b;
+            line-height: 1.4;
+            margin: 8px 0 0 0;
+        }
+        
+        .objectif-body {
+            padding: 16px 20px;
+        }
+        
+        .dates {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .badge-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .badge-termine {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-en_cours, .badge-en-cours {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        
+        .badge-planifie, .badge-planifié {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .objectif-actions {
+            padding: 16px 20px 20px;
+            display: flex;
+            gap: 12px;
+            border-top: 1px solid #f1f5f9;
+            background: #fafcff;
+        }
+        
+        .btn-front {
+            padding: 8px 16px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-edit {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .btn-edit:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+        
+        .btn-delete {
+            background: #fef2f2;
+            color: #dc2626;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-delete:hover {
+            background: #fee2e2;
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary-front {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary-front:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99,102,241,0.3);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            background: #f8fafc;
+            border-radius: 24px;
+            color: #94a3b8;
+        }
+        
+        .inline-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        @media (max-width: 640px) {
+            .objectifs-grid {
+                grid-template-columns: 1fr;
+            }
+            .filter-bar {
+                flex-direction: column;
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+       /* =========================
+   SECTION CALENDRIER PETIT ET CENTRÉ
+========================= */
+.calendar-section {
+    margin-top: 40px;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1e293b;
+    text-align: center;
+}
+
+.calendar-box {
+    max-width: 650px;
+    width: 100%;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* =========================
+   CALENDRIER
+========================= */
+#calendar {
+    width: 100%;
+    min-height: 380px;
+    background: white;
+    border-radius: 12px;
+}
+
+/* =========================
+   FULLCALENDAR HEADER (plus petit)
+========================= */
+.fc .fc-toolbar {
+    margin-bottom: 12px !important;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 0.9rem !important;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* =========================
+   BOUTONS PLUS PETITS
+========================= */
+.fc .fc-button {
+    background: #6366f1 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 4px 8px !important;
+    font-size: 0.7rem !important;
+    transition: all 0.2s !important;
+}
+
+.fc .fc-button:hover {
+    background: #4f46e5 !important;
+}
+
+/* =========================
+   GRILLE PLUS PETITE
+========================= */
+.fc td,
+.fc th {
+    border: 1px solid #f1f5f9 !important;
+    font-size: 0.7rem !important;
+}
+
+.fc .fc-daygrid-day-number {
+    font-size: 0.7rem !important;
+    padding: 4px !important;
+}
+
+.fc .fc-day-today {
+    background: #eef2ff !important;
+}
+
+/* =========================
+   EVENTS PLUS PETITS
+========================= */
+.fc-event {
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 2px 4px !important;
+    font-size: 0.65rem !important;
+    color: white !important;
+    font-weight: 500;
+    margin: 1px !important;
+}
+
+.fc-event-title {
+    font-size: 0.65rem !important;
+}
+
+/* =========================
+   JOURS FÉRIÉS (weekend)
+========================= */
+.fc-day-sat, .fc-day-sun {
+    background-color: #fafafa;
+}
+
+/* Responsive mobile */
+@media (max-width: 768px) {
+    .calendar-box {
+        max-width: 100%;
+        padding: 8px;
+    }
+    
+    .calendar-title {
+        font-size: 1rem;
+    }
+    
+    .fc .fc-toolbar {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .fc .fc-button {
+        padding: 3px 6px !important;
+        font-size: 0.65rem !important;
+    }
+}
+    </style>
+{% endblock %}
+
 {% block content %}
     {% include 'front/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
 
-    <section class="page-header">
-        <div>
-            <h1>Liste des objectifs</h1>
-            <p>Recherche, tri et filtrage par statut sur tous les objectifs.</p>
-        </div>
-        <div class="actions">
-            <a class="btn btn-secondary" href="{{ path('front_gestion_objectifs_personnelles_index') }}">Retour au module</a>
-            <a class="btn btn-primary" href="{{ path('front_objectif_create') }}">Ajouter</a>
-        </div>
-    </section>
+    <div style="max-width: 1280px; margin: 0 auto; padding: 20px;">
+        <section class="page-header">
+            <div>
+                <h1>🎯 Liste des objectifs</h1>
+                <p>🔍 Recherche, tri et filtrage par statut sur tous les objectifs.</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <a class="btn-front btn-edit" href="{{ path('front_gestion_objectifs_personnelles_index') }}">← Retour au module</a>
+                <a class="btn-primary-front" href="{{ path('front_objectif_create') }}">+ Ajouter un objectif</a>
+            </div>
+        </section>
 
-    <form method="get" class="table-card filter-bar">
-        <div>
-            <label for="objectif_q">Mot-clé</label>
-            <input id="objectif_q" type="text" name="q" value="{{ filters.q }}" placeholder="Titre, description, statut">
-        </div>
-        <div>
-            <label for="objectif_sort">Tri</label>
-            <select id="objectif_sort" name="sort">
-                {% for label, value in sort_choices %}
-                    <option value="{{ value }}" {{ filters.sort == value ? 'selected' : '' }}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div>
-            <label for="objectif_status">Statut</label>
-            <select id="objectif_status" name="status">
-                <option value="">Tous</option>
-                {% for label, value in status_choices %}
-                    <option value="{{ value }}" {{ filters.status == value ? 'selected' : '' }}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="actions">
-            <button class="btn btn-primary" type="submit">Filtrer</button>
-            <a class="btn btn-secondary" href="{{ path('front_objectif_index') }}">Réinitialiser</a>
-        </div>
-    </form>
+        <form method="get" class="filter-bar">
+            <div>
+                <label for="objectif_q">🔍 Mot-clé</label>
+                <input id="objectif_q" type="text" name="q" value="{{ filters.q }}" placeholder="Titre, description, statut">
+            </div>
+            <div>
+                <label for="objectif_sort">📊 Tri</label>
+                <select id="objectif_sort" name="sort">
+                    {% for label, value in sort_choices %}
+                        <option value="{{ value }}" {{ filters.sort == value ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="objectif_status">🏷️ Statut</label>
+                <select id="objectif_status" name="status">
+                    <option value="">Tous</option>
+                    {% for label, value in status_choices %}
+                        <option value="{{ value }}" {{ filters.status == value ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="actions" style="display: flex; gap: 8px;">
+                <button class="btn-primary-front" type="submit" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; padding: 10px 20px; border-radius: 40px; color: white; cursor: pointer;">Filtrer</button>
+                <a class="btn-front btn-edit" href="{{ path('front_objectif_index') }}" style="padding: 10px 20px;">Réinitialiser</a>
+            </div>
+        </form>
 
-    <section class="table-card">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Titre</th>
-                    <th>Description</th>
-                    <th>Début</th>
-                    <th>Fin</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for objectif in objectifs %}
-                    <tr>
-                        <td>{{ objectif.idObj }}</td>
-                        <td>{{ objectif.titre }}</td>
-                        <td>{{ objectif.descriprion }}</td>
-                        <td>{{ objectif.dateDebut|date('d/m/Y') }}</td>
-                        <td>{{ objectif.dateFin|date('d/m/Y') }}</td>
-                        <td><span class="badge">{{ objectif.statut|replace({'_': ' '})|title }}</span></td>
-                        <td>
-                            <div class="inline-actions">
-                                <a class="btn btn-secondary" href="{{ path('front_objectif_edit', {idObj: objectif.idObj}) }}">Modifier</a>
-                                <form method="post" action="{{ path('front_objectif_delete', {idObj: objectif.idObj}) }}" onsubmit="return confirm('Supprimer cet objectif ?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_objectif_' ~ objectif.idObj) }}">
-                                    <button class="btn btn-danger" type="submit">Supprimer</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="7" class="muted">Aucun objectif trouvé.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </section>
+        <div class="objectifs-grid">
+            {% for objectif in objectifs %}
+                <div class="objectif-card">
+                    <div class="objectif-header">
+                        <h3 class="objectif-title">{{ objectif.titre }}</h3>
+                        <p class="objectif-description">{{ objectif.descriprion|slice(0, 100) }}{% if objectif.descriprion|length > 100 %}...{% endif %}</p>
+                    </div>
+                    <div class="objectif-body">
+                        <div class="dates">
+                            <span>📅 Début: {{ objectif.dateDebut|date('d/m/Y') }}</span>
+                            <span>🏁 Fin: {{ objectif.dateFin|date('d/m/Y') }}</span>
+                        </div>
+                        <div>
+                            {% set statusClass = '' %}
+                            {% if objectif.statut == 'termine' or objectif.statut == 'terminé' %}
+                                {% set statusClass = 'badge-termine' %}
+                            {% elseif objectif.statut == 'en_cours' or objectif.statut == 'en cours' %}
+                                {% set statusClass = 'badge-en_cours' %}
+                            {% else %}
+                                {% set statusClass = 'badge-planifie' %}
+                            {% endif %}
+                            <span class="badge-status {{ statusClass }}">
+                                {{ objectif.statut|replace({'_': ' '})|title }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="objectif-actions">
+                        <div class="inline-actions">
+                            <a class="btn-front btn-edit" href="{{ path('front_objectif_edit', {idObj: objectif.idObj}) }}">✏️ Modifier</a>
+                            <form method="post" action="{{ path('front_objectif_delete', {idObj: objectif.idObj}) }}" onsubmit="return confirm('Supprimer cet objectif ?');" style="margin: 0;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_objectif_' ~ objectif.idObj) }}">
+                                <button class="btn-front btn-delete" type="submit">🗑️ Supprimer</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>📭 Aucun objectif trouvé.</p>
+                </div>
+            {% endfor %}
+           
+    
+
+</div> {# fermeture object grid #}
+
+<!-- ✅ CALENDRIER DANS LE BLOCK CONTENT -->
+<div class="calendar-section">
+    <div class="calendar-title">📅 Calendrier des objectifs</div>
+
+    <div class="calendar-box">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+
+{% endblock %} 
+
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            let calendarEl = document.getElementById("calendar");
+
+            if (!calendarEl) return;
+
+            let calendar = new FullCalendar.Calendar(calendarEl, {
+
+                initialView: "dayGridMonth",
+
+                events: "/app/objectifs/objectif/calendar",
+
+                eventDidMount: function(info) {
+
+                    let status = info.event.extendedProps.status;
+
+                    if (status === "termine") {
+                        info.el.style.backgroundColor = "#22c55e"; // vert
+                    }
+                    else if (status === "en_cours") {
+                        info.el.style.backgroundColor = "#f59e0b"; // orange
+                    }
+                    else {
+                        info.el.style.backgroundColor = "#3b82f6"; // bleu
+                    }
+
+                    info.el.style.color = "white";
+                    info.el.style.borderRadius = "8px";
+                    info.el.style.padding = "2px 4px";
+                }
+
+            });
+
+            calendar.render();
+        });
+    </script>
+
 {% endblock %}

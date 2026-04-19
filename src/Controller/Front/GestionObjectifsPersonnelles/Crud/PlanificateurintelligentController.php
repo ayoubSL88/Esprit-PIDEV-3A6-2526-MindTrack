@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Service\AIPlanificateurService;
 
 #[Route('/app/objectifs/planificateurs', name: 'front_planificateurintelligent_')]
 final class PlanificateurintelligentController extends AbstractController
@@ -39,7 +40,7 @@ final class PlanificateurintelligentController extends AbstractController
     }
 
     #[Route('/new', name: 'create', methods: ['GET', 'POST'])]
-    public function create(Request $request, PlanificateurintelligentRepository $repository, EntityManagerInterface $entityManager): Response
+    public function create(Request $request, PlanificateurintelligentRepository $repository, EntityManagerInterface $entityManager, AIPlanificateurService $aiService): Response
     {
         $planificateur = new Planificateurintelligent();
         $planificateur->setIdPlanificateur($repository->nextId());
@@ -51,11 +52,31 @@ final class PlanificateurintelligentController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($planificateur);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Planificateur ajouté avec succès.');
-
+            $genererIA = $form->get('genererIA')->getData();
+            $objectif = $planificateur->getIdObj();
+            
+            if ($genererIA && $objectif) {
+                $iaResult = $aiService->generateCompletePlan(
+                    $objectif->getTitre(),
+                    $objectif->getDescriprion() ?? ''
+                );
+                
+                $planificateur->setModeOrganisation($iaResult['mode_organisation']);
+                $planificateur->setCapaciteQuotidienne($iaResult['capacite_quotidienne']);
+                $entityManager->persist($planificateur);
+                $entityManager->flush();
+                
+                $this->addFlash('success', '✅ Planificateur IA créé ! Mode: ' . $iaResult['mode_organisation'] . ', Capacité: ' . $iaResult['capacite_quotidienne'] . 'h');
+                
+                foreach ($iaResult['conseils'] as $conseil) {
+                    $this->addFlash('info', '💡 ' . $conseil);
+                }
+            } else {
+                $entityManager->persist($planificateur);
+                $entityManager->flush();
+                $this->addFlash('success', 'Planificateur ajouté avec succès.');
+            }
+            
             return $this->redirectToRoute('front_planificateurintelligent_index');
         }
 
