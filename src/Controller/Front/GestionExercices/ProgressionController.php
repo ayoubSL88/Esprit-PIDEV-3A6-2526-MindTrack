@@ -1,6 +1,10 @@
 <?php
 namespace App\Controller\Front\GestionExercices;
 
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use App\Service\AdviceApiService;
+use App\Service\AIExerciceSuggester;
 use App\Repository\SessionRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,7 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class ProgressionController extends AbstractController
 {
     #[Route('/', name: 'front_progression_index')]
-    public function index(SessionRepository $sessionRepository): Response
+    public function index(SessionRepository $sessionRepository, AdviceApiService $adviceApi): Response
     {
         //$user = $this->getUser();
         $sessions = $sessionRepository->findBy(['terminee' => true]);
@@ -59,10 +63,85 @@ final class ProgressionController extends AbstractController
             $data[] = $count;
         }
         
+        // Récupérer un conseil aléatoire
+        $advice = $adviceApi->getRandomAdvice();
+        
         return $this->render('front/gestion_exercices/progression.html.twig', [
             'global_progression' => ['sessionsTerminees' => $totalSessions, 'tempsTotal' => $totalTemps],
             'sessions_by_exercice' => array_values($sessionsByExercice),
-            'evolution' => ['labels' => $labels, 'data' => $data]
+            'evolution' => ['labels' => $labels, 'data' => $data],
+            'advice' => $advice
+        ]);
+    }
+
+    #[Route('/export-pdf', name: 'front_progression_export_pdf')]
+    public function exportPdf(SessionRepository $sessionRepository): Response
+    {
+        $user = $this->getUser();
+        $sessions = $sessionRepository->findBy(['user' => $user, 'terminee' => true]);
+        
+        // Calcul des stats
+        $totalSessions = count($sessions);
+        $totalTemps = array_sum(array_map(fn($s) => $s->getDureeReelle() ?? 0, $sessions));
+        $moyenneProgress = $totalSessions > 0 
+            ? array_sum(array_map(fn($s) => $s->getProgress() ?? 0, $sessions)) / $totalSessions 
+            : 0;
+        
+        $html = $this->renderView('front/gestion_exercices/export_pdf.html.twig', [
+            'total_sessions' => $totalSessions,
+            'total_temps' => round($totalTemps / 60),
+            'moyenne_progress' => round($moyenneProgress, 1),
+            'sessions' => $sessions,
+            'user' => $user,
+            'date' => new \DateTime()
+        ]);
+        
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        return new Response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="progression_' . date('Y-m-d') . '.pdf"'
+        ]);
+    }
+
+    #[Route('/suggestion/pour-vous', name: 'front_suggestion_for_you')]
+    public function suggestionForYou(AIExerciceSuggester $aisuggester): Response
+    {
+        $user = $this->getUser();
+        
+        if (!$user) {
+            $exercice = $aisuggester->getRandomSuggestion();
+        } else {
+            $exercice = $aisuggester->suggestByHistory($user);
+        }
+        
+        if (!$exercice) {
+            $this->addFlash('error', 'Aucun exercice recommandé disponible');
+            return $this->redirectToRoute('front_gestion_exercices_home');
+        }
+        
+        return $this->redirectToRoute('front_gestion_exercices_show', [
+            'idEx' => $exercice->getIdEx()
+        ]);
+    }
+
+    #[Route('/suggestion/humeur/{mood}', name: 'front_suggestion_by_mood')]
+    public function suggestByMood(int $mood, AIExerciceSuggester $aisuggester): Response
+    {
+        $exercice = $aisuggester->suggestByMood($mood);
+        
+        if (!$exercice) {
+            $this->addFlash('error', 'Aucun exercice trouvé pour cette humeur');
+            return $this->redirectToRoute('front_gestion_exercices_home');
+        }
+        
+        return $this->redirectToRoute('front_gestion_exercices_show', [
+            'idEx' => $exercice->getIdEx()
         ]);
     }
 }

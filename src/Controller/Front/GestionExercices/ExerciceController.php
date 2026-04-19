@@ -4,6 +4,7 @@ namespace App\Controller\Front\GestionExercices;
 
 use App\Entity\Exercice;
 use App\Form\ExerciceType;
+use App\Service\AIExerciceSuggester;
 use App\Repository\ExerciceRepository;
 use App\Repository\SessionRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -51,14 +52,16 @@ final class ExerciceController extends AbstractController
         // Récupérer les paramètres de filtrage
         $search = $request->query->get('search', '');
         $difficulte = $request->query->get('difficulte', '');
+        $sort = $request->query->get('sort', 'nom');
+        $order = $request->query->get('order', 'ASC');
         
         // Créer le QueryBuilder
         $qb = $entityManager->getRepository(Exercice::class)->createQueryBuilder('e');
         
         // Filtre par recherche (nom ou type)
         if ($search) {
-            $qb->andWhere('e.nom LIKE :search OR e.type LIKE :search')
-               ->setParameter('search', '%'.$search.'%');
+            $qb->andWhere("e.nom LIKE :search OR e.type LIKE :search")
+               ->setParameter('search', "%{$search}%");
         }
         
         // Filtre par difficulté
@@ -67,8 +70,8 @@ final class ExerciceController extends AbstractController
                ->setParameter('difficulte', $difficulte);
         }
         
-        // Trier par nom
-        $qb->orderBy('e.nom', 'ASC');
+        // Trier par nom et par ordre
+        $qb->orderBy("e.{$sort}", $order);
         
         // Exécuter la requête
         $exercices = $qb->getQuery()->getResult();
@@ -77,6 +80,8 @@ final class ExerciceController extends AbstractController
             'exercices' => $exercices,
             'search' => $search,
             'difficulte' => $difficulte,
+            'sort' => $sort,
+            'order' => $order
         ]);
     }
 
@@ -85,6 +90,43 @@ final class ExerciceController extends AbstractController
     {
         return $this->render('front/gestion_exercices/show.html.twig', [
             'exercice' => $exercice,
+        ]);
+    }
+
+    #[Route('/suggestion/humeur/{mood}', name: 'front_suggestion_by_mood')]
+    public function suggestionByMood(int $mood, AIExerciceSuggester $aisuggester): Response
+    {
+        $exercice = $aisuggester->suggestByMood($mood);
+        
+        if (!$exercice) {
+            throw $this->createNotFoundException('Aucun exercice trouvé');
+        }
+        
+        // Rediriger vers la page de l'exercice
+        return $this->redirectToRoute('front_gestion_exercices_show', [
+            'idEx' => $exercice->getIdEx()
+        ]);
+    }
+
+    #[Route('/suggestion/pour-vous', name: 'front_suggestion_for_you')]
+    public function suggestionForYou(AIExerciceSuggester $aisuggester): Response
+    {
+        $user = $this->getUser();
+        
+        if (!$user instanceof Utilisateur) {
+            // Utilisateur non connecté -> suggestion aléatoire
+            $exercice = $aisuggester->getRandomSuggestion();
+        } else {
+            // Utilisateur connecté -> suggestion basée sur historique
+            $exercice = $aisuggester->suggestByHistory($user);
+        }
+        
+        if (!$exercice) {
+            throw $this->createNotFoundException('Aucun exercice trouvé');
+        }
+        
+        return $this->redirectToRoute('front_gestion_exercices_show', [
+            'idEx' => $exercice->getIdEx()
         ]);
     }
 }

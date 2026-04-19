@@ -9,9 +9,59 @@
         <h1 class="display-4 fw-bold text-primary">🧘 Espace Exercices</h1>
         <p class="lead">Développement personnel et bien-être</p>
         <hr class="w-50 mx-auto">
-            <a href="{{ path('front_home') }}" class="btn btn-outline-primary">
+        <a href="{{ path('front_home') }}" class="btn btn-outline-primary">
             <i class="bi bi-arrow-left"></i> Retour
-            </a>
+        </a>
+    </div>
+
+    <!-- ========== NOUVEAU : SECTION IA SUGGESTIONS ========== -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-gradient bg-dark text-white shadow-lg">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-robot fs-1"></i>
+                    <h2 class="mt-2">🤖 Suggestions IA personnalisées</h2>
+                    <p class="mb-3">Basé sur votre humeur et votre historique d'exercices</p>
+                    
+                    <div class="row mt-4">
+                        <!-- Suggestion personnalisée -->
+                        <div class="col-md-6 mb-3">
+                            <div class="bg-white bg-opacity-10 rounded p-3">
+                                <i class="bi bi-magic fs-3"></i>
+                                <h5 class="mt-2">Recommandation pour vous</h5>
+                                <p class="small">Basée sur votre historique et progression</p>
+                                <a href="{{ path('front_suggestion_for_you') }}" class="btn btn-light">
+                                    🤖 Exercice recommandé →
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Sélecteur d'humeur -->
+                        <div class="col-md-6 mb-3">
+                            <div class="bg-white bg-opacity-10 rounded p-3">
+                                <i class="bi bi-emoji-smile fs-3"></i>
+                                <h5 class="mt-2">Basé sur votre humeur</h5>
+                                <p class="small">Comment vous sentez-vous aujourd'hui ?</p>
+                                <div class="d-flex flex-wrap justify-content-center gap-2">
+                                    {% for mood in 1..10 %}
+                                        <a href="{{ path('front_suggestion_by_mood', {'mood': mood}) }}" 
+                                           class="btn btn-sm {% if mood <= 3 %}btn-danger{% elseif mood <= 6 %}btn-warning{% else %}btn-success{% endif %}"
+                                           title="Humeur: {{ mood }}/10">
+                                            {{ mood }}
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                                <div class="small text-white-50 mt-2">
+                                    <span class="text-danger">❶-❸</span> Très basse 
+                                    <span class="text-warning">❹-❻</span> Normale 
+                                    <span class="text-success">❼-❿</span> Excellente
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Dashboard public (sans condition de connexion) -->
