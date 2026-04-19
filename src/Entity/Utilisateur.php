@@ -184,6 +184,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         $this->totp_enabled = $value;
     }
 
+
     public function getUserIdentifier(): string
     {
         return $this->emailU;

@@ -27,5 +27,11 @@ services:
             $similarityThreshold: '%env(COMPREFACE_SIMILARITY_THRESHOLD)%'
             $detectionThreshold: '%env(COMPREFACE_DET_PROB_THRESHOLD)%'
 
+    App\Service\GoogleOAuthService:
+        arguments:
+            $clientId: '%env(GOOGLE_CLIENT_ID)%'
+            $clientSecret: '%env(GOOGLE_CLIENT_SECRET)%'
+            $redirectUri: '%env(GOOGLE_REDIRECT_URI)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
