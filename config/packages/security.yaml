@@ -27,6 +27,7 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/login/face, roles: PUBLIC_ACCESS }
         - { path: ^/logout, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/post-login, roles: [ROLE_USER, ROLE_ADMIN] }

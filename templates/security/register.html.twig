@@ -60,6 +60,38 @@
                             {% endif %}
                         </div>
 
+                        <section class="grid gap-4 rounded-3xl border border-border bg-white/80 p-5 shadow-soft">
+                            <div class="space-y-1">
+                                <p class="text-sm font-semibold text-ink">Face ID sign up</p>
+                                <p class="text-sm text-muted">Press one button, allow camera access, and MindTrack captures one selfie for enrollment.</p>
+                            </div>
+
+                            <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                                <div class="overflow-hidden rounded-3xl border border-border bg-panel">
+                                    <video id="register-face-video" class="hidden aspect-[4/3] h-full w-full object-cover" autoplay playsinline muted></video>
+                                    <img id="register-face-preview" class="hidden aspect-[4/3] h-full w-full object-cover" alt="Face capture preview">
+                                    <div id="register-face-placeholder" class="flex aspect-[4/3] items-center justify-center bg-white/70 p-6 text-center text-sm text-muted">
+                                        Your captured Face ID photo will appear here.
+                                    </div>
+                                </div>
+                                <div class="grid gap-3">
+                                    <button type="button" id="register-face-action" class="btn-primary min-w-28 justify-center">Set up Face ID</button>
+                                    <button type="button" id="register-face-retake" class="hidden text-sm font-semibold text-muted underline-offset-4 hover:text-ink hover:underline">Retake photo</button>
+                                </div>
+                            </div>
+
+                            <div id="register-face-status" class="rounded-2xl border border-border bg-white/90 px-4 py-3 text-sm text-muted" aria-live="polite">
+                                Face ID is optional. If you capture a selfie, it will be enrolled with your account.
+                            </div>
+
+                            <input type="hidden" id="register-face-enabled-input" name="enable_face_id" value="{{ faceEnabled|default(false) ? '1' : '0' }}">
+                            <input type="hidden" id="register-face-capture-input" name="face_capture">
+
+                            {% if fieldErrors.face_capture is defined %}
+                                <p class="field-error">{{ fieldErrors.face_capture }}</p>
+                            {% endif %}
+                        </section>
+
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token('register') }}">
 
                         <div class="button-row">
@@ -71,4 +103,146 @@
             </section>
         </div>
     </main>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        (() => {
+            const init = () => {
+            const video = document.getElementById('register-face-video');
+            const preview = document.getElementById('register-face-preview');
+            const placeholder = document.getElementById('register-face-placeholder');
+            const enabledField = document.getElementById('register-face-enabled-input');
+            const hiddenCapture = document.getElementById('register-face-capture-input');
+            const actionButton = document.getElementById('register-face-action');
+            const retakeButton = document.getElementById('register-face-retake');
+            const statusBox = document.getElementById('register-face-status');
+            const form = hiddenCapture?.closest('form');
+
+            if (!video || !preview || !placeholder || !enabledField || !hiddenCapture || !actionButton || !retakeButton || !statusBox || !form) {
+                return;
+            }
+
+            let stream = null;
+            let isCapturing = false;
+
+            const setStatus = (message, isError = false) => {
+                statusBox.textContent = message;
+                statusBox.className = isError
+                    ? 'rounded-2xl border border-danger-border bg-danger-soft px-4 py-3 text-sm text-danger'
+                    : 'rounded-2xl border border-border bg-white/90 px-4 py-3 text-sm text-muted';
+            };
+
+            const stopStream = () => {
+                if (!stream) {
+                    return;
+                }
+
+                stream.getTracks().forEach((track) => track.stop());
+                stream = null;
+            };
+
+            const resetPreview = () => {
+                enabledField.value = '0';
+                hiddenCapture.value = '';
+                preview.src = '';
+                preview.classList.add('hidden');
+                video.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                retakeButton.classList.add('hidden');
+                actionButton.disabled = false;
+                actionButton.textContent = 'Set up Face ID';
+            };
+
+            const captureFrame = () => {
+                if (!stream || video.videoWidth === 0 || video.videoHeight === 0) {
+                    throw new Error('Camera feed is not ready yet.');
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                return canvas.toDataURL('image/jpeg', 0.92);
+            };
+
+            const beginCapture = async () => {
+                if (!navigator.mediaDevices?.getUserMedia) {
+                    setStatus('This browser does not support camera capture.', true);
+                    return;
+                }
+
+                if (isCapturing) {
+                    return;
+                }
+
+                isCapturing = true;
+                actionButton.disabled = true;
+                actionButton.textContent = 'Opening camera...';
+                stopStream();
+                resetPreview();
+
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'user',
+                            width: { ideal: 1280 },
+                            height: { ideal: 960 }
+                        },
+                        audio: false
+                    });
+
+                    video.srcObject = stream;
+                    video.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+                    await video.play();
+                    setStatus('Camera open. Hold still for a moment...');
+                    actionButton.textContent = 'Capturing...';
+
+                    await new Promise((resolve) => window.setTimeout(resolve, 900));
+
+                    const dataUrl = captureFrame();
+                    enabledField.value = '1';
+                    hiddenCapture.value = dataUrl;
+                    preview.src = dataUrl;
+                    preview.classList.remove('hidden');
+                    video.classList.add('hidden');
+                    retakeButton.classList.remove('hidden');
+                    stopStream();
+                    setStatus('Face captured. Submit the form to enroll this account.');
+                } catch (error) {
+                    const message = error instanceof Error ? error.message : 'Unable to access the camera. Check browser permissions and try again.';
+                    setStatus(message, true);
+                } finally {
+                    isCapturing = false;
+                    actionButton.disabled = false;
+                    actionButton.textContent = hiddenCapture.value === '' ? 'Set up Face ID' : 'Capture again';
+                }
+            };
+
+            actionButton.addEventListener('click', beginCapture);
+
+            retakeButton.addEventListener('click', () => {
+                resetPreview();
+                setStatus('Use the capture button to take a new photo.');
+            });
+
+            form.addEventListener('submit', (event) => {
+                if (enabledField.value === '1' && hiddenCapture.value === '') {
+                    event.preventDefault();
+                    setStatus('Capture your face before creating the account.', true);
+                }
+            });
+
+            window.addEventListener('beforeunload', stopStream);
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init, { once: true });
+            } else {
+                init();
+            }
+        })();
+    </script>
 {% endblock %}

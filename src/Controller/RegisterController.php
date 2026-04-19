@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
+use App\Exception\FaceAuthenticationException;
+use App\Service\CompreFaceService;
 use App\Service\GestionUser\ValidationService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -22,6 +24,7 @@ final class RegisterController extends AbstractController
         Connection $connection,
         UserPasswordHasherInterface $passwordHasher,
         ValidationService $inputValidation,
+        CompreFaceService $compreFaceService,
     ): Response|RedirectResponse {
         if ($this->getUser() !== null) {
             return $this->isGranted('ROLE_ADMIN')
@@ -37,9 +40,11 @@ final class RegisterController extends AbstractController
         ];
         $fieldErrors = [];
         $formSubmitted = false;
+        $faceEnabled = false;
 
         if ($request->isMethod('POST')) {
             $formSubmitted = true;
+            $faceEnabled = $request->request->getBoolean('enable_face_id');
             $csrfToken = (string) $request->request->get('_csrf_token', '');
             if (!$this->isCsrfTokenValid('register', $csrfToken)) {
                 $this->addFlash('error', 'Invalid form token. Please try again.');
@@ -71,6 +76,7 @@ final class RegisterController extends AbstractController
 
             $plainPassword = (string) $validated['data']['password'];
             $age = (int) $validated['data']['age'];
+            $faceCapture = (string) $request->request->get('face_capture', '');
 
             $existing = $entityManager->getRepository(Utilisateur::class)->findOneBy(['emailU' => $formData['email']]);
             if ($existing !== null) {
@@ -79,11 +85,40 @@ final class RegisterController extends AbstractController
                     'form' => $formData,
                     'fieldErrors' => $fieldErrors,
                     'formSubmitted' => $formSubmitted,
+                    'faceEnabled' => $faceEnabled,
                 ]);
             }
 
-            $user = new Utilisateur();
             $nextUserId = (int) $connection->fetchOne('SELECT COALESCE(MAX(id_u), 0) + 1 FROM utilisateur');
+            $faceEnrollment = null;
+
+            if ($faceEnabled) {
+                if ($faceCapture === '') {
+                    $fieldErrors['face_capture'] = 'Capture your face before enabling Face ID.';
+
+                    return $this->render('security/register.html.twig', [
+                        'form' => $formData,
+                        'fieldErrors' => $fieldErrors,
+                        'formSubmitted' => $formSubmitted,
+                        'faceEnabled' => $faceEnabled,
+                    ]);
+                }
+
+                try {
+                    $faceEnrollment = $compreFaceService->enrollFace(sprintf('mindtrack-user-%d', $nextUserId), $faceCapture);
+                } catch (FaceAuthenticationException $exception) {
+                    $fieldErrors['face_capture'] = $exception->getMessage();
+
+                    return $this->render('security/register.html.twig', [
+                        'form' => $formData,
+                        'fieldErrors' => $fieldErrors,
+                        'formSubmitted' => $formSubmitted,
+                        'faceEnabled' => $faceEnabled,
+                    ]);
+                }
+            }
+
+            $user = new Utilisateur();
 
             $user->setIdU($nextUserId);
             $user->setNomU($formData['nom']);
@@ -91,9 +126,9 @@ final class RegisterController extends AbstractController
             $user->setEmailU($formData['email']);
             $user->setAgeU($age);
             $user->setRoleU('USER');
-            $user->setFace_subject('');
-            $user->setFace_image_id('');
-            $user->setFace_enabled(false);
+            $user->setFace_subject((string) ($faceEnrollment['subject'] ?? ''));
+            $user->setFace_image_id((string) ($faceEnrollment['image_id'] ?? ''));
+            $user->setFace_enabled($faceEnabled && $faceEnrollment !== null);
             $user->setProfile_picture_path('');
             $user->setTotp_secret('');
             $user->setTotp_enabled(false);
@@ -111,6 +146,7 @@ final class RegisterController extends AbstractController
             'form' => $formData,
             'fieldErrors' => $fieldErrors,
             'formSubmitted' => $formSubmitted,
+            'faceEnabled' => $faceEnabled,
         ]);
     }
 }

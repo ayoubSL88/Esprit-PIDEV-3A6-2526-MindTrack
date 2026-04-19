@@ -20,5 +20,12 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    App\Service\CompreFaceService:
+        arguments:
+            $baseUrl: '%env(COMPREFACE_BASE_URL)%'
+            $apiKey: '%env(COMPREFACE_API_KEY)%'
+            $similarityThreshold: '%env(COMPREFACE_SIMILARITY_THRESHOLD)%'
+            $detectionThreshold: '%env(COMPREFACE_DET_PROB_THRESHOLD)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

@@ -35,8 +35,148 @@
                             <a class="btn-secondary" href="{{ path('app_register') }}">Create account</a>
                         </div>
                     </form>
+
+                    <section class="grid gap-4">
+                        <button type="button" id="login-face-action" class="inline-flex w-full items-center justify-center rounded-3xl border border-border bg-white/90 px-6 py-5 text-base font-semibold text-ink shadow-soft transition hover:bg-panel focus:outline-none focus:ring-2 focus:ring-brand/30">
+                            Face ID
+                        </button>
+                        <div id="login-face-preview-shell" class="hidden overflow-hidden rounded-3xl border border-border bg-panel shadow-soft">
+                            <video id="login-face-video" class="aspect-[4/3] h-full w-full object-cover" autoplay playsinline muted></video>
+                        </div>
+                        <p id="login-face-status" class="hidden text-center text-sm text-muted" aria-live="polite"></p>
+                        <input type="hidden" id="login-face-csrf" value="{{ csrf_token('face_login') }}">
+                    </section>
                 </div>
             </section>
         </div>
     </main>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        (() => {
+            const init = () => {
+            const video = document.getElementById('login-face-video');
+            const previewShell = document.getElementById('login-face-preview-shell');
+            const actionButton = document.getElementById('login-face-action');
+            const statusBox = document.getElementById('login-face-status');
+            const csrfField = document.getElementById('login-face-csrf');
+
+            if (!video || !previewShell || !actionButton || !statusBox || !csrfField) {
+                return;
+            }
+
+            let stream = null;
+            let isCapturing = false;
+
+            const setStatus = (message, isError = false) => {
+                statusBox.textContent = message;
+                statusBox.className = isError
+                    ? 'block text-center text-sm text-danger'
+                    : 'block text-center text-sm text-muted';
+            };
+
+            const stopStream = () => {
+                if (!stream) {
+                    previewShell.classList.add('hidden');
+                    return;
+                }
+
+                stream.getTracks().forEach((track) => track.stop());
+                stream = null;
+                video.srcObject = null;
+                previewShell.classList.add('hidden');
+            };
+
+            const captureFrame = () => {
+                if (!stream || video.videoWidth === 0 || video.videoHeight === 0) {
+                    throw new Error('Camera feed is not ready yet.');
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                return canvas.toDataURL('image/jpeg', 0.92);
+            };
+
+            actionButton.addEventListener('click', async () => {
+                if (!navigator.mediaDevices?.getUserMedia) {
+                    setStatus('This browser does not support camera capture.', true);
+                    return;
+                }
+
+                if (isCapturing) {
+                    return;
+                }
+
+                isCapturing = true;
+                actionButton.disabled = true;
+                actionButton.textContent = 'Opening camera...';
+                stopStream();
+
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'user',
+                            width: { ideal: 1280 },
+                            height: { ideal: 960 }
+                        },
+                        audio: false
+                    });
+
+                    previewShell.classList.remove('hidden');
+                    video.srcObject = stream;
+                    await video.play();
+                    setStatus('Camera open. Hold still for a moment...');
+                    actionButton.textContent = 'Capturing...';
+
+                    await new Promise((resolve) => window.setTimeout(resolve, 900));
+
+                    const faceCapture = captureFrame();
+                    stopStream();
+                    setStatus('Verifying your face...');
+                    actionButton.textContent = 'Verifying...';
+
+                    const response = await fetch('{{ path('app_login_face') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            image: faceCapture,
+                            csrf_token: csrfField.value
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Face ID sign in failed.');
+                    }
+
+                    setStatus('Face verified. Redirecting now.');
+                    window.location.assign(data.redirect);
+                } catch (error) {
+                    const message = error instanceof Error ? error.message : 'Face ID sign in failed.';
+                    setStatus(message, true);
+                } finally {
+                    stopStream();
+                    isCapturing = false;
+                    actionButton.disabled = false;
+                    actionButton.textContent = 'Use Face ID';
+                }
+            });
+
+            window.addEventListener('beforeunload', stopStream);
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init, { once: true });
+            } else {
+                init();
+            }
+        })();
+    </script>
 {% endblock %}

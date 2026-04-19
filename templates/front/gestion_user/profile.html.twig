@@ -66,6 +66,12 @@
                 <h3 class="feature-title">Age</h3>
                 <p class="feature-copy">{{ currentUser.ageU }}</p>
             </article>
+
+            <article class="feature-card">
+                <p class="feature-label">Security</p>
+                <h3 class="feature-title">Face ID</h3>
+                <p class="feature-copy">{{ currentUser.face_enabled ? 'Active on this account.' : 'Not active yet. You can enroll it below.' }}</p>
+            </article>
         </section>
 
         <form method="post" id="profile-edit-form" class="panel-section form-stack {{ openEdit ? '' : 'hidden' }}" novalidate>
@@ -116,6 +122,30 @@
             </div>
         </form>
 
+        <section class="panel-section form-stack">
+            <header class="page-header">
+                <h2 class="panel-title">Face ID Login</h2>
+                <p class="panel-copy">Set up Face ID here if you skipped it during sign up. One capture will enroll this account for biometric sign in.</p>
+            </header>
+
+            <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                <div id="profile-face-preview-shell" class="hidden overflow-hidden rounded-3xl border border-border bg-panel shadow-soft">
+                    <video id="profile-face-video" class="aspect-[4/3] h-full w-full object-cover" autoplay playsinline muted></video>
+                </div>
+                <div class="grid gap-3">
+                    <button type="button" id="profile-face-action" class="btn-primary min-w-28 justify-center">{{ currentUser.face_enabled ? 'Update Face ID' : 'Activate Face ID' }}</button>
+                    <p id="profile-face-status" class="text-sm text-muted" aria-live="polite">
+                        {{ currentUser.face_enabled ? 'Face ID is active. Capture again if you want to refresh it.' : 'Press the button to open the webcam and capture your face.' }}
+                    </p>
+                </div>
+            </div>
+
+            <form method="post" id="profile-face-form" action="{{ path('front_gestion_user_face_id_enable') }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('front_profile_face_id_' ~ currentUser.idU) }}">
+                <input type="hidden" name="face_capture" id="profile-face-capture-input">
+            </form>
+        </section>
+
         <section class="panel-section">
             <p class="feature-label">Danger Zone</p>
             <h2 class="panel-title mt-4">Delete Account</h2>
@@ -133,10 +163,38 @@
             const editButton = document.getElementById('edit-profile-button');
             const cancelButton = document.getElementById('cancel-edit-button');
             const editForm = document.getElementById('profile-edit-form');
+            const faceActionButton = document.getElementById('profile-face-action');
+            const faceStatus = document.getElementById('profile-face-status');
+            const facePreviewShell = document.getElementById('profile-face-preview-shell');
+            const faceVideo = document.getElementById('profile-face-video');
+            const faceCaptureInput = document.getElementById('profile-face-capture-input');
+            const faceForm = document.getElementById('profile-face-form');
 
-            if (!editButton || !cancelButton || !editForm) {
+            if (!editButton || !cancelButton || !editForm || !faceActionButton || !faceStatus || !facePreviewShell || !faceVideo || !faceCaptureInput || !faceForm) {
                 return;
             }
+
+            let faceStream = null;
+            let faceCapturing = false;
+
+            const setFaceStatus = function (message, isError = false) {
+                faceStatus.textContent = message;
+                faceStatus.className = isError ? 'text-sm text-danger' : 'text-sm text-muted';
+            };
+
+            const stopFaceStream = function () {
+                if (!faceStream) {
+                    facePreviewShell.classList.add('hidden');
+                    return;
+                }
+
+                faceStream.getTracks().forEach(function (track) {
+                    track.stop();
+                });
+                faceStream = null;
+                faceVideo.srcObject = null;
+                facePreviewShell.classList.add('hidden');
+            };
 
             editButton.addEventListener('click', function () {
                 editForm.classList.remove('hidden');
@@ -150,6 +208,68 @@
             if (!editForm.classList.contains('hidden')) {
                 editForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
+
+            faceActionButton.addEventListener('click', async function () {
+                if (!navigator.mediaDevices?.getUserMedia) {
+                    setFaceStatus('This browser does not support camera capture.', true);
+                    return;
+                }
+
+                if (faceCapturing) {
+                    return;
+                }
+
+                faceCapturing = true;
+                faceActionButton.disabled = true;
+                faceActionButton.textContent = 'Opening camera...';
+                stopFaceStream();
+
+                try {
+                    faceStream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'user',
+                            width: { ideal: 1280 },
+                            height: { ideal: 960 }
+                        },
+                        audio: false
+                    });
+
+                    facePreviewShell.classList.remove('hidden');
+                    faceVideo.srcObject = faceStream;
+                    await faceVideo.play();
+                    setFaceStatus('Camera open. Hold still for a moment...');
+                    faceActionButton.textContent = 'Capturing...';
+
+                    await new Promise(function (resolve) {
+                        window.setTimeout(resolve, 900);
+                    });
+
+                    if (faceVideo.videoWidth === 0 || faceVideo.videoHeight === 0) {
+                        throw new Error('Camera feed is not ready yet.');
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = faceVideo.videoWidth;
+                    canvas.height = faceVideo.videoHeight;
+                    const context = canvas.getContext('2d');
+                    context.drawImage(faceVideo, 0, 0, canvas.width, canvas.height);
+                    faceCaptureInput.value = canvas.toDataURL('image/jpeg', 0.92);
+
+                    stopFaceStream();
+                    setFaceStatus('Face captured. Saving Face ID...');
+                    faceActionButton.textContent = 'Saving...';
+                    faceForm.submit();
+                } catch (error) {
+                    const message = error instanceof Error ? error.message : 'Unable to access the camera. Check browser permissions and try again.';
+                    stopFaceStream();
+                    setFaceStatus(message, true);
+                    faceActionButton.disabled = false;
+                    faceActionButton.textContent = '{{ currentUser.face_enabled ? 'Update Face ID' : 'Activate Face ID' }}';
+                    faceCapturing = false;
+                }
+            });
+
+            window.addEventListener('beforeunload', stopFaceStream);
         })();
     </script>
 {% endblock %}

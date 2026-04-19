@@ -3,6 +3,8 @@
 namespace App\Controller\Front\GestionUser;
 
 use App\Entity\Utilisateur;
+use App\Exception\FaceAuthenticationException;
+use App\Service\CompreFaceService;
 use App\Service\GestionUser\ValidationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -87,6 +89,46 @@ final class ProfileController extends AbstractController
             'formSubmitted' => $formSubmitted,
             'openEdit' => $openEdit,
         ]);
+    }
+
+    #[Route('/app/users/face-id', name: 'front_gestion_user_face_id_enable', methods: ['POST'])]
+    public function enableFaceId(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        CompreFaceService $compreFaceService,
+    ): RedirectResponse {
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof Utilisateur) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $csrfToken = (string) $request->request->get('_csrf_token', '');
+        if (!$this->isCsrfTokenValid('front_profile_face_id_' . $currentUser->getIdU(), $csrfToken)) {
+            $this->addFlash('error', 'Invalid Face ID request. Please try again.');
+            return $this->redirectToRoute('front_gestion_user_index');
+        }
+
+        $faceCapture = (string) $request->request->get('face_capture', '');
+        if ($faceCapture === '') {
+            $this->addFlash('error', 'Capture your face before saving Face ID.');
+            return $this->redirectToRoute('front_gestion_user_index');
+        }
+
+        try {
+            $faceEnrollment = $compreFaceService->enrollFace(sprintf('mindtrack-user-%d', $currentUser->getIdU()), $faceCapture);
+        } catch (FaceAuthenticationException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+            return $this->redirectToRoute('front_gestion_user_index');
+        }
+
+        $currentUser->setFace_subject((string) $faceEnrollment['subject']);
+        $currentUser->setFace_image_id((string) $faceEnrollment['image_id']);
+        $currentUser->setFace_enabled(true);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Face ID is now active for your account.');
+
+        return $this->redirectToRoute('front_gestion_user_index');
     }
 
     #[Route('/app/users/delete', name: 'front_gestion_user_delete_account', methods: ['POST'])]
