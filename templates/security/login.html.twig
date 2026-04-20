@@ -17,7 +17,7 @@
                         errorMessage: error ? error.messageKey|trans(error.messageData, 'security') : null
                     }) }}
 
-                    <form method="post" class="form-stack">
+                    <form method="post" action="{{ path('app_login_password') }}" class="form-stack">
                         <div class="field">
                             <label class="field-label" for="username">Email</label>
                             <input class="field-input" type="email" id="username" name="_username" value="{{ last_username }}" autocomplete="email" required autofocus>
@@ -38,6 +38,10 @@
 
                     <a href="{{ path('app_connect_google') }}" class="inline-flex w-full items-center justify-center rounded-3xl border border-border bg-white/90 px-6 py-4 text-sm font-semibold text-ink shadow-soft transition hover:bg-panel focus:outline-none focus:ring-2 focus:ring-brand/30">
                         Continue with Google
+                    </a>
+
+                    <a href="{{ path('app_connect_github') }}" class="inline-flex w-full items-center justify-center rounded-3xl border border-border bg-white/90 px-6 py-4 text-sm font-semibold text-ink shadow-soft transition hover:bg-panel focus:outline-none focus:ring-2 focus:ring-brand/30">
+                        Continue with GitHub
                     </a>
 
                     <section class="grid gap-4">
@@ -160,7 +164,7 @@
                         throw new Error(data.message || 'Face ID sign in failed.');
                     }
 
-                    setStatus('Face verified. Redirecting now.');
+                    setStatus(data.requires_two_factor ? 'Face verified. Redirecting to 2FA...' : 'Face verified. Redirecting now.');
                     window.location.assign(data.redirect);
                 } catch (error) {
                     const message = error instanceof Error ? error.message : 'Face ID sign in failed.';

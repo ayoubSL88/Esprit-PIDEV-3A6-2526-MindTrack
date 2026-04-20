@@ -6,6 +6,7 @@ use App\Entity\Utilisateur;
 use App\Exception\FaceAuthenticationException;
 use App\Service\CompreFaceService;
 use App\Service\GestionUser\ValidationService;
+use App\Service\TotpService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -127,6 +128,85 @@ final class ProfileController extends AbstractController
         $entityManager->flush();
 
         $this->addFlash('success', 'Face ID is now active for your account.');
+
+        return $this->redirectToRoute('front_gestion_user_index');
+    }
+
+    #[Route('/app/users/two-factor/setup', name: 'front_gestion_user_totp_setup', methods: ['GET'])]
+    public function setupTotp(TotpService $totpService): Response|RedirectResponse
+    {
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof Utilisateur) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $secret = $totpService->generateSecret();
+        $otpAuthUrl = $totpService->generateOtpAuthUrl($currentUser->getEmailU(), $secret);
+
+        return $this->render('front/gestion_user/two_factor_setup.html.twig', [
+            'currentUser' => $currentUser,
+            'secret' => $secret,
+            'qr_code_url' => $totpService->getQrCodeUrl($otpAuthUrl),
+            'seconds_remaining' => $totpService->getSecondsRemaining(),
+        ]);
+    }
+
+    #[Route('/app/users/two-factor/enable', name: 'front_gestion_user_totp_enable', methods: ['POST'])]
+    public function enableTotp(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        TotpService $totpService,
+    ): RedirectResponse {
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof Utilisateur) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $csrfToken = (string) $request->request->get('_csrf_token', '');
+        if (!$this->isCsrfTokenValid('front_profile_totp_enable_' . $currentUser->getIdU(), $csrfToken)) {
+            $this->addFlash('error', 'Invalid 2FA request. Please try again.');
+
+            return $this->redirectToRoute('front_gestion_user_totp_setup');
+        }
+
+        $secret = trim((string) $request->request->get('secret', ''));
+        $code = (string) $request->request->get('code', '');
+
+        if ($secret === '' || !$totpService->verifyCode($secret, $code)) {
+            $this->addFlash('error', 'Invalid authenticator code.');
+
+            return $this->redirectToRoute('front_gestion_user_totp_setup');
+        }
+
+        $currentUser->setTotp_secret($secret);
+        $currentUser->setTotp_enabled(true);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Two-factor authentication is now enabled.');
+
+        return $this->redirectToRoute('front_gestion_user_index');
+    }
+
+    #[Route('/app/users/two-factor/disable', name: 'front_gestion_user_totp_disable', methods: ['POST'])]
+    public function disableTotp(Request $request, EntityManagerInterface $entityManager): RedirectResponse
+    {
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof Utilisateur) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $csrfToken = (string) $request->request->get('_csrf_token', '');
+        if (!$this->isCsrfTokenValid('front_profile_totp_disable_' . $currentUser->getIdU(), $csrfToken)) {
+            $this->addFlash('error', 'Invalid 2FA disable request.');
+
+            return $this->redirectToRoute('front_gestion_user_index');
+        }
+
+        $currentUser->setTotp_secret('');
+        $currentUser->setTotp_enabled(false);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Two-factor authentication was disabled.');
 
         return $this->redirectToRoute('front_gestion_user_index');
     }

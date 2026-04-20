@@ -72,6 +72,12 @@
                 <h3 class="feature-title">Face ID</h3>
                 <p class="feature-copy">{{ currentUser.face_enabled ? 'Active on this account.' : 'Not active yet. You can enroll it below.' }}</p>
             </article>
+
+            <article class="feature-card">
+                <p class="feature-label">Security</p>
+                <h3 class="feature-title">Two-Factor Auth</h3>
+                <p class="feature-copy">{{ currentUser.totp_enabled ? 'Enabled with your authenticator app.' : 'Disabled. Add TOTP protection below.' }}</p>
+            </article>
         </section>
 
         <form method="post" id="profile-edit-form" class="panel-section form-stack {{ openEdit ? '' : 'hidden' }}" novalidate>
@@ -144,6 +150,29 @@
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('front_profile_face_id_' ~ currentUser.idU) }}">
                 <input type="hidden" name="face_capture" id="profile-face-capture-input">
             </form>
+        </section>
+
+        <section class="panel-section form-stack">
+            <header class="page-header">
+                <h2 class="panel-title">Authenticator App 2FA</h2>
+                <p class="panel-copy">Use a TOTP app to require a 6-digit verification code after password, Google login, or Face ID.</p>
+            </header>
+
+            <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                <div>
+                    <p class="feature-label">Status</p>
+                    <p class="panel-copy mt-3">{{ currentUser.totp_enabled ? 'Two-factor authentication is active on this account.' : 'Two-factor authentication is not active yet.' }}</p>
+                </div>
+                <div class="button-row">
+                    <a href="{{ path('front_gestion_user_totp_setup') }}" class="btn-primary">{{ currentUser.totp_enabled ? 'Reset 2FA' : 'Enable 2FA' }}</a>
+                    {% if currentUser.totp_enabled %}
+                        <form method="post" action="{{ path('front_gestion_user_totp_disable') }}" onsubmit="return confirm('Disable two-factor authentication for this account?');">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('front_profile_totp_disable_' ~ currentUser.idU) }}">
+                            <button type="submit" class="btn-secondary">Disable 2FA</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
         </section>
 
         <section class="panel-section">

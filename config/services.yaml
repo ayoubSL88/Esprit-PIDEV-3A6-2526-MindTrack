@@ -33,5 +33,11 @@ services:
             $clientSecret: '%env(GOOGLE_CLIENT_SECRET)%'
             $redirectUri: '%env(GOOGLE_REDIRECT_URI)%'
 
+    App\Service\GitHubOAuthService:
+        arguments:
+            $clientId: '%env(GITHUB_CLIENT_ID)%'
+            $clientSecret: '%env(GITHUB_CLIENT_SECRET)%'
+            $redirectUri: '%env(GITHUB_REDIRECT_URI)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

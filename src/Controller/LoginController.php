@@ -4,10 +4,13 @@ namespace App\Controller;
 
 use App\Entity\Utilisateur;
 use App\Exception\FaceAuthenticationException;
+use App\Exception\GitHubAuthenticationException;
 use App\Exception\GoogleAuthenticationException;
 use App\Repository\UtilisateurRepository;
 use App\Service\CompreFaceService;
+use App\Service\GitHubOAuthService;
 use App\Service\GoogleOAuthService;
+use App\Service\TotpService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,10 +21,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 final class LoginController extends AbstractController
 {
+    private const TWO_FACTOR_PENDING_USER_ID = 'login_2fa_pending_user_id';
+
     #[Route('/post-login', name: 'app_post_login')]
     public function postLogin(): RedirectResponse
     {
@@ -34,8 +40,8 @@ final class LoginController extends AbstractController
             : $this->redirectToRoute('front_home');
     }
 
-    #[Route('/login', name: 'app_login')]
-    public function login(AuthenticationUtils $authenticationUtils): Response|RedirectResponse
+    #[Route('/login', name: 'app_login', methods: ['GET'])]
+    public function login(AuthenticationUtils $authenticationUtils, Request $request): Response|RedirectResponse
     {
         if ($this->getUser() !== null) {
             return $this->isGranted('ROLE_ADMIN')
@@ -44,9 +50,49 @@ final class LoginController extends AbstractController
         }
 
         return $this->render('security/login.html.twig', [
-            'last_username' => $authenticationUtils->getLastUsername(),
+            'last_username' => (string) $request->getSession()->get('last_login_email', $authenticationUtils->getLastUsername()),
             'error' => $authenticationUtils->getLastAuthenticationError(),
         ]);
+    }
+
+    #[Route('/login/password', name: 'app_login_password', methods: ['POST'])]
+    public function passwordLogin(
+        Request $request,
+        UtilisateurRepository $utilisateurRepository,
+        UserPasswordHasherInterface $passwordHasher,
+        Security $security,
+    ): RedirectResponse {
+        if ($this->getUser() !== null) {
+            return $this->redirectToRoute('app_post_login');
+        }
+
+        $csrfToken = (string) $request->request->get('_csrf_token', '');
+        if (!$this->isCsrfTokenValid('authenticate', $csrfToken)) {
+            $this->addFlash('error', 'Invalid login form token. Please try again.');
+
+            return $this->redirectToRoute('app_login');
+        }
+
+        $email = trim((string) $request->request->get('_username', ''));
+        $password = (string) $request->request->get('_password', '');
+        $request->getSession()->set('last_login_email', $email);
+
+        /** @var Utilisateur|null $user */
+        $user = $utilisateurRepository->findOneBy(['emailU' => $email]);
+        if ($user === null || !$passwordHasher->isPasswordValid($user, $password)) {
+            $this->addFlash('error', 'Invalid email or password.');
+
+            return $this->redirectToRoute('app_login');
+        }
+
+        if ($this->requiresTwoFactor($user)) {
+            return $this->startTwoFactorChallenge($request, $user);
+        }
+
+        $request->getSession()->remove('last_login_email');
+        $security->login($user, 'form_login', 'main');
+
+        return $this->redirectToRoute('app_post_login');
     }
 
     #[Route('/connect/google', name: 'app_connect_google', methods: ['GET'])]
@@ -129,6 +175,101 @@ final class LoginController extends AbstractController
         }
 
         $entityManager->flush();
+
+        if ($this->requiresTwoFactor($user)) {
+            return $this->startTwoFactorChallenge($request, $user);
+        }
+
+        $security->login($user, 'form_login', 'main');
+
+        return $this->redirectToRoute('app_post_login');
+    }
+
+    #[Route('/connect/github', name: 'app_connect_github', methods: ['GET'])]
+    public function connectGithub(Request $request, GitHubOAuthService $gitHubOAuthService): RedirectResponse
+    {
+        try {
+            $state = bin2hex(random_bytes(16));
+            $request->getSession()->set('github_oauth_state', $state);
+            $redirectUri = $this->generateUrl('app_connect_github_check', [], UrlGeneratorInterface::ABSOLUTE_URL);
+
+            return $this->redirect($gitHubOAuthService->getAuthorizationUrl($state, $redirectUri));
+        } catch (GitHubAuthenticationException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+
+            return $this->redirectToRoute('app_login');
+        }
+    }
+
+    #[Route('/connect/github/check', name: 'app_connect_github_check', methods: ['GET'])]
+    public function connectGithubCheck(
+        Request $request,
+        GitHubOAuthService $gitHubOAuthService,
+        UtilisateurRepository $utilisateurRepository,
+        EntityManagerInterface $entityManager,
+        Connection $connection,
+        Security $security,
+    ): RedirectResponse {
+        $session = $request->getSession();
+        $expectedState = (string) $session->get('github_oauth_state', '');
+        $session->remove('github_oauth_state');
+
+        $state = (string) $request->query->get('state', '');
+        $error = trim((string) $request->query->get('error', ''));
+
+        if ($error !== '') {
+            $this->addFlash('error', 'GitHub sign-in was cancelled or denied.');
+
+            return $this->redirectToRoute('app_login');
+        }
+
+        if ($expectedState === '' || !hash_equals($expectedState, $state)) {
+            $this->addFlash('error', 'GitHub sign-in could not be verified. Please try again.');
+
+            return $this->redirectToRoute('app_login');
+        }
+
+        try {
+            $redirectUri = $this->generateUrl('app_connect_github_check', [], UrlGeneratorInterface::ABSOLUTE_URL);
+            $gitHubUser = $gitHubOAuthService->fetchUser((string) $request->query->get('code', ''), $redirectUri);
+        } catch (GitHubAuthenticationException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+
+            return $this->redirectToRoute('app_login');
+        }
+
+        /** @var Utilisateur|null $user */
+        $user = $utilisateurRepository->findOneBy(['emailU' => $gitHubUser['email']]);
+
+        if ($user === null) {
+            $nextUserId = (int) $connection->fetchOne('SELECT COALESCE(MAX(id_u), 0) + 1 FROM utilisateur');
+            $user = new Utilisateur();
+            $user->setIdU($nextUserId);
+            $user->setNomU($gitHubUser['family_name'] !== '' ? $gitHubUser['family_name'] : 'GitHub');
+            $user->setPrenomU($gitHubUser['given_name'] !== '' ? $gitHubUser['given_name'] : ($gitHubUser['login'] !== '' ? $gitHubUser['login'] : 'User'));
+            $user->setEmailU($gitHubUser['email']);
+            $user->setAgeU(18);
+            $user->setRoleU('USER');
+            $user->setFace_subject('');
+            $user->setFace_image_id('');
+            $user->setFace_enabled(false);
+            $user->setProfile_picture_path($gitHubUser['picture']);
+            $user->setTotp_secret('');
+            $user->setTotp_enabled(false);
+            $user->setMdpsU(password_hash(bin2hex(random_bytes(24)), PASSWORD_DEFAULT) ?: bin2hex(random_bytes(24)));
+            $entityManager->persist($user);
+        } else {
+            if ($user->getProfile_picture_path() === '' && $gitHubUser['picture'] !== '') {
+                $user->setProfile_picture_path($gitHubUser['picture']);
+            }
+        }
+
+        $entityManager->flush();
+
+        if ($this->requiresTwoFactor($user)) {
+            return $this->startTwoFactorChallenge($request, $user);
+        }
+
         $security->login($user, 'form_login', 'main');
 
         return $this->redirectToRoute('app_post_login');
@@ -178,6 +319,16 @@ final class LoginController extends AbstractController
             return $this->json(['message' => 'The matched Face ID account is not available in MindTrack.'], Response::HTTP_UNAUTHORIZED);
         }
 
+        if ($this->requiresTwoFactor($user)) {
+            $this->storeTwoFactorPendingUser($request, $user);
+
+            return $this->json([
+                'message' => 'Face verified. Enter your authenticator code to finish signing in.',
+                'redirect' => $this->generateUrl('app_login_2fa'),
+                'requires_two_factor' => true,
+            ]);
+        }
+
         $security->login($user, 'form_login', 'main');
 
         $redirect = in_array('ROLE_ADMIN', $user->getRoles(), true)
@@ -191,9 +342,112 @@ final class LoginController extends AbstractController
         ]);
     }
 
+    #[Route('/login/2fa', name: 'app_login_2fa', methods: ['GET'])]
+    public function twoFactor(Request $request, UtilisateurRepository $utilisateurRepository, TotpService $totpService): Response|RedirectResponse
+    {
+        if ($this->getUser() !== null) {
+            return $this->redirectToRoute('app_post_login');
+        }
+
+        $pendingUser = $this->getPendingTwoFactorUser($request, $utilisateurRepository);
+        if ($pendingUser === null) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        return $this->render('security/two_factor.html.twig', [
+            'seconds_remaining' => $totpService->getSecondsRemaining(),
+        ]);
+    }
+
+    #[Route('/login/2fa/verify', name: 'app_login_2fa_verify', methods: ['POST'])]
+    public function verifyTwoFactor(
+        Request $request,
+        UtilisateurRepository $utilisateurRepository,
+        TotpService $totpService,
+        Security $security,
+    ): RedirectResponse {
+        $csrfToken = (string) $request->request->get('_csrf_token', '');
+        if (!$this->isCsrfTokenValid('login_2fa_verify', $csrfToken)) {
+            $this->addFlash('error', 'Invalid two-factor form token. Please try again.');
+
+            return $this->redirectToRoute('app_login_2fa');
+        }
+
+        $pendingUser = $this->getPendingTwoFactorUser($request, $utilisateurRepository);
+        if ($pendingUser === null) {
+            $this->addFlash('error', 'Your sign-in session expired. Please sign in again.');
+
+            return $this->redirectToRoute('app_login');
+        }
+
+        if (!$this->requiresTwoFactor($pendingUser)) {
+            $this->clearTwoFactorChallenge($request);
+            $security->login($pendingUser, 'form_login', 'main');
+
+            return $this->redirectToRoute('app_post_login');
+        }
+
+        $code = (string) $request->request->get('code', '');
+        if (!$totpService->verifyCode($pendingUser->getTotp_secret(), $code)) {
+            $this->addFlash('error', 'Invalid authenticator code.');
+
+            return $this->redirectToRoute('app_login_2fa');
+        }
+
+        $this->clearTwoFactorChallenge($request);
+        $request->getSession()->remove('last_login_email');
+        $security->login($pendingUser, 'form_login', 'main');
+
+        return $this->redirectToRoute('app_post_login');
+    }
+
+    #[Route('/login/2fa/cancel', name: 'app_login_2fa_cancel', methods: ['GET'])]
+    public function cancelTwoFactor(Request $request): RedirectResponse
+    {
+        $this->clearTwoFactorChallenge($request);
+        $this->addFlash('error', 'Two-factor sign-in was cancelled.');
+
+        return $this->redirectToRoute('app_login');
+    }
+
     #[Route('/logout', name: 'app_logout')]
     public function logout(): void
     {
         throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
+    }
+
+    private function requiresTwoFactor(Utilisateur $user): bool
+    {
+        return $user->getTotp_enabled() && trim($user->getTotp_secret()) !== '';
+    }
+
+    private function startTwoFactorChallenge(Request $request, Utilisateur $user): RedirectResponse
+    {
+        $this->storeTwoFactorPendingUser($request, $user);
+        $this->addFlash('success', 'Primary sign-in complete. Enter your authenticator code to continue.');
+
+        return $this->redirectToRoute('app_login_2fa');
+    }
+
+    private function storeTwoFactorPendingUser(Request $request, Utilisateur $user): void
+    {
+        $request->getSession()->set(self::TWO_FACTOR_PENDING_USER_ID, $user->getIdU());
+    }
+
+    private function clearTwoFactorChallenge(Request $request): void
+    {
+        $request->getSession()->remove(self::TWO_FACTOR_PENDING_USER_ID);
+    }
+
+    private function getPendingTwoFactorUser(Request $request, UtilisateurRepository $utilisateurRepository): ?Utilisateur
+    {
+        $pendingUserId = $request->getSession()->get(self::TWO_FACTOR_PENDING_USER_ID);
+        if (!is_int($pendingUserId) && !ctype_digit((string) $pendingUserId)) {
+            return null;
+        }
+
+        $user = $utilisateurRepository->find((int) $pendingUserId);
+
+        return $user instanceof Utilisateur ? $user : null;
     }
 }
