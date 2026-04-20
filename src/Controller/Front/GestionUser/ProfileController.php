@@ -12,6 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
@@ -207,6 +208,75 @@ final class ProfileController extends AbstractController
         $entityManager->flush();
 
         $this->addFlash('success', 'Two-factor authentication was disabled.');
+
+        return $this->redirectToRoute('front_gestion_user_index');
+    }
+
+    #[Route('/app/users/password', name: 'front_gestion_user_change_password', methods: ['POST'])]
+    public function changePassword(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ValidationService $inputValidation,
+        UserPasswordHasherInterface $passwordHasher,
+    ): RedirectResponse {
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof Utilisateur) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $csrfToken = (string) $request->request->get('_csrf_token', '');
+        if (!$this->isCsrfTokenValid('front_profile_password_' . $currentUser->getIdU(), $csrfToken)) {
+            $this->addFlash('error', 'Invalid password change request.');
+
+            return $this->redirectToRoute('front_gestion_user_index');
+        }
+
+        $currentPassword = (string) $request->request->get('current_password', '');
+        $newPassword = (string) $request->request->get('new_password', '');
+        $confirmPassword = (string) $request->request->get('confirm_password', '');
+
+        if ($currentPassword === '') {
+            $this->addFlash('error', 'Current password is required.');
+
+            return $this->redirectToRoute('front_gestion_user_index');
+        }
+
+        if (!$passwordHasher->isPasswordValid($currentUser, $currentPassword)) {
+            $this->addFlash('error', 'Current password is incorrect.');
+
+            return $this->redirectToRoute('front_gestion_user_index');
+        }
+
+        $passwordError = $inputValidation->validate([
+            'nom' => 'AA',
+            'prenom' => 'AA',
+            'email' => 'temp@example.com',
+            'age' => '18',
+            'password' => $newPassword,
+        ], true, false)['fieldErrors']['password'] ?? null;
+
+        if ($passwordError !== null) {
+            $this->addFlash('error', $passwordError);
+
+            return $this->redirectToRoute('front_gestion_user_index');
+        }
+
+        if ($newPassword !== $confirmPassword) {
+            $this->addFlash('error', 'New password and confirmation do not match.');
+
+            return $this->redirectToRoute('front_gestion_user_index');
+        }
+
+        if ($currentPassword === $newPassword) {
+            $this->addFlash('error', 'Choose a different password from your current one.');
+
+            return $this->redirectToRoute('front_gestion_user_index');
+        }
+
+        $currentUser->setMdpsU($passwordHasher->hashPassword($currentUser, $newPassword));
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Your password was updated successfully.');
 
         return $this->redirectToRoute('front_gestion_user_index');
     }

@@ -30,10 +30,19 @@
 
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
+                        {% include 'security/_captcha_field.html.twig' with {
+                            context: 'login',
+                            form: {},
+                            fieldErrors: {},
+                            captcha_verified: captcha_verified|default(false)
+                        } %}
+
                         <div class="button-row">
                             <button class="btn-primary" type="submit">Sign in</button>
                             <a class="btn-secondary" href="{{ path('app_register') }}">Create account</a>
                         </div>
+
+                        <a class="text-sm font-semibold text-muted underline-offset-4 hover:text-ink hover:underline" href="{{ path('app_forgot_password') }}">Forgot your password?</a>
                     </form>
 
                     <a href="{{ path('app_connect_google') }}" class="inline-flex w-full items-center justify-center rounded-3xl border border-border bg-white/90 px-6 py-4 text-sm font-semibold text-ink shadow-soft transition hover:bg-panel focus:outline-none focus:ring-2 focus:ring-brand/30">
@@ -64,6 +73,128 @@
     <script>
         (() => {
             const init = () => {
+            document.querySelectorAll('[data-captcha-widget]').forEach((widget) => {
+                const shell = widget.querySelector('[data-captcha-shell]');
+                const successMessage = widget.querySelector('[data-captcha-success-message]');
+                const refreshButton = widget.querySelector('[data-captcha-refresh]');
+                const verifyButton = widget.querySelector('[data-captcha-verify]');
+                const image = widget.querySelector('[data-captcha-image]');
+                const fields = widget.querySelector('[data-captcha-fields]');
+                const inputWrap = widget.querySelector('[data-captcha-input-wrap]');
+                const input = widget.querySelector('[data-captcha-input]');
+                const verifiedInput = widget.querySelector('[data-captcha-verified-input]');
+                const csrfField = widget.querySelector('[data-captcha-csrf]');
+
+                if (!shell || !successMessage || !refreshButton || !verifyButton || !image || !fields || !inputWrap || !input || !verifiedInput || !csrfField) {
+                    return;
+                }
+
+                const setSuccessState = (message) => {
+                    shell.classList.add('hidden');
+                    successMessage.classList.remove('hidden');
+                    successMessage.textContent = message;
+                    verifiedInput.value = '1';
+                };
+
+                const setDefaultState = (message) => {
+                    shell.classList.remove('hidden');
+                    successMessage.classList.add('hidden');
+                    successMessage.textContent = message;
+                    verifiedInput.value = '0';
+                };
+
+                if (widget.getAttribute('data-captcha-verified') === '1') {
+                    setSuccessState('CAPTCHA valid.');
+                } else {
+                    setDefaultState('Verify the code below before submitting the form.');
+                }
+
+                refreshButton.addEventListener('click', async () => {
+                    const refreshUrl = refreshButton.getAttribute('data-captcha-refresh-url');
+                    const imageUrl = refreshButton.getAttribute('data-captcha-image-url');
+                    const targetId = refreshButton.getAttribute('data-captcha-target');
+                    const targetImage = targetId ? document.getElementById(targetId) : image;
+
+                    if (!refreshUrl || !imageUrl || !targetImage) {
+                        return;
+                    }
+
+                    refreshButton.disabled = true;
+
+                    try {
+                        const response = await fetch(refreshUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Refresh failed.');
+                        }
+
+                        const data = await response.json();
+                        targetImage.src = data.imageUrl;
+                        input.value = '';
+                        setDefaultState('Verify the code below before submitting the form.');
+                    } catch (_) {
+                        targetImage.src = `${imageUrl}?v=${Date.now()}`;
+                    } finally {
+                        refreshButton.disabled = false;
+                    }
+                });
+
+                verifyButton.addEventListener('click', async () => {
+                    const verifyUrl = verifyButton.getAttribute('data-captcha-verify-url');
+                    const value = input.value.trim();
+
+                    if (!verifyUrl) {
+                        return;
+                    }
+
+                    if (value === '') {
+                        setDefaultState('Enter the CAPTCHA code first.');
+                        return;
+                    }
+
+                    verifyButton.disabled = true;
+                    refreshButton.disabled = true;
+
+                    try {
+                        const response = await fetch(verifyUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                            },
+                            body: new URLSearchParams({
+                                captcha: value,
+                                _csrf_token: csrfField.value
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok || !data.valid) {
+                            if (data.imageUrl) {
+                                image.src = data.imageUrl;
+                            }
+
+                            input.value = '';
+                            setDefaultState(data.message || 'Invalid CAPTCHA. Please try again.');
+                            return;
+                        }
+
+                        setSuccessState(data.message || 'CAPTCHA valid.');
+                    } catch (error) {
+                        setDefaultState(error instanceof Error ? error.message : 'CAPTCHA verification failed.');
+                    } finally {
+                        verifyButton.disabled = false;
+                        refreshButton.disabled = false;
+                    }
+                });
+            });
+
             const video = document.getElementById('login-face-video');
             const previewShell = document.getElementById('login-face-preview-shell');
             const actionButton = document.getElementById('login-face-action');

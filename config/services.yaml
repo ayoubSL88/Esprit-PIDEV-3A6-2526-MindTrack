@@ -39,5 +39,17 @@ services:
             $clientSecret: '%env(GITHUB_CLIENT_SECRET)%'
             $redirectUri: '%env(GITHUB_REDIRECT_URI)%'
 
+    App\Service\PasswordResetDeliveryService:
+        arguments:
+            $mode: '%env(PASSWORD_RESET_DELIVERY_MODE)%'
+            $fromEmail: '%env(PASSWORD_RESET_FROM_EMAIL)%'
+            $fromName: '%env(PASSWORD_RESET_FROM_NAME)%'
+            $logFile: '%kernel.project_dir%/var/log/password-reset.log'
+            $smtpHost: '%env(PASSWORD_RESET_SMTP_HOST)%'
+            $smtpPort: '%env(PASSWORD_RESET_SMTP_PORT)%'
+            $smtpEncryption: '%env(PASSWORD_RESET_SMTP_ENCRYPTION)%'
+            $smtpUsername: '%env(PASSWORD_RESET_SMTP_USERNAME)%'
+            $smtpPassword: '%env(PASSWORD_RESET_SMTP_PASSWORD)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

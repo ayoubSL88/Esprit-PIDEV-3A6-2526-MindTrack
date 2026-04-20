@@ -175,6 +175,39 @@
             </div>
         </section>
 
+        <section class="panel-section form-stack">
+            <header class="page-header">
+                <h2 class="panel-title">Change Password</h2>
+                <p class="panel-copy">Use your current password to confirm the change, then set a new one that meets the account password rules.</p>
+            </header>
+
+            <form method="post" action="{{ path('front_gestion_user_change_password') }}" class="form-stack" novalidate>
+                <div class="form-grid">
+                    <div class="field">
+                        <label class="field-label" for="current_password">Current password</label>
+                        <input class="field-input" id="current_password" name="current_password" type="password" autocomplete="current-password" required>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="new_password">New password</label>
+                        <input class="field-input" id="new_password" name="new_password" type="password" autocomplete="new-password" required>
+                    </div>
+                </div>
+
+                <div class="field max-w-3xl">
+                    <label class="field-label" for="confirm_password">Confirm new password</label>
+                    <input class="field-input" id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required>
+                    <p class="text-sm text-muted">Minimum 7 characters with uppercase, lowercase, and a number.</p>
+                </div>
+
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('front_profile_password_' ~ currentUser.idU) }}">
+
+                <div class="button-row">
+                    <button type="submit" class="btn-primary">Update password</button>
+                </div>
+            </form>
+        </section>
+
         <section class="panel-section">
             <p class="feature-label">Danger Zone</p>
             <h2 class="panel-title mt-4">Delete Account</h2>

@@ -7,6 +7,7 @@ use App\Exception\FaceAuthenticationException;
 use App\Exception\GitHubAuthenticationException;
 use App\Exception\GoogleAuthenticationException;
 use App\Repository\UtilisateurRepository;
+use App\Service\CaptchaService;
 use App\Service\CompreFaceService;
 use App\Service\GitHubOAuthService;
 use App\Service\GoogleOAuthService;
@@ -41,7 +42,7 @@ final class LoginController extends AbstractController
     }
 
     #[Route('/login', name: 'app_login', methods: ['GET'])]
-    public function login(AuthenticationUtils $authenticationUtils, Request $request): Response|RedirectResponse
+    public function login(AuthenticationUtils $authenticationUtils, Request $request, CaptchaService $captchaService): Response|RedirectResponse
     {
         if ($this->getUser() !== null) {
             return $this->isGranted('ROLE_ADMIN')
@@ -49,9 +50,12 @@ final class LoginController extends AbstractController
                 : $this->redirectToRoute('front_home');
         }
 
+        $session = $request->getSession();
+
         return $this->render('security/login.html.twig', [
-            'last_username' => (string) $request->getSession()->get('last_login_email', $authenticationUtils->getLastUsername()),
+            'last_username' => (string) $session->get('last_login_email', $authenticationUtils->getLastUsername()),
             'error' => $authenticationUtils->getLastAuthenticationError(),
+            'captcha_verified' => $captchaService->isVerified($session, 'login'),
         ]);
     }
 
@@ -61,11 +65,13 @@ final class LoginController extends AbstractController
         UtilisateurRepository $utilisateurRepository,
         UserPasswordHasherInterface $passwordHasher,
         Security $security,
+        CaptchaService $captchaService,
     ): RedirectResponse {
         if ($this->getUser() !== null) {
             return $this->redirectToRoute('app_post_login');
         }
 
+        $session = $request->getSession();
         $csrfToken = (string) $request->request->get('_csrf_token', '');
         if (!$this->isCsrfTokenValid('authenticate', $csrfToken)) {
             $this->addFlash('error', 'Invalid login form token. Please try again.');
@@ -73,9 +79,15 @@ final class LoginController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
+        if (!$captchaService->isVerified($session, 'login')) {
+            $this->addFlash('error', 'Please verify the CAPTCHA first.');
+
+            return $this->redirectToRoute('app_login');
+        }
+
         $email = trim((string) $request->request->get('_username', ''));
         $password = (string) $request->request->get('_password', '');
-        $request->getSession()->set('last_login_email', $email);
+        $session->set('last_login_email', $email);
 
         /** @var Utilisateur|null $user */
         $user = $utilisateurRepository->findOneBy(['emailU' => $email]);
@@ -89,7 +101,8 @@ final class LoginController extends AbstractController
             return $this->startTwoFactorChallenge($request, $user);
         }
 
-        $request->getSession()->remove('last_login_email');
+        $session->remove('last_login_email');
+        $captchaService->clearVerified($session, 'login');
         $security->login($user, 'form_login', 'main');
 
         return $this->redirectToRoute('app_post_login');
