@@ -37,7 +37,7 @@ final class LoginController extends AbstractController
         }
 
         return $this->isGranted('ROLE_ADMIN')
-            ? $this->redirectToRoute('admin_dashboard')
+            ? $this->redirectToRoute('admin_panel')
             : $this->redirectToRoute('front_home');
     }
 
@@ -46,7 +46,7 @@ final class LoginController extends AbstractController
     {
         if ($this->getUser() !== null) {
             return $this->isGranted('ROLE_ADMIN')
-                ? $this->redirectToRoute('admin_dashboard')
+                ? $this->redirectToRoute('admin_panel')
                 : $this->redirectToRoute('front_home');
         }
 
@@ -345,7 +345,7 @@ final class LoginController extends AbstractController
         $security->login($user, 'form_login', 'main');
 
         $redirect = in_array('ROLE_ADMIN', $user->getRoles(), true)
-            ? $this->generateUrl('admin_dashboard')
+            ? $this->generateUrl('admin_panel')
             : $this->generateUrl('front_home');
 
         return $this->json([

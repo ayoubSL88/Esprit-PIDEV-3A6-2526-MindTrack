@@ -3,10 +3,13 @@
 {% block page_title %}My Profile{% endblock %}
 
 {% block content %}
+    {% set avatarPath = currentUser.profile_picture_path ? asset(currentUser.profile_picture_path) : null %}
+    {% set initials = (currentUser.prenomU|default('')|slice(0, 1) ~ currentUser.nomU|default('')|slice(0, 1))|upper %}
+
     <div class="page-stack">
         <header class="page-header">
             <h1 class="page-title">My Profile</h1>
-            <p class="page-copy">Review your account information by section. Use Edit profile to unlock the form.</p>
+            <p class="page-copy">Strengthen your profile, improve your trust score, and keep your account easy to recognize and secure.</p>
         </header>
 
         <div class="flash-stack">
@@ -19,10 +22,75 @@
             {% endfor %}
         </div>
 
+        <section class="hero-grid">
+            <article class="hero-card">
+                <div class="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-center">
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="relative h-40 w-40 overflow-hidden rounded-[2rem] border border-border bg-white shadow-soft">
+                            {% if avatarPath %}
+                                <img src="{{ avatarPath }}" alt="Profile picture for {{ currentUser.prenomU }} {{ currentUser.nomU }}" class="h-full w-full object-cover">
+                            {% else %}
+                                <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-soft via-accent-soft to-white text-4xl font-semibold text-ink">
+                                    {{ initials ?: 'MT' }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <p class="text-xs uppercase tracking-[0.18em] text-muted">{{ currentUser.roleU }}</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <p class="hero-kicker">Account overview</p>
+                            <h2 class="hero-title text-ink sm:text-4xl">{{ currentUser.prenomU }} {{ currentUser.nomU }}</h2>
+                            <p class="hero-copy">{{ currentUser.emailU }}</p>
+                        </div>
+
+                        <div class="metric-grid">
+                            <div class="metric-card">
+                                <p class="metric-value">{{ integrity.score }}/100</p>
+                                <p class="metric-label">Trust score</p>
+                            </div>
+                            <div class="metric-card">
+                                <p class="metric-value">{{ integrity.profile_completeness.completed_fields }}/{{ integrity.profile_completeness.total_fields }}</p>
+                                <p class="metric-label">Profile signals</p>
+                            </div>
+                            <div class="metric-card">
+                                <p class="metric-value">{{ currentUser.totp_enabled or currentUser.face_enabled ? 'Protected' : 'Basic' }}</p>
+                                <p class="metric-label">Security state</p>
+                            </div>
+                        </div>
+
+                        <div class="button-row">
+                            <button type="button" class="btn-primary" id="edit-profile-button">Edit profile</button>
+                            <a href="{{ path('app_logout') }}" class="btn-secondary">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel-section">
+                <p class="feature-label">Identity depth</p>
+                <h2 class="panel-title mt-4">{{ integrity.band|capitalize }} trust</h2>
+                <p class="panel-copy mt-3">The score improves when your profile is more complete, your email has stronger trust signals, and your login methods are harder to compromise.</p>
+
+                <div class="mt-5 h-3 overflow-hidden rounded-full bg-white/70">
+                    <div class="h-full rounded-full bg-gradient-to-r from-brand to-emphasis" style="width: {{ integrity.score }}%"></div>
+                </div>
+
+                {% if integrity.profile_completeness.missing_fields is not empty %}
+                    <div class="mt-5 grid gap-3">
+                        {% for missing in integrity.profile_completeness.missing_fields|slice(0, 4) %}
+                            <div class="rounded-2xl border border-border bg-white/85 px-4 py-3 text-sm text-muted">{{ missing }} missing</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </article>
+        </section>
+
         <section class="panel-section form-stack">
             <header class="page-header">
                 <h2 class="panel-title">Trust Score</h2>
-                <p class="panel-copy">Your score tracks profile completeness, verified email signal, 2FA coverage, and recent security hygiene (last {{ integrity.window_days }} days).</p>
+                <p class="panel-copy">Your score now combines profile depth, verified email signal, 2FA coverage, and recent account hygiene over the last {{ integrity.window_days }} days.</p>
             </header>
 
             <div class="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
@@ -33,6 +101,7 @@
                     <div class="mt-4 h-2 overflow-hidden rounded-full bg-white/70">
                         <div class="h-full rounded-full bg-gradient-to-r from-brand to-emphasis" style="width: {{ integrity.score }}%"></div>
                     </div>
+                    <p class="mt-4 text-sm text-muted">{{ integrity.profile_completeness.completed_fields }} of {{ integrity.profile_completeness.total_fields }} profile trust signals completed.</p>
                 </article>
 
                 <article class="rounded-3xl border border-border bg-white/90 p-5 shadow-soft">
@@ -117,52 +186,29 @@
             </div>
         </section>
 
-        <section class="hero-grid">
-            <article class="panel-section">
-                <p class="feature-label">Account Overview</p>
-                <h2 class="panel-title mt-4">{{ currentUser.prenomU }} {{ currentUser.nomU }}</h2>
-                <p class="panel-copy">{{ currentUser.emailU }}</p>
-
-                <div class="button-row mt-6">
-                    <button type="button" class="btn-primary" id="edit-profile-button">Edit profile</button>
-                    <a href="{{ path('app_logout') }}" class="btn-secondary">Logout</a>
-                </div>
-            </article>
-
-            <article class="panel-section">
-                <p class="feature-label">Access</p>
-                <h2 class="panel-title mt-4">Session Summary</h2>
-                <ul class="feature-list">
-                    <li>Role: {{ currentUser.roleU }}</li>
-                    <li>Status: Active session</li>
-                    <li>Email: {{ currentUser.emailU }}</li>
-                </ul>
-            </article>
-        </section>
-
         <section class="feature-grid">
             <article class="feature-card">
-                <p class="feature-label">Identity</p>
-                <h3 class="feature-title">First Name</h3>
-                <p class="feature-copy">{{ currentUser.prenomU }}</p>
-            </article>
-
-            <article class="feature-card">
-                <p class="feature-label">Identity</p>
-                <h3 class="feature-title">Last Name</h3>
-                <p class="feature-copy">{{ currentUser.nomU }}</p>
-            </article>
-
-            <article class="feature-card">
                 <p class="feature-label">Contact</p>
-                <h3 class="feature-title">Email</h3>
-                <p class="feature-copy">{{ currentUser.emailU }}</p>
+                <h3 class="feature-title">Phone</h3>
+                <p class="feature-copy">{{ currentUser.phoneNumber ?: 'Add a phone number for stronger profile trust.' }}</p>
+            </article>
+
+            <article class="feature-card">
+                <p class="feature-label">Location</p>
+                <h3 class="feature-title">City and Country</h3>
+                <p class="feature-copy">{{ currentUser.city ?: 'City missing' }}{% if currentUser.country %}, {{ currentUser.country }}{% endif %}</p>
             </article>
 
             <article class="feature-card">
                 <p class="feature-label">Profile</p>
-                <h3 class="feature-title">Age</h3>
-                <p class="feature-copy">{{ currentUser.ageU }}</p>
+                <h3 class="feature-title">Timezone</h3>
+                <p class="feature-copy">{{ currentUser.timezone ?: 'Choose your timezone to make the profile feel complete.' }}</p>
+            </article>
+
+            <article class="feature-card">
+                <p class="feature-label">Profile</p>
+                <h3 class="feature-title">Occupation</h3>
+                <p class="feature-copy">{{ currentUser.occupation ?: 'Tell people what you do or what stage you are in.' }}</p>
             </article>
 
             <article class="feature-card">
@@ -178,43 +224,123 @@
             </article>
         </section>
 
-        <form method="post" id="profile-edit-form" class="panel-section form-stack {{ openEdit ? '' : 'hidden' }}" novalidate>
+        <form method="post" enctype="multipart/form-data" id="profile-edit-form" class="panel-section form-stack {{ openEdit ? '' : 'hidden' }}" novalidate>
             <header class="page-header">
                 <h2 class="panel-title">Edit Profile</h2>
-                <p class="panel-copy">Update your details, then save.</p>
+                <p class="panel-copy">Update your profile depth, upload a photo, and give the trust score more signals to work with.</p>
             </header>
 
-            <div class="form-grid">
-                <div class="field">
-                    <label class="field-label" for="prenom">First name</label>
-                    <input class="field-input {{ formSubmitted and fieldErrors.prenom is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="prenom" name="prenom" type="text" value="{{ form.prenom|default(currentUser.prenomU) }}">
-                    {% if fieldErrors.prenom is defined %}
-                        <p class="field-error">{{ fieldErrors.prenom }}</p>
-                    {% endif %}
+            <div class="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+                <div class="space-y-4">
+                    <div class="relative h-40 w-40 overflow-hidden rounded-[2rem] border border-border bg-white shadow-soft">
+                        {% if avatarPath %}
+                            <img src="{{ avatarPath }}" alt="Current profile picture" class="h-full w-full object-cover" id="profile-picture-preview">
+                        {% else %}
+                            <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-soft via-accent-soft to-white text-4xl font-semibold text-ink" id="profile-picture-fallback">
+                                {{ initials ?: 'MT' }}
+                            </div>
+                            <img src="" alt="Selected profile picture preview" class="hidden h-full w-full object-cover" id="profile-picture-preview">
+                        {% endif %}
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="profile_picture">Profile picture</label>
+                        <input class="field-input" id="profile_picture" name="profile_picture" type="file" accept="image/png,image/jpeg,image/webp">
+                        <p class="text-sm text-muted">JPG, PNG, or WEBP up to 4 MB.</p>
+                        {% if fieldErrors.profile_picture is defined %}
+                            <p class="field-error">{{ fieldErrors.profile_picture }}</p>
+                        {% endif %}
+                    </div>
                 </div>
 
-                <div class="field">
-                    <label class="field-label" for="nom">Last name</label>
-                    <input class="field-input {{ formSubmitted and fieldErrors.nom is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="nom" name="nom" type="text" value="{{ form.nom|default(currentUser.nomU) }}">
-                    {% if fieldErrors.nom is defined %}
-                        <p class="field-error">{{ fieldErrors.nom }}</p>
-                    {% endif %}
-                </div>
+                <div class="form-stack">
+                    <div class="form-grid">
+                        <div class="field">
+                            <label class="field-label" for="prenom">First name</label>
+                            <input class="field-input {{ formSubmitted and fieldErrors.prenom is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="prenom" name="prenom" type="text" value="{{ form.prenom|default(currentUser.prenomU) }}">
+                            {% if fieldErrors.prenom is defined %}
+                                <p class="field-error">{{ fieldErrors.prenom }}</p>
+                            {% endif %}
+                        </div>
 
-                <div class="field">
-                    <label class="field-label" for="email">Email</label>
-                    <input class="field-input {{ formSubmitted and fieldErrors.email is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="email" name="email" type="text" inputmode="email" value="{{ form.email|default(currentUser.emailU) }}">
-                    {% if fieldErrors.email is defined %}
-                        <p class="field-error">{{ fieldErrors.email }}</p>
-                    {% endif %}
-                </div>
+                        <div class="field">
+                            <label class="field-label" for="nom">Last name</label>
+                            <input class="field-input {{ formSubmitted and fieldErrors.nom is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="nom" name="nom" type="text" value="{{ form.nom|default(currentUser.nomU) }}">
+                            {% if fieldErrors.nom is defined %}
+                                <p class="field-error">{{ fieldErrors.nom }}</p>
+                            {% endif %}
+                        </div>
 
-                <div class="field">
-                    <label class="field-label" for="age">Age</label>
-                    <input class="field-input {{ formSubmitted and fieldErrors.age is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="age" name="age" type="text" inputmode="numeric" value="{{ form.age|default(currentUser.ageU) }}">
-                    {% if fieldErrors.age is defined %}
-                        <p class="field-error">{{ fieldErrors.age }}</p>
-                    {% endif %}
+                        <div class="field">
+                            <label class="field-label" for="email">Email</label>
+                            <input class="field-input {{ formSubmitted and fieldErrors.email is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="email" name="email" type="text" inputmode="email" value="{{ form.email|default(currentUser.emailU) }}">
+                            {% if fieldErrors.email is defined %}
+                                <p class="field-error">{{ fieldErrors.email }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label" for="age">Age</label>
+                            <input class="field-input {{ formSubmitted and fieldErrors.age is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="age" name="age" type="text" inputmode="numeric" value="{{ form.age|default(currentUser.ageU) }}">
+                            {% if fieldErrors.age is defined %}
+                                <p class="field-error">{{ fieldErrors.age }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label" for="phone_number">Phone number</label>
+                            <input class="field-input {{ formSubmitted and fieldErrors.phone_number is defined ? 'field-input-invalid' : '' }}" id="phone_number" name="phone_number" type="text" value="{{ form.phone_number|default(currentUser.phoneNumber) }}">
+                            {% if fieldErrors.phone_number is defined %}
+                                <p class="field-error">{{ fieldErrors.phone_number }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label" for="occupation">Occupation</label>
+                            <input class="field-input {{ formSubmitted and fieldErrors.occupation is defined ? 'field-input-invalid' : '' }}" id="occupation" name="occupation" type="text" value="{{ form.occupation|default(currentUser.occupation) }}">
+                            {% if fieldErrors.occupation is defined %}
+                                <p class="field-error">{{ fieldErrors.occupation }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label" for="city">City</label>
+                            <input class="field-input {{ formSubmitted and fieldErrors.city is defined ? 'field-input-invalid' : '' }}" id="city" name="city" type="text" value="{{ form.city|default(currentUser.city) }}">
+                            {% if fieldErrors.city is defined %}
+                                <p class="field-error">{{ fieldErrors.city }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label" for="country">Country</label>
+                            <input class="field-input {{ formSubmitted and fieldErrors.country is defined ? 'field-input-invalid' : '' }}" id="country" name="country" type="text" value="{{ form.country|default(currentUser.country) }}">
+                            {% if fieldErrors.country is defined %}
+                                <p class="field-error">{{ fieldErrors.country }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="timezone">Timezone</label>
+                        <select class="field-select {{ formSubmitted and fieldErrors.timezone is defined ? 'field-input-invalid' : '' }}" id="timezone" name="timezone">
+                            <option value="">Select a timezone</option>
+                            {% for timezone in timezones %}
+                                <option value="{{ timezone }}" {{ (form.timezone|default(currentUser.timezone)) == timezone ? 'selected' : '' }}>{{ timezone }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if fieldErrors.timezone is defined %}
+                            <p class="field-error">{{ fieldErrors.timezone }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="biography">Short biography</label>
+                        <textarea class="field-input {{ formSubmitted and fieldErrors.biography is defined ? 'field-input-invalid' : '' }}" id="biography" name="biography" rows="5">{{ form.biography|default(currentUser.biography) }}</textarea>
+                        <p class="text-sm text-muted">A few sentences about your goals, role, or focus area can improve trust and context.</p>
+                        {% if fieldErrors.biography is defined %}
+                            <p class="field-error">{{ fieldErrors.biography }}</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 
@@ -332,6 +458,9 @@
             const focusFaceIdButton = document.getElementById('focus-face-id-action');
             const focusEditProfileButton = document.getElementById('focus-edit-profile-action');
             const focusPasswordButton = document.getElementById('focus-password-action');
+            const pictureInput = document.getElementById('profile_picture');
+            const picturePreview = document.getElementById('profile-picture-preview');
+            const pictureFallback = document.getElementById('profile-picture-fallback');
 
             if (!editButton || !cancelButton || !editForm || !faceActionButton || !faceStatus || !facePreviewShell || !faceVideo || !faceCaptureInput || !faceForm) {
                 return;
@@ -374,6 +503,22 @@
             cancelButton.addEventListener('click', function () {
                 editForm.classList.add('hidden');
             });
+
+            if (pictureInput && picturePreview) {
+                pictureInput.addEventListener('change', function () {
+                    const file = pictureInput.files && pictureInput.files[0];
+                    if (!file) {
+                        return;
+                    }
+
+                    const objectUrl = URL.createObjectURL(file);
+                    picturePreview.src = objectUrl;
+                    picturePreview.classList.remove('hidden');
+                    if (pictureFallback) {
+                        pictureFallback.classList.add('hidden');
+                    }
+                });
+            }
 
             if (focusFaceIdButton) {
                 focusFaceIdButton.addEventListener('click', function () {

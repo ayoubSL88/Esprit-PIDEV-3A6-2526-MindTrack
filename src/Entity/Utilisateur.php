@@ -55,6 +55,24 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean')]
     private bool $totp_enabled;
 
+    #[ORM\Column(type: 'string', length: 30, nullable: true)]
+    private ?string $phone_number = null;
+
+    #[ORM\Column(type: 'string', length: 120, nullable: true)]
+    private ?string $city = null;
+
+    #[ORM\Column(type: 'string', length: 120, nullable: true)]
+    private ?string $country = null;
+
+    #[ORM\Column(type: 'string', length: 80, nullable: true)]
+    private ?string $timezone = null;
+
+    #[ORM\Column(type: 'string', length: 160, nullable: true)]
+    private ?string $occupation = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $biography = null;
+
     #[ORM\OneToMany(mappedBy: 'idU', targetEntity: Habitude::class)]
     private Collection $habitudes;
 
@@ -261,6 +279,89 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setTotp_enabled(bool $value): void
     {
         $this->setTotpEnabled($value);
+    }
+
+    public function getPhoneNumber(): ?string
+    {
+        return $this->phone_number;
+    }
+
+    public function getPhone_number(): ?string
+    {
+        return $this->getPhoneNumber();
+    }
+
+    public function setPhoneNumber(?string $value): self
+    {
+        $this->phone_number = $value !== null ? trim($value) : null;
+
+        return $this;
+    }
+
+    public function setPhone_number(?string $value): self
+    {
+        return $this->setPhoneNumber($value);
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(?string $value): self
+    {
+        $this->city = $value !== null ? trim($value) : null;
+
+        return $this;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(?string $value): self
+    {
+        $this->country = $value !== null ? trim($value) : null;
+
+        return $this;
+    }
+
+    public function getTimezone(): ?string
+    {
+        return $this->timezone;
+    }
+
+    public function setTimezone(?string $value): self
+    {
+        $this->timezone = $value !== null ? trim($value) : null;
+
+        return $this;
+    }
+
+    public function getOccupation(): ?string
+    {
+        return $this->occupation;
+    }
+
+    public function setOccupation(?string $value): self
+    {
+        $this->occupation = $value !== null ? trim($value) : null;
+
+        return $this;
+    }
+
+    public function getBiography(): ?string
+    {
+        return $this->biography;
+    }
+
+    public function setBiography(?string $value): self
+    {
+        $trimmed = $value !== null ? trim($value) : null;
+        $this->biography = $trimmed !== '' ? $trimmed : null;
+
+        return $this;
     }
 
     public function getUserIdentifier(): string

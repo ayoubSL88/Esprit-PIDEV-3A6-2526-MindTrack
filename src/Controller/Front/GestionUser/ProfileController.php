@@ -13,9 +13,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 final class ProfileController extends AbstractController
 {
@@ -25,6 +27,7 @@ final class ProfileController extends AbstractController
         EntityManagerInterface $entityManager,
         ValidationService $inputValidation,
         ProfileIntegrityService $profileIntegrityService,
+        SluggerInterface $slugger,
     ): Response|RedirectResponse
     {
         $currentUser = $this->getUser();
@@ -37,6 +40,12 @@ final class ProfileController extends AbstractController
             'prenom' => $currentUser->getPrenomU(),
             'email' => $currentUser->getEmailU(),
             'age' => (string) $currentUser->getAgeU(),
+            'phone_number' => $currentUser->getPhoneNumber() ?? '',
+            'city' => $currentUser->getCity() ?? '',
+            'country' => $currentUser->getCountry() ?? '',
+            'timezone' => $currentUser->getTimezone() ?? '',
+            'occupation' => $currentUser->getOccupation() ?? '',
+            'biography' => $currentUser->getBiography() ?? '',
         ];
         $fieldErrors = [];
         $formSubmitted = false;
@@ -56,14 +65,34 @@ final class ProfileController extends AbstractController
                 'email' => $request->request->get('email', ''),
                 'age' => $request->request->get('age', ''),
             ], false, false);
+            $detailValidation = $inputValidation->validateProfileDetails([
+                'phone_number' => $request->request->get('phone_number', ''),
+                'city' => $request->request->get('city', ''),
+                'country' => $request->request->get('country', ''),
+                'timezone' => $request->request->get('timezone', ''),
+                'occupation' => $request->request->get('occupation', ''),
+                'biography' => $request->request->get('biography', ''),
+            ]);
 
             $formData['nom'] = (string) $validated['data']['nom'];
             $formData['prenom'] = (string) $validated['data']['prenom'];
             $formData['email'] = (string) $validated['data']['email'];
             $formData['age'] = (string) (($validated['data']['age'] ?? '') ?: '');
+            $formData['phone_number'] = (string) ($detailValidation['data']['phone_number'] ?? '');
+            $formData['city'] = (string) ($detailValidation['data']['city'] ?? '');
+            $formData['country'] = (string) ($detailValidation['data']['country'] ?? '');
+            $formData['timezone'] = (string) ($detailValidation['data']['timezone'] ?? '');
+            $formData['occupation'] = (string) ($detailValidation['data']['occupation'] ?? '');
+            $formData['biography'] = (string) ($detailValidation['data']['biography'] ?? '');
 
-            if ($validated['errors'] !== []) {
-                $fieldErrors = $validated['fieldErrors'];
+            $uploadedAvatar = $request->files->get('profile_picture');
+            $avatarError = $this->validateProfilePicture($uploadedAvatar);
+            if ($avatarError !== null) {
+                $fieldErrors['profile_picture'] = $avatarError;
+            }
+
+            if ($validated['errors'] !== [] || $detailValidation['errors'] !== [] || $fieldErrors !== []) {
+                $fieldErrors = array_merge($validated['fieldErrors'], $detailValidation['fieldErrors'], $fieldErrors);
                 $openEdit = true;
             } else {
                 $email = (string) $validated['data']['email'];
@@ -78,6 +107,19 @@ final class ProfileController extends AbstractController
                     $currentUser->setPrenomU((string) $validated['data']['prenom']);
                     $currentUser->setEmailU($email);
                     $currentUser->setAgeU($age);
+                    $currentUser->setPhoneNumber($detailValidation['data']['phone_number']);
+                    $currentUser->setCity($detailValidation['data']['city']);
+                    $currentUser->setCountry($detailValidation['data']['country']);
+                    $currentUser->setTimezone($detailValidation['data']['timezone']);
+                    $currentUser->setOccupation($detailValidation['data']['occupation']);
+                    $currentUser->setBiography($detailValidation['data']['biography']);
+
+                    if ($uploadedAvatar instanceof UploadedFile) {
+                        $currentUser->setProfile_picture_path(
+                            $this->storeProfilePicture($uploadedAvatar, $currentUser, $slugger)
+                        );
+                    }
+
                     $entityManager->flush();
 
                     $this->addFlash('success', 'Your profile was updated successfully.');
@@ -93,6 +135,7 @@ final class ProfileController extends AbstractController
             'formSubmitted' => $formSubmitted,
             'openEdit' => $openEdit,
             'integrity' => $profileIntegrityService->buildForUser($currentUser),
+            'timezones' => \DateTimeZone::listIdentifiers(),
         ]);
     }
 
@@ -311,5 +354,51 @@ final class ProfileController extends AbstractController
         }
 
         return $this->redirectToRoute('app_login');
+    }
+
+    private function validateProfilePicture(mixed $uploadedAvatar): ?string
+    {
+        if (!$uploadedAvatar instanceof UploadedFile) {
+            return null;
+        }
+
+        if (!$uploadedAvatar->isValid()) {
+            return 'The uploaded profile picture is invalid.';
+        }
+
+        if ($uploadedAvatar->getSize() !== null && $uploadedAvatar->getSize() > 4 * 1024 * 1024) {
+            return 'Profile picture must stay under 4 MB.';
+        }
+
+        $mimeType = $uploadedAvatar->getMimeType();
+        if (!in_array($mimeType, ['image/jpeg', 'image/png', 'image/webp'], true)) {
+            return 'Profile picture must be a JPG, PNG, or WEBP image.';
+        }
+
+        return null;
+    }
+
+    private function storeProfilePicture(UploadedFile $uploadedAvatar, Utilisateur $user, SluggerInterface $slugger): string
+    {
+        $uploadDir = (string) $this->getParameter('app.profile_pictures_dir');
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0775, true);
+        }
+
+        $safeName = $slugger->slug((string) ($user->getPrenomU() . '-' . $user->getNomU()))->lower();
+        $extension = $uploadedAvatar->guessExtension() ?: 'bin';
+        $fileName = sprintf('%s-%d-%s.%s', $safeName, $user->getIdU(), bin2hex(random_bytes(4)), $extension);
+        $oldPath = trim((string) $user->getProfile_picture_path());
+
+        $uploadedAvatar->move($uploadDir, $fileName);
+
+        if ($oldPath !== '' && str_starts_with($oldPath, 'uploads/profile-pictures/')) {
+            $oldFile = $uploadDir . DIRECTORY_SEPARATOR . basename($oldPath);
+            if (is_file($oldFile)) {
+                @unlink($oldFile);
+            }
+        }
+
+        return 'uploads/profile-pictures/' . $fileName;
     }
 }

@@ -19,7 +19,7 @@ final class ProfileIntegrityService
      *   band:string,
      *   window_days:int,
      *   calculated_at:string,
-     *   profile_completeness:array{points:int,max:int,percent:int},
+     *   profile_completeness:array{points:int,max:int,percent:int,completed_fields:int,total_fields:int,missing_fields:list<string>},
      *   verified_email:array{points:int,max:int,verified:bool,note:string},
      *   two_factor:array{points:int,max:int,enabled:bool},
      *   security_hygiene:array{points:int,max:int,face_enabled:bool,suspicious_events:int,risk_level:string},
@@ -91,38 +91,36 @@ final class ProfileIntegrityService
     }
 
     /**
-     * @return array{points:int,max:int,percent:int}
+     * @return array{points:int,max:int,percent:int,completed_fields:int,total_fields:int,missing_fields:list<string>}
      */
     private function computeProfileCompleteness(Utilisateur $user): array
     {
-        $points = 0;
+        $signals = [
+            'First name' => trim((string) $user->getPrenomU()) !== '',
+            'Last name' => trim((string) $user->getNomU()) !== '',
+            'Valid email' => (($email = trim((string) $user->getEmailU())) !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) !== false),
+            'Age' => (($age = (int) $user->getAgeU()) >= 13 && $age <= 120),
+            'Profile picture' => trim((string) $user->getProfile_picture_path()) !== '',
+            'Phone number' => trim((string) $user->getPhoneNumber()) !== '',
+            'City' => trim((string) $user->getCity()) !== '',
+            'Country' => trim((string) $user->getCountry()) !== '',
+            'Timezone' => trim((string) $user->getTimezone()) !== '',
+            'Occupation' => trim((string) $user->getOccupation()) !== '',
+            'Biography' => trim((string) $user->getBiography()) !== '',
+        ];
 
-        if (trim((string) $user->getPrenomU()) !== '') {
-            $points += 8;
-        }
-
-        if (trim((string) $user->getNomU()) !== '') {
-            $points += 8;
-        }
-
-        $email = trim((string) $user->getEmailU());
-        if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) !== false) {
-            $points += 8;
-        }
-
-        $age = (int) $user->getAgeU();
-        if ($age >= 13 && $age <= 120) {
-            $points += 8;
-        }
-
-        if (trim((string) $user->getProfile_picture_path()) !== '') {
-            $points += 8;
-        }
+        $totalFields = count($signals);
+        $completedFields = count(array_filter($signals));
+        $points = (int) round(($completedFields / $totalFields) * 40);
+        $missingFields = array_keys(array_filter($signals, static fn (bool $present): bool => $present === false));
 
         return [
             'points' => $points,
             'max' => 40,
-            'percent' => (int) round(($points / 40) * 100),
+            'percent' => (int) round(($completedFields / $totalFields) * 100),
+            'completed_fields' => $completedFields,
+            'total_fields' => $totalFields,
+            'missing_fields' => $missingFields,
         ];
     }
 
@@ -218,7 +216,7 @@ final class ProfileIntegrityService
     }
 
     /**
-     * @param array{points:int,max:int,percent:int} $profileCompleteness
+     * @param array{points:int,max:int,percent:int,completed_fields:int,total_fields:int,missing_fields:list<string>} $profileCompleteness
      * @param array{points:int,max:int,verified:bool,note:string} $verifiedEmail
      * @param array{points:int,max:int,enabled:bool} $twoFactor
      * @param list<string> $suspiciousEvents
@@ -261,7 +259,10 @@ final class ProfileIntegrityService
         if ($profileCompleteness['percent'] < 100) {
             $actions[] = [
                 'code' => 'complete_profile',
-                'label' => 'Complete all profile fields to improve account integrity.',
+                'label' => sprintf(
+                    'Complete your profile. Missing: %s.',
+                    implode(', ', array_slice($profileCompleteness['missing_fields'], 0, 3))
+                ),
                 'priority' => 'medium',
             ];
         }

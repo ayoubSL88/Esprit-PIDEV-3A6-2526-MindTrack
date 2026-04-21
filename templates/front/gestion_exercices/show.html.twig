@@ -3,133 +3,108 @@
 {% block page_title %}{{ exercice.nom }}{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    {# Fil d'Ariane + Retour #}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <a href="{{ path('front_gestion_exercices_index') }}" class="text-decoration-none text-primary">
-                <i class="bi bi-folder"></i> Mes Exercices
-            </a>
-            <span class="mx-2 text-muted">›</span>
-            <span class="text-secondary">{{ exercice.nom }}</span>
-        </div>
-        <div>
-            <a href="{{ path('front_gestion_exercices_index') }}" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left"></i> Retour
-            </a>
-        </div>
-    </div>
+    <div class="page-stack">
+        <section class="panel-section page-stack">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div class="space-y-3">
+                    <a href="{{ path('front_gestion_exercices_index') }}" class="text-sm font-medium text-brand hover:underline">
+                        Retour au catalogue
+                    </a>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <p class="feature-label">{{ exercice.type }}</p>
+                        {% set difficultyClasses = exercice.difficulte == 'FACILE'
+                            ? 'bg-success-soft text-success border-success-border'
+                            : (exercice.difficulte == 'MOYEN'
+                                ? 'bg-accent-soft text-amber-700 border-accent/50'
+                                : 'bg-danger-soft text-danger border-danger-border')
+                        %}
+                        <span class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] {{ difficultyClasses }}">
+                            {{ exercice.difficulte }}
+                        </span>
+                    </div>
+                    <h1 class="page-title">{{ exercice.nom }}</h1>
+                    <p class="page-copy">{{ exercice.description }}</p>
+                </div>
 
-    <div class="row">
-        <div class="col-lg-8">
-            {# Informations principales #}
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <h1 class="card-title">{{ exercice.nom }}</h1>
-                        <span class="badge 
-                            {% if exercice.difficulte == 'FACILE' %}bg-success
-                            {% elseif exercice.difficulte == 'MOYEN' %}bg-warning text-dark
-                            {% else %}bg-danger
-                            {% endif %} px-3 py-2 fs-6">
-                            {{ exercice.difficulte|capitalize }}
-                        </span>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <span class="badge bg-secondary me-2">
-                            <i class="bi bi-tag"></i> {{ exercice.type }}
-                        </span>
-                        <span class="badge bg-info">
-                            <i class="bi bi-clock"></i> {{ exercice.duree }} minutes
-                        </span>
-                    </div>
-                    
-                    <h5 class="mt-4">
-                        <i class="bi bi-file-text"></i> Description
-                    </h5>
-                    <hr>
-                    <p class="lead">{{ exercice.description|nl2br }}</p>
-                    
-                    <h5 class="mt-4">
-                        <i class="bi bi-list-check"></i> Démarche
-                    </h5>
-                    <hr>
-                    <div class="demarche-content">
-                        {{ exercice.demarche|raw }}
-                    </div>
+                <div class="button-row">
+                    <a href="{{ path('front_session_start', {'idEx': exercice.idEx}) }}" class="btn-primary">Commencer l'exercice</a>
+                    <button type="button" class="btn-secondary" onclick="window.print()">Imprimer</button>
                 </div>
             </div>
-        </div>
-        
-        <div class="col-lg-4">
-            {# Carte d'information #}
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informations</h5>
+        </section>
+
+        <section class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <article class="panel-section page-stack">
+                <div>
+                    <p class="feature-label">Description</p>
+                    <h2 class="panel-title">Ce que vous allez faire</h2>
                 </div>
-                <div class="card-body">
-                    <ul class="list-unstyled">
-                        <li class="mb-3">
-                            <strong><i class="bi bi-clock-history"></i> Durée estimée :</strong><br>
-                            {{ exercice.duree }} minutes
-                        </li>
-                        <li class="mb-3">
-                            <strong><i class="bi bi-calendar-plus"></i> Date de création :</strong><br>
-                            {{ exercice.dateCreation|date('d/m/Y à H:i') }}
-                        </li>
+                <div class="rounded-3xl border border-border bg-white/80 p-5 text-sm leading-7 text-ink">
+                    {{ exercice.description|nl2br }}
+                </div>
+
+                <div>
+                    <p class="feature-label">Demarche</p>
+                    <h2 class="panel-title">Etapes conseillees</h2>
+                </div>
+                <div class="rounded-3xl border border-border bg-white/80 p-5 text-sm leading-7 text-ink">
+                    {{ exercice.demarche|raw }}
+                </div>
+            </article>
+
+            <aside class="page-stack">
+                <section class="panel-section page-stack">
+                    <div>
+                        <p class="feature-label">Informations</p>
+                        <h2 class="panel-title">Resume rapide</h2>
+                    </div>
+                    <div class="grid gap-3">
+                        <div class="rounded-3xl border border-border bg-white/85 p-4">
+                            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Duree</p>
+                            <p class="mt-2 text-lg font-semibold text-ink">{{ exercice.duree }} minutes</p>
+                        </div>
+                        <div class="rounded-3xl border border-border bg-white/85 p-4">
+                            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Date de creation</p>
+                            <p class="mt-2 text-lg font-semibold text-ink">{{ exercice.dateCreation|date('d/m/Y H:i') }}</p>
+                        </div>
                         {% if exercice.dateModification %}
-                        <li class="mb-3">
-                            <strong><i class="bi bi-pencil-square"></i> Dernière modification :</strong><br>
-                            {{ exercice.dateModification|date('d/m/Y à H:i') }}
-                        </li>
+                            <div class="rounded-3xl border border-border bg-white/85 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Derniere modification</p>
+                                <p class="mt-2 text-lg font-semibold text-ink">{{ exercice.dateModification|date('d/m/Y H:i') }}</p>
+                            </div>
                         {% endif %}
-                    </ul>
-                    
-                    <div class="d-grid gap-2 mt-4">
-                        <a href="{{ path('front_session_start', {'idEx': exercice.idEx}) }}" 
-                           class="btn btn-success btn-lg">
-                            <i class="bi bi-play-fill"></i> Commencer l'exercice
-                        </a>
-                        <button class="btn btn-outline-secondary" onclick="window.print()">
-                            <i class="bi bi-printer"></i> Imprimer
-                        </button>
                     </div>
-                </div>
-            </div>
-            
-            {# Conseils #}
-            <div class="card shadow-sm bg-light">
-                <div class="card-body">
-                    <h6><i class="bi bi-lightbulb"></i> Conseils</h6>
-                    <hr>
-                    <p class="small mb-0">
-                        Prenez votre temps, suivez la démarche étape par étape, 
-                        et n'hésitez pas à prendre des notes pour suivre votre progression.
+                </section>
+
+                <section class="panel-section page-stack">
+                    <div>
+                        <p class="feature-label">Conseils</p>
+                        <h2 class="panel-title">Avant de commencer</h2>
+                    </div>
+                    <p class="panel-copy">
+                        Prenez votre temps, suivez la demarche et gardez une trace de ce qui vous aide vraiment pour mieux mesurer votre progression.
                     </p>
-                </div>
-            </div>
-        </div>
+                </section>
+            </aside>
+        </section>
     </div>
-</div>
 {% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        .demarche-content {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            line-height: 1.8;
-        }
         @media print {
-            .btn, .dropdown, nav, .bg-light {
+            .app-navbar,
+            .btn-primary,
+            .btn-secondary {
                 display: none !important;
             }
-            .card {
+
+            .page-card,
+            .panel-section {
                 border: none !important;
                 box-shadow: none !important;
+                background: #fff !important;
             }
         }
     </style>

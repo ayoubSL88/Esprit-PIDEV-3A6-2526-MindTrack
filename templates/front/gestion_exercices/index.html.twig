@@ -3,106 +3,98 @@
 {% block page_title %}Mes Exercices{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="d-flex align-items-center gap-3">
-            {# Bouton Retour - redirige vers l'accueil général #}
-                <a href="{{ path('front_gestion_exercices_home') }}" class="btn btn-outline-primary">
-                <i class="bi bi-arrow-left"></i> Retour à l'espace d'exercices
-                </a>
-            <h1 class="mb-0">Mes Exercices</h1>
-        </div>
-        <div class="dropdown">
-            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                <i class="bi bi-funnel"></i> Filtrer
-            </button>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="{{ path('front_gestion_exercices_index') }}">Tous</a></li>
-                <li><a class="dropdown-item" href="{{ path('front_gestion_exercices_index', {'difficulte': 'FACILE'}) }}">Facile</a></li>
-                <li><a class="dropdown-item" href="{{ path('front_gestion_exercices_index', {'difficulte': 'MOYEN'}) }}">Moyen</a></li>
-                <li><a class="dropdown-item" href="{{ path('front_gestion_exercices_index', {'difficulte': 'DIFFICILE'}) }}">Difficile</a></li>
-            </ul>
-        </div>
-    </div>
-
-    {# Barre de recherche #}
-    <div class="card mb-4 shadow-sm">
-        <div class="card-body">
-            <form method="get" class="row g-3">
-                <div class="col-md-9">
-                    <input type="text" name="search" value="{{ search }}" class="form-control form-control-lg" 
-                           placeholder="Rechercher un exercice par nom ou type...">
+    <div class="page-stack">
+        <section class="panel-section page-stack">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div class="space-y-3">
+                    <p class="feature-label">Catalogue</p>
+                    <h1 class="page-title">Mes exercices</h1>
+                    <p class="page-copy">Explorez les exercices, filtrez par difficulte et ouvrez rapidement une fiche detaillee.</p>
                 </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary btn-lg w-100">
-                        <i class="bi bi-search"></i> Rechercher
-                    </button>
+                <div class="button-row">
+                    <a href="{{ path('front_gestion_exercices_home') }}" class="btn-secondary">Retour a l'espace exercices</a>
+                </div>
+            </div>
+
+            <form method="get" class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px_220px_auto]">
+                <div class="field">
+                    <label for="exercise-search" class="field-label">Recherche</label>
+                    <input
+                        id="exercise-search"
+                        type="text"
+                        name="search"
+                        value="{{ search }}"
+                        class="field-input"
+                        placeholder="Rechercher un exercice par nom ou type"
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="exercise-difficulty" class="field-label">Difficulte</label>
+                    <select id="exercise-difficulty" name="difficulte" class="field-select">
+                        <option value="">Toutes</option>
+                        <option value="FACILE" {{ difficulte == 'FACILE' ? 'selected' : '' }}>Facile</option>
+                        <option value="MOYEN" {{ difficulte == 'MOYEN' ? 'selected' : '' }}>Moyen</option>
+                        <option value="DIFFICILE" {{ difficulte == 'DIFFICILE' ? 'selected' : '' }}>Difficile</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="exercise-sort" class="field-label">Tri</label>
+                    <select id="exercise-sort" name="sort" class="field-select">
+                        <option value="nom" {{ sort == 'nom' ? 'selected' : '' }}>Nom</option>
+                        <option value="difficulte" {{ sort == 'difficulte' ? 'selected' : '' }}>Difficulte</option>
+                        <option value="date_creation" {{ sort == 'date_creation' ? 'selected' : '' }}>Date</option>
+                    </select>
+                </div>
+
+                <div class="button-row lg:self-end">
+                    <button type="submit" class="btn-primary">Filtrer</button>
                 </div>
             </form>
-        </div>
-    </div>
+        </section>
 
-    {# Grille des exercices #}
-    {% if exercices is empty %}
-        <div class="alert alert-info text-center py-5">
-            <i class="bi bi-emoji-frown fs-1"></i>
-            <h4 class="mt-3">Aucun exercice trouvé</h4>
-            <p>Essayez de modifier vos critères de recherche.</p>
-        </div>
-    {% else %}
-        <div class="row">
-            {% for exercice in exercices %}
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 shadow-sm hover-shadow transition">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title text-primary">{{ exercice.nom }}</h5>
-                                <span class="badge 
-                                    {% if exercice.difficulte == 'FACILE' %}bg-success
-                                    {% elseif exercice.difficulte == 'MOYEN' %}bg-warning text-dark
-                                    {% else %}bg-danger
-                                    {% endif %} px-3 py-2">
-                                    {{ exercice.difficulte|capitalize }}
-                                </span>
+        {% if exercices is empty %}
+            <section class="panel-section">
+                <p class="feature-label">Aucun resultat</p>
+                <h2 class="panel-title">Aucun exercice trouve</h2>
+                <p class="panel-copy">Essayez de modifier vos criteres de recherche ou de retirer un filtre.</p>
+            </section>
+        {% else %}
+            <section class="feature-grid">
+                {% for exercice in exercices %}
+                    {% set difficultyClasses = exercice.difficulte == 'FACILE'
+                        ? 'bg-success-soft text-success border-success-border'
+                        : (exercice.difficulte == 'MOYEN'
+                            ? 'bg-accent-soft text-amber-700 border-accent/50'
+                            : 'bg-danger-soft text-danger border-danger-border')
+                    %}
+                    <article class="feature-card flex h-full flex-col">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="space-y-2">
+                                <p class="feature-label">{{ exercice.type }}</p>
+                                <h2 class="text-xl font-semibold text-ink">{{ exercice.nom }}</h2>
                             </div>
-                            <h6 class="card-subtitle mb-2 text-muted">
-                                <i class="bi bi-tag"></i> {{ exercice.type }}
-                            </h6>
-                            <p class="card-text">{{ exercice.description|slice(0, 100) }}{% if exercice.description|length > 100 %}...{% endif %}</p>
-                            <div class="mb-3">
-                                <small class="text-muted">
-                                    <i class="bi bi-clock"></i> {{ exercice.duree }} minutes
-                                </small>
-                                <br>
-                                <small class="text-muted">
-                                    <i class="bi bi-calendar"></i> Créé le {{ exercice.dateCreation|date('d/m/Y') }}
-                                </small>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <a href="{{ path('front_gestion_exercices_show', {'idEx': exercice.idEx}) }}" 
-                                   class="btn btn-outline-primary">
-                                    <i class="bi bi-eye"></i> Voir l'exercice
-                                </a>
-                            </div>
+                            <span class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] {{ difficultyClasses }}">
+                                {{ exercice.difficulte }}
+                            </span>
                         </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-</div>
-{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .hover-shadow:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-            transition: all 0.3s ease;
-        }
-        .transition {
-            transition: all 0.3s ease;
-        }
-    </style>
+                        <p class="feature-copy mt-4 flex-1">
+                            {{ exercice.description|slice(0, 120) }}{% if exercice.description|length > 120 %}...{% endif %}
+                        </p>
+
+                        <div class="mt-4 grid gap-2 text-sm text-muted">
+                            <p>{{ exercice.duree }} minutes</p>
+                            <p>Cree le {{ exercice.dateCreation|date('d/m/Y') }}</p>
+                        </div>
+
+                        <div class="button-row mt-5">
+                            <a href="{{ path('front_gestion_exercices_show', {'idEx': exercice.idEx}) }}" class="btn-secondary">Voir l'exercice</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </section>
+        {% endif %}
+    </div>
 {% endblock %}

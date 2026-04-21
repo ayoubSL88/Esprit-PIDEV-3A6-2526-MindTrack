@@ -28,7 +28,7 @@ final class RegisterController extends AbstractController
     ): Response|RedirectResponse {
         if ($this->getUser() !== null) {
             return $this->isGranted('ROLE_ADMIN')
-                ? $this->redirectToRoute('admin_dashboard')
+                ? $this->redirectToRoute('admin_panel')
                 : $this->redirectToRoute('front_home');
         }
 

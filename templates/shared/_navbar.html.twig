@@ -1,7 +1,7 @@
 <header class="app-navbar">
     <div class="app-shell">
         <div class="app-navbar-inner">
-            <a class="app-brand" href="{{ path(office == 'admin' ? 'admin_dashboard' : 'front_home') }}">
+            <a class="app-brand" href="{{ path(office == 'admin' ? 'admin_panel' : 'front_home') }}">
                 <span class="app-brand-mark">MT</span>
                 <span>MindTrack</span>
             </a>
@@ -9,7 +9,7 @@
             <nav class="app-nav" aria-label="Primary">
                 <div class="app-nav-group">
             {% if office == 'admin' %}
-                    <a class="app-nav-link {{ app.request.attributes.get('_route') == 'admin_dashboard' ? 'app-nav-link-active' : '' }}" href="{{ path('admin_dashboard') }}">Dashboard</a>
+                    <a class="app-nav-link {{ app.request.attributes.get('_route') in ['admin_dashboard', 'admin_panel'] ? 'app-nav-link-active' : '' }}" href="{{ path('admin_panel') }}">Dashboard</a>
                     <a class="app-nav-link {{ app.request.attributes.get('_route') starts with 'admin_gestion_user_' ? 'app-nav-link-active' : '' }}" href="{{ path('admin_gestion_user_index') }}">Users</a>
                     <a class="app-nav-link {{ app.request.attributes.get('_route') starts with 'admin_gestion_objectifs_personnelles_' ? 'app-nav-link-active' : '' }}" href="{{ path('admin_gestion_objectifs_personnelles_index') }}">Objectifs</a>
                     <a class="app-nav-link {{ app.request.attributes.get('_route') starts with 'admin_gestion_suivi_habitudes_' ? 'app-nav-link-active' : '' }}" href="{{ path('admin_gestion_suivi_habitudes_index') }}">Habitudes</a>

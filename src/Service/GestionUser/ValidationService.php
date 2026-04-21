@@ -5,6 +5,9 @@ namespace App\Service\GestionUser;
 final class ValidationService
 {
     private const NAME_PATTERN = "/^[\p{L}][\p{L}\p{M}\s'\-]{1,79}$/u";
+    private const CITY_PATTERN = "/^[\p{L}\p{M}\s'\-.]{2,120}$/u";
+    private const OCCUPATION_PATTERN = "/^[\p{L}\p{M}\d\s'\-&,.()\/]{2,160}$/u";
+    private const PHONE_PATTERN = '/^\+?[0-9][0-9\s\-()]{7,20}$/';
 
     /**
      * @param array<string, mixed> $rawInput
@@ -72,6 +75,63 @@ final class ValidationService
         return [
             'data' => $data,
             'errors' => $errors,
+            'fieldErrors' => $fieldErrors,
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $rawInput
+     * @return array{data: array<string, mixed>, errors: string[], fieldErrors: array<string, string>}
+     */
+    public function validateProfileDetails(array $rawInput): array
+    {
+        $data = [
+            'phone_number' => trim((string) ($rawInput['phone_number'] ?? '')),
+            'city' => trim((string) ($rawInput['city'] ?? '')),
+            'country' => trim((string) ($rawInput['country'] ?? '')),
+            'timezone' => trim((string) ($rawInput['timezone'] ?? '')),
+            'occupation' => trim((string) ($rawInput['occupation'] ?? '')),
+            'biography' => trim((string) ($rawInput['biography'] ?? '')),
+        ];
+
+        $fieldErrors = [];
+
+        if ($data['phone_number'] !== '' && !preg_match(self::PHONE_PATTERN, $data['phone_number'])) {
+            $fieldErrors['phone_number'] = 'Please provide a valid phone number.';
+        }
+
+        if ($data['city'] !== '' && !preg_match(self::CITY_PATTERN, $data['city'])) {
+            $fieldErrors['city'] = 'City format is invalid.';
+        }
+
+        if ($data['country'] !== '' && !preg_match(self::CITY_PATTERN, $data['country'])) {
+            $fieldErrors['country'] = 'Country format is invalid.';
+        }
+
+        if ($data['timezone'] !== '' && !in_array($data['timezone'], \DateTimeZone::listIdentifiers(), true)) {
+            $fieldErrors['timezone'] = 'Choose a valid timezone.';
+        }
+
+        if ($data['occupation'] !== '' && !preg_match(self::OCCUPATION_PATTERN, $data['occupation'])) {
+            $fieldErrors['occupation'] = 'Occupation format is invalid.';
+        }
+
+        if ($data['biography'] !== '' && mb_strlen($data['biography']) < 20) {
+            $fieldErrors['biography'] = 'Biography should contain at least 20 characters.';
+        } elseif (mb_strlen($data['biography']) > 500) {
+            $fieldErrors['biography'] = 'Biography must stay under 500 characters.';
+        }
+
+        return [
+            'data' => [
+                'phone_number' => $data['phone_number'] !== '' ? $data['phone_number'] : null,
+                'city' => $data['city'] !== '' ? $data['city'] : null,
+                'country' => $data['country'] !== '' ? $data['country'] : null,
+                'timezone' => $data['timezone'] !== '' ? $data['timezone'] : null,
+                'occupation' => $data['occupation'] !== '' ? $data['occupation'] : null,
+                'biography' => $data['biography'] !== '' ? $data['biography'] : null,
+            ],
+            'errors' => array_values(array_unique(array_values($fieldErrors))),
             'fieldErrors' => $fieldErrors,
         ];
     }

@@ -14,6 +14,7 @@ parameters:
     app.weather.latitude: 36.8
     app.weather.longitude: 10.18
     app.weather.location_label: 'Tunis'
+    app.profile_pictures_dir: '%kernel.project_dir%/public/uploads/profile-pictures'
 
 services:
     # default configuration for services in *this* file

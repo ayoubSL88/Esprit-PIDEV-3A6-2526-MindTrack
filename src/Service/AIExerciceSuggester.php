@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Service;
 
 use App\Entity\Exercice;
@@ -20,113 +21,101 @@ class AIExerciceSuggester
     }
 
     /**
-     * Suggestion basée sur l'humeur (1-10)
+     * Suggestion basee sur l humeur (1-10).
+     * 1-3 => FACILE, 4-6 => MOYEN, 7-10 => DIFFICILE.
      */
     public function suggestByMood(int $mood): ?Exercice
     {
-        // Humeur très basse (1-3) -> exercices apaisants anti-anxiété
         if ($mood <= 3) {
-            return $this->exerciceRepo->findOneBy(['nom' => '5-4-3-2-1 (retour au présent)'])
-                ?? $this->exerciceRepo->findOneBy(['nom' => 'STOP (Arrêter la panique)'])
-                ?? $this->exerciceRepo->findOneBy(['type' => 'Gestion de l\'anxiété']);
+            return $this->findRandomByDifficulty('FACILE')
+                ?? $this->getRandomSuggestion();
         }
-        
-        // Humeur moyenne (4-6) -> exercices d'ancrage ou respiration
+
         if ($mood <= 6) {
-            return $this->exerciceRepo->findOneBy(['nom' => 'Respiration carrée (box breathing)'])
-                ?? $this->exerciceRepo->findOneBy(['nom' => 'Ancrage par les pieds'])
-                ?? $this->exerciceRepo->findOneBy(['type' => 'Respiration']);
+            return $this->findRandomByDifficulty('MOYEN')
+                ?? $this->findRandomByDifficulty('FACILE')
+                ?? $this->getRandomSuggestion();
         }
-        
-        // Bonne humeur (7-8) -> gratitude ou méditation légère
-        if ($mood <= 8) {
-            return $this->exerciceRepo->findOneBy(['nom' => '3 choses pour lesquelles je suis reconnaissant'])
-                ?? $this->exerciceRepo->findOneBy(['type' => 'Gratitude']);
+
+        if ($mood <= 10) {
+            return $this->findRandomByDifficulty('DIFFICILE')
+                ?? $this->findRandomByDifficulty('MOYEN')
+                ?? $this->getRandomSuggestion();
         }
-        
-        // Très bonne humeur (9-10) -> exercices dynamiques et joyeux
-        return $this->exerciceRepo->findOneBy(['nom' => 'Danse de la victoire'])
-            ?? $this->exerciceRepo->findOneBy(['type' => 'Bien-être']);
+
+        return $this->getRandomSuggestion();
     }
 
-    /**
-     * Suggestion basée sur l'historique des exercices faits
-     */
     public function suggestByHistory(Utilisateur $user): ?Exercice
     {
-        // Dernier exercice fait par l'utilisateur
-        $lastSession = $this->sessionRepo->findOneBy(
-            ['user' => $user, 'terminee' => true], 
-            ['dateFin' => 'DESC']
-        );
-        
-        if (!$lastSession || !$lastSession->getExercice()) {
-            // Pas d'historique -> proposer un exercice facile
-            return $this->exerciceRepo->findOneBy(['difficulte' => 'FACILE']);
-        }
-        
-        $lastExercice = $lastSession->getExercice();
-        $lastDifficulte = $lastExercice->getDifficulte();
-        
-        // Progression logique : augmenter la difficulté progressivement
-        switch ($lastDifficulte) {
-            case 'FACILE':
-                return $this->exerciceRepo->findOneBy(['difficulte' => 'MOYEN']);
-            case 'MOYEN':
-                return $this->exerciceRepo->findOneBy(['difficulte' => 'DIFFICILE']);
-            case 'DIFFICILE':
-                // Alterner avec un exercice différent mais même niveau
-                $otherExercice = $this->exerciceRepo->findOneBy([
-                    'difficulte' => 'DIFFICILE',
-                    'nom' => 'Rituel du matin'
-                ]);
-                if ($otherExercice && $otherExercice !== $lastExercice) {
-                    return $otherExercice;
-                }
-                return $this->exerciceRepo->findOneBy(['difficulte' => 'MOYEN']);
-            default:
-                return $this->exerciceRepo->findOneBy(['difficulte' => 'FACILE']);
-        }
-    }
-
-    /**
-     * Suggestion combinée (humeur + historique)
-     */
-    public function suggestCombined(Utilisateur $user, int $mood): ?Exercice
-    {
-        // Priorité à l'humeur si elle est extrême (très basse)
-        if ($mood <= 3) {
-            return $this->suggestByMood($mood);
-        }
-        
-        // Sinon, basé sur l'historique
-        $historySuggestion = $this->suggestByHistory($user);
-        
-        // Éviter de proposer le même exercice 2 fois de suite
         $lastSession = $this->sessionRepo->findOneBy(
             ['user' => $user, 'terminee' => true],
             ['dateFin' => 'DESC']
         );
-        
-        if ($lastSession && $historySuggestion === $lastSession->getExercice()) {
-            return $this->suggestByMood($mood);
+
+        if (!$lastSession || !$lastSession->getExercice()) {
+            return $this->findRandomByDifficulty('FACILE')
+                ?? $this->getRandomSuggestion();
         }
-        
-        return $historySuggestion;
+
+        $lastExercice = $lastSession->getExercice();
+        $lastDifficulte = $lastExercice->getDifficulte();
+
+        switch ($lastDifficulte) {
+            case 'FACILE':
+                return $this->findRandomByDifficulty('MOYEN')
+                    ?? $this->findRandomByDifficulty('FACILE')
+                    ?? $this->getRandomSuggestion();
+            case 'MOYEN':
+                return $this->findRandomByDifficulty('DIFFICILE')
+                    ?? $this->findRandomByDifficulty('MOYEN')
+                    ?? $this->getRandomSuggestion();
+            case 'DIFFICILE':
+                return $this->findRandomByDifficulty('MOYEN')
+                    ?? $this->findRandomByDifficulty('DIFFICILE')
+                    ?? $this->getRandomSuggestion();
+            default:
+                return $this->findRandomByDifficulty('FACILE')
+                    ?? $this->getRandomSuggestion();
+        }
     }
 
-    /**
-     * Suggestion simple sans historique (pour la page d'accueil)
-     */
+    public function suggestCombined(Utilisateur $user, int $mood): ?Exercice
+    {
+        if ($mood <= 3) {
+            return $this->suggestByMood($mood);
+        }
+
+        $historySuggestion = $this->suggestByHistory($user);
+        $lastSession = $this->sessionRepo->findOneBy(
+            ['user' => $user, 'terminee' => true],
+            ['dateFin' => 'DESC']
+        );
+
+        if ($lastSession && $historySuggestion && $historySuggestion->getIdEx() === $lastSession->getExercice()?->getIdEx()) {
+            return $this->suggestByMood($mood);
+        }
+
+        return $historySuggestion ?? $this->suggestByMood($mood);
+    }
+
     public function getRandomSuggestion(): ?Exercice
     {
         $exercices = $this->exerciceRepo->findAll();
-        
-        if (empty($exercices)) {
+        if ($exercices === []) {
             return null;
         }
-        
-        // Retourner un exercice aléatoire
+
         return $exercices[array_rand($exercices)];
+    }
+
+    private function findRandomByDifficulty(string $difficulty): ?Exercice
+    {
+        $matches = $this->exerciceRepo->findBy(['difficulte' => $difficulty]);
+        if ($matches === []) {
+            return null;
+        }
+
+        return $matches[array_rand($matches)];
     }
 }
