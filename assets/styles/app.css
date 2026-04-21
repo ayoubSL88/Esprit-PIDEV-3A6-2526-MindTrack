@@ -1367,7 +1367,6 @@
         margin-left: auto;
     }
 }
-<<<<<<< HEAD
 
   /* GestionSuiviHabitudes sizing fix: keep the main "Mes habitudes" container larger */
   @media (min-width: 1024px) {
@@ -1388,5 +1387,3 @@
   .hero-grid > .panel-section:first-child .mt-habitudes-grid {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   }
-=======
->>>>>>> origin/GestionObjectifsPersonnelles

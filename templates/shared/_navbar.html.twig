@@ -19,7 +19,7 @@
                     <a class="app-nav-link {{ app.request.attributes.get('_route') == 'front_home' ? 'app-nav-link-active' : '' }}" href="{{ path('front_home') }}">Accueil</a>
                     <a class="app-nav-link {{ app.request.attributes.get('_route') starts with 'front_gestion_objectifs_personnelles_' ? 'app-nav-link-active' : '' }}" href="{{ path('front_gestion_objectifs_personnelles_index') }}">Objectifs</a>
                     <a class="app-nav-link {{ app.request.attributes.get('_route') starts with 'front_gestion_suivi_habitudes_' ? 'app-nav-link-active' : '' }}" href="{{ path('front_gestion_suivi_habitudes_index') }}">Habitudes</a>
-                    <a class="app-nav-link {{ app.request.attributes.get('_route') starts with 'front_gestion_exercices_' ? 'app-nav-link-active' : '' }}" href="{{ path('front_gestion_exercices_index') }}">Exercices</a>
+                    <a class="app-nav-link {{ app.request.attributes.get('_route') starts with 'front_gestion_exercices_' ? 'app-nav-link-active' : '' }}" href="{{ path('front_gestion_exercices_home') }}">Exercices</a>
                     <a class="app-nav-link {{ app.request.attributes.get('_route') starts with 'front_gestion_humeur_' ? 'app-nav-link-active' : '' }}" href="{{ path('front_gestion_humeur_index') }}">Humeur</a>
                     <a class="app-nav-link {{ app.request.attributes.get('_route') starts with 'front_gestion_user_' ? 'app-nav-link-active' : '' }}" href="{{ path('front_gestion_user_index') }}">Profil</a>
             {% endif %}

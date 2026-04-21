@@ -4,6 +4,9 @@ namespace App\Controller\Front\GestionExercices;
 
 use App\Entity\Exercice;
 use App\Form\ExerciceType;
+use App\Service\AIExerciceSuggester;
+use App\Repository\ExerciceRepository;
+use App\Repository\SessionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,53 +16,72 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/app/exercices')]
 final class ExerciceController extends AbstractController
 {
-    #[Route('/', name: 'front_gestion_exercices_index', methods: ['GET'])]
+    #[Route('/', name: 'front_gestion_exercices_home')]
+    public function home(ExerciceRepository $exerciceRepo, SessionRepository $sessionRepo): Response
+    {   
+        $user = $this->getUser();
+        
+        $recentExercices = $exerciceRepo->findBy([], ['date_creation' => 'DESC'], 6);
+        
+        $stats = null;
+        if ($user) {
+            $sessions = $sessionRepo->findBy(['user' => $user, 'terminee' => true]);
+            $totalSessions = count($sessions);
+            $totalTemps = array_sum(array_map(fn($s) => $s->getDureeReelle() ?? 0, $sessions));
+            $moyenneProgress = $totalSessions > 0 
+                ? array_sum(array_map(fn($s) => $s->getProgress() ?? 0, $sessions)) / $totalSessions 
+                : 0;
+            
+            $stats = [
+                'total' => $totalSessions,
+                'temps' => round($totalTemps / 60),
+                'moyenne' => round($moyenneProgress, 1),
+                'recent_sessions' => $sessionRepo->findBy(['user' => $user, 'terminee' => true], ['dateFin' => 'DESC'], 5)
+            ];
+        }
+        
+        return $this->render('front/gestion_exercices/home.html.twig', [
+            'recent_exercices' => $recentExercices,
+            'stats' => $stats
+        ]);
+    }
+
+    #[Route('/list', name: 'front_gestion_exercices_index', methods: ['GET'])]
     public function index(Request $request, EntityManagerInterface $entityManager): Response
     {
+        // Récupérer les paramètres de filtrage
         $search = $request->query->get('search', '');
         $difficulte = $request->query->get('difficulte', '');
-
+        $sort = $request->query->get('sort', 'nom');
+        $order = $request->query->get('order', 'ASC');
+        
+        // Créer le QueryBuilder
         $qb = $entityManager->getRepository(Exercice::class)->createQueryBuilder('e');
-
+        
+        // Filtre par recherche (nom ou type)
         if ($search) {
-            $qb->andWhere('e.nom LIKE :search OR e.type LIKE :search')
-                ->setParameter('search', '%'.$search.'%');
+            $qb->andWhere("e.nom LIKE :search OR e.type LIKE :search")
+               ->setParameter('search', "%{$search}%");
         }
-
+        
+        // Filtre par difficulté
         if ($difficulte) {
             $qb->andWhere('e.difficulte = :difficulte')
-                ->setParameter('difficulte', $difficulte);
+               ->setParameter('difficulte', $difficulte);
         }
-
-        $qb->orderBy('e.idEx', 'DESC');
+        
+        // Trier par nom et par ordre
+        $qb->orderBy("e.{$sort}", $order);
+        
+        // Exécuter la requête
         $exercices = $qb->getQuery()->getResult();
-
+        
         return $this->render('front/gestion_exercices/index.html.twig', [
             'exercices' => $exercices,
             'search' => $search,
             'difficulte' => $difficulte,
-        ]);
-    }
-
-    #[Route('/new', name: 'front_gestion_exercices_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $exercice = new Exercice();
-        $form = $this->createForm(ExerciceType::class, $exercice, [
-            'is_edit' => false,
-        ]);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($exercice);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Exercice cree avec succes.');
-            return $this->redirectToRoute('front_gestion_exercices_index');
-        }
-
-        return $this->render('front/gestion_exercices/new.html.twig', [
-            'form' => $form->createView(),
+            'sort' => $sort,
+            'order' => $order
         ]);
     }
 
@@ -71,35 +93,40 @@ final class ExerciceController extends AbstractController
         ]);
     }
 
-    #[Route('/{idEx}/edit', name: 'front_gestion_exercices_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Exercice $exercice, EntityManagerInterface $entityManager): Response
+    #[Route('/suggestion/humeur/{mood}', name: 'front_suggestion_by_mood')]
+    public function suggestionByMood(int $mood, AIExerciceSuggester $aisuggester): Response
     {
-        $form = $this->createForm(ExerciceType::class, $exercice, [
-            'is_edit' => true,
-        ]);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Exercice modifie avec succes.');
-            return $this->redirectToRoute('front_gestion_exercices_index');
+        $exercice = $aisuggester->suggestByMood($mood);
+        
+        if (!$exercice) {
+            throw $this->createNotFoundException('Aucun exercice trouvé');
         }
-
-        return $this->render('front/gestion_exercices/edit.html.twig', [
-            'form' => $form->createView(),
-            'exercice' => $exercice,
+        
+        // Rediriger vers la page de l'exercice
+        return $this->redirectToRoute('front_gestion_exercices_show', [
+            'idEx' => $exercice->getIdEx()
         ]);
     }
 
-    #[Route('/{idEx}', name: 'front_gestion_exercices_delete', methods: ['POST'])]
-    public function delete(Request $request, Exercice $exercice, EntityManagerInterface $entityManager): Response
+    #[Route('/suggestion/pour-vous', name: 'front_suggestion_for_you')]
+    public function suggestionForYou(AIExerciceSuggester $aisuggester): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$exercice->getIdEx(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($exercice);
-            $entityManager->flush();
+        $user = $this->getUser();
+        
+        if (!$user instanceof Utilisateur) {
+            // Utilisateur non connecté -> suggestion aléatoire
+            $exercice = $aisuggester->getRandomSuggestion();
+        } else {
+            // Utilisateur connecté -> suggestion basée sur historique
+            $exercice = $aisuggester->suggestByHistory($user);
         }
-
-        return $this->redirectToRoute('front_gestion_exercices_index', [], Response::HTTP_SEE_OTHER);
+        
+        if (!$exercice) {
+            throw $this->createNotFoundException('Aucun exercice trouvé');
+        }
+        
+        return $this->redirectToRoute('front_gestion_exercices_show', [
+            'idEx' => $exercice->getIdEx()
+        ]);
     }
 }

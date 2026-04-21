@@ -46,7 +46,7 @@ class Habitude
     private string $unit = '';
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'habitudes')]
-    #[ORM\JoinColumn(name: 'idU', referencedColumnName: 'id_u', nullable: true, onDelete: 'SET NULL')]
+    #[ORM\JoinColumn(name: 'id_u', referencedColumnName: 'id_u', nullable: true, onDelete: 'SET NULL')]
     private ?Utilisateur $idU = null;
 
     /** @var Collection<int, Rappel_habitude> */

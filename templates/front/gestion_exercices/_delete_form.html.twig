@@ -1,4 +1,0 @@
-<form method="post" action="{{ path('front_gestion_exercices_delete', {'idEx': exercice.idEx}) }}" onsubmit="return confirm('Supprimer ?');">
-    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ exercice.idEx) }}">
-    <button class="btn btn-danger">Supprimer</button>
-</form>

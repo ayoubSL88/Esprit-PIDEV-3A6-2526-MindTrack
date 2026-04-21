@@ -7,53 +7,48 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use App\Entity\Todo;
 use App\Entity\Session;
+use App\Repository\ExerciceRepository;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: ExerciceRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 class Exercice
 {
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(name:"id_ex", type: "integer")]
     #[ORM\GeneratedValue(strategy: "IDENTITY")]
     private int $idEx;
 
     #[ORM\Column(type: "string", length: 255)]
-    #[Assert\NotBlank(message: "Le nom est obligatoire")]
     #[Assert\Length(min: 3, max: 255, minMessage: "Minimum 3 caractères")]
     private string $nom;
 
     #[ORM\Column(type: "string", length: 255)]
-    #[Assert\NotBlank(message: "Le type est obligatoire")]
     private string $type;
 
     #[ORM\Column(type: "integer")]
-    #[Assert\NotBlank(message: "La durée est obligatoire")]
     #[Assert\Positive(message: "La durée doit être un nombre positif")]
     private int $duree;
 
     #[ORM\Column(type: "string", length: 50)]
-    #[Assert\NotBlank(message: "La difficulté est obligatoire")]
     #[Assert\Choice(choices: ["FACILE", "MOYEN", "DIFFICILE"], message: "Difficulté invalide")]
     private string $difficulte;
 
     #[ORM\Column(type: "text")]
-    #[Assert\NotBlank(message: "La description est obligatoire")]
     private string $description;
 
     #[ORM\Column(type: "text")]
-    #[Assert\NotBlank(message: "La démarche est obligatoire")]
     private string $demarche;
 
-    #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $date_creation;
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private ?\DateTimeInterface $date_creation = null;
 
-    #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $date_modification;
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private ?\DateTimeInterface $date_modification = null;
 
-    #[ORM\OneToMany(mappedBy: "idEx", targetEntity: Session::class)]
+    #[ORM\OneToMany(mappedBy: "exercice", targetEntity: Session::class, cascade: ["remove"])]
     private Collection $sessions;
 
     #[ORM\OneToMany(mappedBy: "idExercice", targetEntity: Todo::class)]
@@ -80,9 +75,10 @@ class Exercice
     #[ORM\PreUpdate]
     public function updateDateModification(): void
     {
+        // Force la mise à jour de la date même si Doctrine ne détecte pas de changement
         $this->date_modification = new \DateTime();
     }
-
+    
     public function getIdEx()
     {
         return $this->idEx;
@@ -93,7 +89,7 @@ class Exercice
         return $this->nom;
     }
 
-    public function setNom($value)
+    public function setNom($value): self
     {
         $this->nom = $value;
         return $this;
@@ -104,7 +100,7 @@ class Exercice
         return $this->type;
     }
 
-    public function setType($value)
+    public function setType($value): self
     {
         $this->type = $value;
         return $this;
@@ -115,7 +111,7 @@ class Exercice
         return $this->duree;
     }
 
-    public function setDuree($value)
+    public function setDuree($value):self
     {
         $this->duree = $value;
         return $this;
@@ -126,7 +122,7 @@ class Exercice
         return $this->difficulte;
     }
 
-    public function setDifficulte($value)
+    public function setDifficulte($value): self
     {
         $this->difficulte = $value;
         return $this;
@@ -137,7 +133,7 @@ class Exercice
         return $this->description;
     }
 
-    public function setDescription($value)
+    public function setDescription($value): self
     {
         $this->description = $value;
         return $this;
@@ -148,42 +144,42 @@ class Exercice
         return $this->demarche;
     }
 
-    public function setDemarche($value)
+    public function setDemarche($value): self
     {
         $this->demarche = $value;
         return $this;
     }
 
-    public function getDateCreation(): \DateTimeInterface
+    public function getDateCreation(): ?\DateTimeInterface
     {
         return $this->date_creation;
     }
 
-    public function setDateCreation(\DateTimeInterface $value): self
+    public function setDateCreation(?\DateTimeInterface $value): self
     {
         $this->date_creation = $value;
 
         return $this;
     }
 
-    public function setDate_creation(\DateTimeInterface $value): self
+    public function setDate_creation(?\DateTimeInterface $value): self
     {
         return $this->setDateCreation($value);
     }
 
-    public function getDateModification(): \DateTimeInterface
+    public function getDateModification(): ?\DateTimeInterface
     {
         return $this->date_modification;
     }
 
-    public function setDateModification(\DateTimeInterface $value): self
+    public function setDateModification(?\DateTimeInterface $value): self
     {
         $this->date_modification = $value;
 
         return $this;
     }
 
-    public function setDate_modification(\DateTimeInterface $value): self
+    public function setDate_modification(?\DateTimeInterface $value): self
     {
         return $this->setDateModification($value);
     }
@@ -198,7 +194,7 @@ class Exercice
     {
         if (!$this->sessions->contains($session)) {
             $this->sessions[] = $session;
-            $session->setIdEx($this);
+            $session->setExercice($this);
         }
         return $this;
     }

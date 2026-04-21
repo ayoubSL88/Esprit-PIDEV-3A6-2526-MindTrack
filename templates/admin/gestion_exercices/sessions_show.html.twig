@@ -1,0 +1,164 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}Détail de la session #{{ session.idSession }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Détail de la session #{{ session.idSession }}</h1>
+    <div>
+        <a href="{{ path('admin_sessions_index') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour
+        </a>
+        <a href="{{ path('admin_sessions_user', {'idU': session.user.idU}) }}" class="btn btn-info">
+            <i class="bi bi-person"></i> Voir toutes les sessions de l'utilisateur
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Informations utilisateur</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Nom complet</th>
+                        <td>{{ session.user.nomU }} {{ session.user.prenomU }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>{{ session.user.emailU }}</td>
+                    </tr>
+                    <tr>
+                        <th>Âge</th>
+                        <td>{{ session.user.ageU }} ans</td>
+                    </tr>
+                    <tr>
+                        <th>Rôle</th>
+                        <td><span class="badge bg-secondary">{{ session.user.roleU }}</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Informations exercice</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Nom</th>
+                        <td><strong>{{ session.exercice.nom }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Type</th>
+                        <td>{{ session.exercice.type }}</td>
+                    </tr>
+                    <tr>
+                        <th>Difficulté</th>
+                        <td>
+                            <span class="badge bg-{{ session.exercice.difficulte == 'FACILE' ? 'success' : (session.exercice.difficulte == 'MOYEN' ? 'warning' : 'danger') }}">
+                                {{ session.exercice.difficulte }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Durée estimée</th>
+                        <td>{{ session.exercice.duree }} minutes</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Informations session</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Date début</th>
+                        <td>{{ session.dateDebut|date('d/m/Y H:i:s') }}</td>
+                    </tr>
+                    <tr>
+                        <th>Date fin</th>
+                        <td>
+                            {% if session.dateFin %}
+                                {{ session.dateFin|date('d/m/Y H:i:s') }}
+                            {% else %}
+                                <span class="badge bg-warning">Non terminée</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Durée réelle</th>
+                        <td>
+                            {% if session.dureeReelle %}
+                                {{ (session.dureeReelle / 60)|round }} minutes ({{ session.dureeReelle }} secondes)
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Progression</th>
+                        <td>
+                            <div class="progress" style="height: 30px;">
+                                <div class="progress-bar bg-{{ session.progress == 100 ? 'success' : 'primary' }}" 
+                                     style="width: {{ session.progress }}%">
+                                    {{ session.progress }}%
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Statut</th>
+                        <td>
+                            {% if session.terminee %}
+                                <span class="badge bg-success">Terminée</span>
+                            {% else %}
+                                <span class="badge bg-warning">En cours</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Résultat</th>
+                        <td>{{ session.resultat|default('-') }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        {% if session.commentaires %}
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Commentaires de l'utilisateur</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ session.commentaires|nl2br }}</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if session.steps %}
+        <div class="card mt-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Étapes réalisées</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for step in session.steps %}
+                        <li class="list-group-item">{{ step }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
