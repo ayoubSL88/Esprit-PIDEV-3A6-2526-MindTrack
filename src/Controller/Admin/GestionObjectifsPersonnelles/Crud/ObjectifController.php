@@ -9,6 +9,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Dompdf\Dompdf;
+
 
 #[Route('/admin/objectifs/objectif', name: 'admin_objectif_')]
 final class ObjectifController extends AbstractController
@@ -64,4 +68,60 @@ final class ObjectifController extends AbstractController
             'status' => trim((string) $request->query->get('status', '')),
         ];
     }
+    #[Route('/export/csv', name: 'export_csv', methods: ['GET'])]
+public function exportCsv(ObjectifRepository $repository): Response
+{
+    $objectifs = $repository->findAll();
+
+    $response = new StreamedResponse(function () use ($objectifs) {
+        $handle = fopen('php://output', 'w+');
+
+        // header CSV
+        fputcsv($handle, ['ID', 'Titre', 'Description', 'Début', 'Fin', 'Statut']);
+
+        foreach ($objectifs as $o) {
+            fputcsv($handle, [
+                $o->getIdObj(),
+                $o->getTitre(),
+                $o->getDescriprion(),
+                $o->getDateDebut()->format('Y-m-d'),
+                $o->getDateFin()->format('Y-m-d'),
+                $o->getStatut(),
+            ]);
+        }
+
+        fclose($handle);
+    });
+
+    $response->headers->set('Content-Type', 'text/csv');
+    $response->headers->set('Content-Disposition', 'attachment; filename="objectifs.csv"');
+
+    return $response;
+}
+
+     
+
+#[Route('/export/pdf', name: 'export_pdf', methods: ['GET'])]
+public function exportPdf(ObjectifRepository $repository): Response
+{
+    $objectifs = $repository->findAll();
+
+    $html = $this->renderView(
+        'admin/gestion_objectifs_personnelles/objectif/pdf.html.twig',
+        ['objectifs' => $objectifs]
+    );
+
+    // ✅ VERSION SIMPLE (sans Options)
+    $dompdf = new Dompdf();
+
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    return new Response($dompdf->output(), 200, [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => 'attachment; filename="objectifs.pdf"',
+    ]);
+}
+
 }

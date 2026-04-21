@@ -1,0 +1,87 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}Détail de l'objectif{% endblock %}
+
+{% block content %}
+    <div style="max-width: 800px; margin: 40px auto; padding: 20px;">
+        <div style="border-radius: 24px; padding: 32px; background: white; box-shadow: 0 8px 30px rgba(0,0,0,0.05);">
+            
+            <h1 style="font-size: 1.8rem; margin-bottom: 8px;">{{ objectif.titre }}</h1>
+            <p style="color: #64748b; margin-bottom: 24px;">{{ objectif.descriprion }}</p>
+            
+            <div style="display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap;">
+                <div>
+                    <strong>📅 Date de début</strong><br>
+                    {{ objectif.dateDebut|date('d/m/Y') }}
+                </div>
+                <div>
+                    <strong>🏁 Date de fin</strong><br>
+                    {{ objectif.dateFin|date('d/m/Y') }}
+                </div>
+                <div>
+                    <strong>📊 Statut</strong><br>
+                    {% if objectif.statut == 'termine' %}
+                        <span style="background: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 30px;">✅ Terminé</span>
+                    {% elseif objectif.statut == 'en_cours' %}
+                        <span style="background: #fed7aa; color: #9a3412; padding: 4px 12px; border-radius: 30px;">🔄 En cours</span>
+                    {% else %}
+                        <span style="background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 30px;">📋 Planifié</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <hr style="margin: 24px 0; border: none; border-top: 1px solid #f1f5f9;">
+
+            <h3 style="margin-bottom: 16px;">🎯 Progression</h3>
+            <div style="background: #e2e8f0; height: 12px; border-radius: 10px; overflow: hidden; margin-bottom: 8px;">
+                <div style="background: linear-gradient(90deg, #6366f1, #8b5cf6); width: {{ progression }}%; height: 100%; border-radius: 10px;"></div>
+            </div>
+            <p style="text-align: center; margin-bottom: 24px;">{{ progression }}% complété</p>
+
+            <hr style="margin: 24px 0; border: none; border-top: 1px solid #f1f5f9;">
+
+            <h3 style="margin-bottom: 16px;">📍 Jalons de progression</h3>
+            {% if jalons is defined and jalons|length > 0 %}
+                <ul style="list-style: none; padding: 0;">
+                    {% for jalon in jalons %}
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
+                            {% if jalon.atteint %}
+                                <span style="color: #10b981;">✅</span>
+                            {% else %}
+                                <span style="color: #94a3b8;">⭕</span>
+                            {% endif %}
+                            <div>
+                                <strong>{{ jalon.titre }}</strong><br>
+                                <small style="color: #64748b;">{{ jalon.dateCible|date('d/m/Y') }}</small>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p style="color: #94a3b8;">Aucun jalon défini pour cet objectif.</p>
+            {% endif %}
+
+            <hr style="margin: 24px 0; border: none; border-top: 1px solid #f1f5f9;">
+
+            <h3 style="margin-bottom: 16px;">📋 Plans d'action</h3>
+            {% if plans is defined and plans|length > 0 %}
+                <ul style="list-style: none; padding: 0;">
+                    {% for plan in plans %}
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>{{ plan.etape }}</span>
+                                <span style="background: #f1f5f9; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem;">Priorité {{ plan.priorite }}/10</span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p style="color: #94a3b8;">Aucun plan d'action défini pour cet objectif.</p>
+            {% endif %}
+
+            <div style="margin-top: 32px; text-align: center;">
+                <a href="{{ path('front_objectif_index') }}" style="background: #f1f5f9; padding: 10px 24px; border-radius: 40px; text-decoration: none; color: #475569;">← Retour à la liste</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

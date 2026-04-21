@@ -2,88 +2,311 @@
 
 {% block page_title %}Jalons{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* STYLE FRONT - CARTES MODERNES POUR JALONS */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+        
+        .filter-bar {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 32px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            border: 1px solid #f1f5f9;
+        }
+        
+        .filter-bar > div {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .filter-bar label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        
+        .filter-bar input, .filter-bar select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: #f8fafc;
+        }
+        
+        .filter-bar input:focus, .filter-bar select:focus {
+            border-color: #6366f1;
+            outline: none;
+        }
+        
+        /* GRILLE DE CARTES */
+        .jalons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        .jalon-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        
+        .jalon-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15);
+        }
+        
+        .jalon-header {
+            padding: 20px 20px 12px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .jalon-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 4px 0;
+        }
+        
+        .jalon-objectif {
+            font-size: 0.75rem;
+            color: #6366f1;
+            font-weight: 500;
+        }
+        
+        .jalon-body {
+            padding: 16px 20px;
+        }
+        
+        .progress-section {
+            margin-bottom: 16px;
+        }
+        
+        .progress-bar-bg {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-fill.en-cours { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+        .progress-fill.atteint { background: linear-gradient(90deg, #10b981, #34d399); }
+        
+        .progress-percent {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 8px;
+            display: inline-block;
+        }
+        
+        .dates {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin: 12px 0;
+            padding: 8px 0;
+            border-top: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .badge-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .badge-atteint {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-en-cours {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        
+        .jalon-actions {
+            padding: 16px 20px 20px;
+            display: flex;
+            gap: 12px;
+            border-top: 1px solid #f1f5f9;
+            background: #fafcff;
+        }
+        
+        .btn-front {
+            padding: 8px 16px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-edit {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .btn-edit:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+        
+        .btn-delete {
+            background: #fef2f2;
+            color: #dc2626;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-delete:hover {
+            background: #fee2e2;
+            transform: translateY(-1px);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            background: #f8fafc;
+            border-radius: 24px;
+            color: #94a3b8;
+        }
+        
+        @media (max-width: 640px) {
+            .jalons-grid {
+                grid-template-columns: 1fr;
+            }
+            .filter-bar {
+                flex-direction: column;
+            }
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
     {% include 'front/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
 
-    <section class="page-header">
-        <div>
-            <h1>Liste des jalons de progression</h1>
-            <p>Recherche par mot-clé, tri par date ou statut, et filtre d’avancement.</p>
-        </div>
-        <div class="actions">
-            <a class="btn btn-secondary" href="{{ path('front_gestion_objectifs_personnelles_index') }}">Retour au module</a>
-            <a class="btn btn-primary" href="{{ path('front_jalonprogression_create') }}">Ajouter</a>
-        </div>
-    </section>
+    <div class="container" style="max-width: 1280px; margin: 0 auto; padding: 20px;">
+        <section class="page-header">
+            <div>
+                <h1>📌 Liste des jalons de progression</h1>
+                <p style="color: #64748b; margin-top: 8px;">Recherche, tri et filtrage de tes jalons</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <a class="btn-front btn-edit" href="{{ path('front_gestion_objectifs_personnelles_index') }}">← Retour au module</a>
+                <a class="btn-primary" href="{{ path('front_jalonprogression_create') }}" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 10px 20px; border-radius: 40px; text-decoration: none; font-weight: 500;">+ Ajouter un jalon</a>
+            </div>
+        </section>
 
-    <form method="get" class="table-card filter-bar">
-        <div>
-            <label for="jalon_q">Mot-clé</label>
-            <input id="jalon_q" type="text" name="q" value="{{ filters.q }}" placeholder="Titre du jalon ou objectif">
-        </div>
-        <div>
-            <label for="jalon_sort">Tri</label>
-            <select id="jalon_sort" name="sort">
-                {% for label, value in sort_choices %}
-                    <option value="{{ value }}" {{ filters.sort == value ? 'selected' : '' }}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div>
-            <label for="jalon_status">Statut</label>
-            <select id="jalon_status" name="status">
-                <option value="">Tous</option>
-                {% for label, value in status_choices %}
-                    <option value="{{ value }}" {{ filters.status == value ? 'selected' : '' }}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="actions">
-            <button class="btn btn-primary" type="submit">Filtrer</button>
-            <a class="btn btn-secondary" href="{{ path('front_jalonprogression_index') }}">Réinitialiser</a>
-        </div>
-    </form>
+        <form method="get" class="filter-bar">
+            <div>
+                <label for="jalon_q">🔍 Mot-clé</label>
+                <input id="jalon_q" type="text" name="q" value="{{ filters.q }}" placeholder="Titre du jalon ou objectif">
+            </div>
+            <div>
+                <label for="jalon_sort">📊 Tri</label>
+                <select id="jalon_sort" name="sort">
+                    {% for label, value in sort_choices %}
+                        <option value="{{ value }}" {{ filters.sort == value ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="jalon_status">🏷️ Statut</label>
+                <select id="jalon_status" name="status">
+                    <option value="">Tous</option>
+                    {% for label, value in status_choices %}
+                        <option value="{{ value }}" {{ filters.status == value ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="actions" style="display: flex; gap: 8px;">
+                <button class="btn-primary" type="submit" style="padding: 10px 20px;">Filtrer</button>
+                <a class="btn-front btn-edit" href="{{ path('front_jalonprogression_index') }}" style="padding: 10px 20px;">Réinitialiser</a>
+            </div>
+        </form>
 
-    <section class="table-card">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Objectif</th>
-                    <th>Titre</th>
-                    <th>Date cible</th>
-                    <th>Date atteinte</th>
-                    <th>Progression</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for jalon in jalons %}
-                    <tr>
-                        <td>{{ jalon.idJalon }}</td>
-                        <td>{{ jalon.idObj.titre }}</td>
-                        <td>{{ jalon.titre }}</td>
-                        <td>{{ jalon.dateCible|date('d/m/Y') }}</td>
-                        <td>{{ jalon.dateAtteinte|date('d/m/Y') }}</td>
-                        <td>{{ jalon.pourcentageProgression }}%</td>
-                        <td><span class="badge">{{ jalon.atteint ? 'Atteint' : 'En cours' }}</span></td>
-                        <td>
-                            <div class="inline-actions">
-                                <a class="btn btn-secondary" href="{{ path('front_jalonprogression_edit', {idJalon: jalon.idJalon}) }}">Modifier</a>
-                                <form method="post" action="{{ path('front_jalonprogression_delete', {idJalon: jalon.idJalon}) }}" onsubmit="return confirm('Supprimer ce jalon ?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_jalon_' ~ jalon.idJalon) }}">
-                                    <button class="btn btn-danger" type="submit">Supprimer</button>
-                                </form>
+        <div class="jalons-grid">
+            {% for jalon in jalons %}
+                <div class="jalon-card">
+                    <div class="jalon-header">
+                        <h3 class="jalon-title">{{ jalon.titre }}</h3>
+                        <span class="jalon-objectif">🎯 {{ jalon.idObj.titre }}</span>
+                    </div>
+                    <div class="jalon-body">
+                        <div class="progress-section">
+                            <div class="progress-bar-bg">
+                                <div class="progress-fill {% if jalon.atteint %}atteint{% else %}en-cours{% endif %}" style="width: {{ jalon.pourcentageProgression }}%"></div>
                             </div>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="8" class="muted">Aucun jalon trouvé.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </section>
+                            <span class="progress-percent">{{ jalon.pourcentageProgression }}%</span>
+                        </div>
+                        <div class="dates">
+                            <span>📅 Cible: {{ jalon.dateCible|date('d/m/Y') }}</span>
+                            <span>✅ Atteinte: {{ jalon.dateAtteinte ? jalon.dateAtteinte|date('d/m/Y') : '—' }}</span>
+                        </div>
+                        <div>
+                            <span class="badge-status {% if jalon.atteint %}badge-atteint{% else %}badge-en-cours{% endif %}">
+                                {{ jalon.atteint ? '✓ Atteint' : '⏳ En cours' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="jalon-actions">
+                        <a class="btn-front btn-edit" href="{{ path('front_jalonprogression_edit', {idJalon: jalon.idJalon}) }}">✏️ Modifier</a>
+                        <form method="post" action="{{ path('front_jalonprogression_delete', {idJalon: jalon.idJalon}) }}" onsubmit="return confirm('Supprimer ce jalon ?');" style="margin: 0;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_jalon_' ~ jalon.idJalon) }}">
+                            <button class="btn-front btn-delete" type="submit">🗑️ Supprimer</button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>Aucun jalon trouvé.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
 {% endblock %}

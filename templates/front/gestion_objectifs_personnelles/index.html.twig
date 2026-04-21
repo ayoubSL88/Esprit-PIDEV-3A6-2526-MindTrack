@@ -2,21 +2,181 @@
 
 {% block page_title %}Gestion des objectifs{% endblock %}
 
-{% block content %}
-    <div class="page-stack">
-        {{ component('PageHeader', {
-            eyebrow: 'Front Office',
-            title: 'Mes Objectifs',
-            copy: 'Choisissez le module a gerer puis utilisez les ecrans de liste, ajout, modification et suppression.'
-        }) }}
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* STYLE FRONT - MODERN CARDS WITH ICONS */
+        .page-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        
+        .page-header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+        
+        .page-header p {
+            color: #64748b;
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* GRILLE DE CARTES MODERNES */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 28px;
+            margin-top: 20px;
+        }
+        
+        .module-card {
+            background: white;
+            border-radius: 28px;
+            padding: 0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.03);
+            position: relative;
+        }
+        
+        .module-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 35px -12px rgba(0,0,0,0.15);
+        }
+        
+        .card-icon {
+            font-size: 3rem;
+            text-align: center;
+            padding: 30px 20px 20px;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        }
+        
+        .card-content {
+            padding: 20px 24px 24px;
+            text-align: center;
+        }
+        
+        .card-content h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        
+        .card-content p {
+            color: #64748b;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        
+        .btn-front-module {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-front-module:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99,102,241,0.3);
+        }
+        
+        /* Couleurs différentes pour chaque carte */
+        .module-card:nth-child(1) .card-icon {
+            background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+        }
+        .module-card:nth-child(2) .card-icon {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+        }
+        .module-card:nth-child(3) .card-icon {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+        }
+        .module-card:nth-child(4) .card-icon {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+        }
+        
+        @media (max-width: 768px) {
+            .modules-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .page-header h1 {
+                font-size: 1.6rem;
+            }
+        }
+        
+        /* Animation d'apparition */
+        .module-card {
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .module-card:nth-child(1) { animation-delay: 0.1s; }
+        .module-card:nth-child(2) { animation-delay: 0.2s; }
+        .module-card:nth-child(3) { animation-delay: 0.3s; }
+        .module-card:nth-child(4) { animation-delay: 0.4s; }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+{% endblock %}
 
-        <section class="feature-grid">
+{% block content %}
+    <div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
+        <section class="page-header">
+            <h1>🎯 Gestion des objectifs personnelles</h1>
+            <p>Fixe-toi des objectifs élevés et ne t’arrête pas avant de les atteindre.</p>
+        </section>
+
+        <section class="modules-grid">
             {% for module in modules %}
-                <article class="feature-card">
-                    <h3 class="feature-title">{{ module.title }}</h3>
-                    <p class="feature-copy">{{ module.description }}</p>
-                    <a class="btn-primary mt-4" href="{{ path(module.route) }}">Ouvrir</a>
-                </article>
+                <div class="module-card">
+                    <div class="card-icon">
+                        {% if module.title == "Objectifs" %}
+                            🎯
+                        {% elseif module.title == "Plans d'action" %}
+                            📋
+                        {% elseif module.title == "Jalons de progression" %}
+                            📍
+                        {% elseif module.title == "Planificateur intelligent" %}
+                            🤖
+                        {% else %}
+                            📦
+                        {% endif %}
+                    </div>
+                    <div class="card-content">
+                        <h3>{{ module.title }}</h3>
+                        <p>{{ module.description }}</p>
+                        <a class="btn-front-module" href="{{ path(module.route) }}">
+                            Accéder <span>→</span>
+                        </a>
+                    </div>
+                </div>
             {% endfor %}
         </section>
     </div>

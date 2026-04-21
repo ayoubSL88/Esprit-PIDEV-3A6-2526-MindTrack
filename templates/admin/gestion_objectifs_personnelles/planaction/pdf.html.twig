@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h2>Liste des plans d'action</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Titre</th>
+            <th>Description</th>
+            <th>Statut</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for p in planactions %}
+        <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.titre }}</td>
+            <td>{{ p.description }}</td>
+            <td>{{ p.statut }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

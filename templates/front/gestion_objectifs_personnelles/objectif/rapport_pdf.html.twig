@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport Objectif</title>
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; }
+        h1 { color: #4f46e5; }
+        .box { margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<h1>📊 Rapport de l'objectif</h1>
+
+<div class="box">
+    <strong>Titre :</strong> {{ objectif.titre }}
+</div>
+
+<div class="box">
+    <strong>Description :</strong> {{ objectif.descriprion }}
+</div>
+
+<div class="box">
+    <strong>Statut :</strong> {{ objectif.statut }}
+</div>
+
+<div class="box">
+    <strong>Progression :</strong> {{ progression }}%
+</div>
+
+<div class="box">
+    <strong>Date :</strong> {{ date|date('d/m/Y') }}
+</div>
+
+<hr>
+
+<h3>📌 JALONS</h3>
+<ul>
+    {% for j in jalons %}
+        <li>
+            {{ j.titre ?? 'Jalon' }} -
+            {{ j.atteint ? '✔ terminé' : '⏳ en cours' }}
+        </li>
+    {% endfor %}
+</ul>
+
+<h3>📌 PLANS</h3>
+<ul>
+    {% for p in planactions %}
+        <li>{{ p.titre ?? 'Action' }}</li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>

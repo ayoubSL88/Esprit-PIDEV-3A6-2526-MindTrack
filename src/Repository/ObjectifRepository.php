@@ -47,6 +47,37 @@ class ObjectifRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * Retourne une requête Query (pour KnpPaginator)
+     */
+    public function findBySearchSortAndStatusQuery(?string $search, ?string $sort, ?string $status): \Doctrine\ORM\Query
+    {
+        $qb = $this->createQueryBuilder('o');
+
+        if ($search) {
+            $qb
+                ->andWhere('LOWER(o.titre) LIKE :search OR LOWER(o.descriprion) LIKE :search OR LOWER(o.statut) LIKE :search')
+                ->setParameter('search', '%' . mb_strtolower(trim($search)) . '%');
+        }
+
+        if ($status) {
+            $qb
+                ->andWhere('LOWER(o.statut) = :status')
+                ->setParameter('status', mb_strtolower(trim($status)));
+        }
+
+        match ($sort) {
+            'date_asc' => $qb->orderBy('o.dateDebut', 'ASC'),
+            'fin_asc' => $qb->orderBy('o.dateFin', 'ASC'),
+            'fin_desc' => $qb->orderBy('o.dateFin', 'DESC'),
+            'statut_asc' => $qb->orderBy('o.statut', 'ASC')->addOrderBy('o.dateDebut', 'ASC'),
+            'statut_desc' => $qb->orderBy('o.statut', 'DESC')->addOrderBy('o.dateDebut', 'DESC'),
+            default => $qb->orderBy('o.dateDebut', 'DESC'),
+        };
+
+        return $qb->getQuery();
+    }
+
     public function nextId(): int
     {
         $maxId = $this->createQueryBuilder('o')
