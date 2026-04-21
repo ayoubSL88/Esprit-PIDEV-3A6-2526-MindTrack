@@ -276,13 +276,25 @@ def compute_facial_features(face_image: np.ndarray, detected_eyes: list[tuple[in
     )
 
     eye_count = min(2, len(detected_eyes))
-    smile_strength = 0.0
+    raw_smile_strength = 0.0
     if len(smiles) > 0:
         largest_smile = max(smiles, key=lambda item: int(item[2]) * int(item[3]))
-        smile_strength = min(
+        raw_smile_strength = min(
             1.0,
             safe_ratio(largest_smile[2], width * 0.6) * 0.7 + safe_ratio(len(smiles), 3) * 0.3,
         )
+
+    mouth_features = compute_mouth_features(gray)
+    mouth_curve = float(mouth_features["mouth_curve"])
+    teeth_score = float(mouth_features["teeth_score"])
+    smile_support = max(0.0, mouth_curve) * 0.68 + teeth_score * 0.32
+    smile_strength = min(
+        1.0,
+        raw_smile_strength * (0.28 + smile_support * 0.72) + smile_support * 0.45,
+    )
+
+    if mouth_curve <= 0.03 and teeth_score < 0.08:
+        smile_strength *= 0.45
 
     eye_openness = 0.0
     if eye_count > 0:
@@ -296,13 +308,14 @@ def compute_facial_features(face_image: np.ndarray, detected_eyes: list[tuple[in
         float(np.mean(gray[:, : width // 2])) - float(np.mean(gray[:, width // 2 :]))
     ) / 255.0
     local_contrast = min(1.0, float(np.std(cv2.Laplacian(gray, cv2.CV_64F))) / 48.0)
-    mouth_features = compute_mouth_features(gray)
 
     return {
         "eye_count": eye_count,
         "eye_presence": round(min(1.0, eye_count / 2.0), 4),
         "eye_openness": round(float(eye_openness), 4),
         "smile_strength": round(smile_strength, 4),
+        "raw_smile_strength": round(raw_smile_strength, 4),
+        "smile_support": round(smile_support, 4),
         "edge_density": round(edge_density, 4),
         "lower_brightness": round(lower_brightness, 4),
         "upper_brightness": round(upper_brightness, 4),
@@ -325,17 +338,18 @@ def infer_emotions(features: dict, quality: dict) -> dict:
     teeth_score = float(features["teeth_score"])
     mouth_contrast = float(features["mouth_contrast"])
     local_contrast = float(features["local_contrast"])
+    smile_support = float(features.get("smile_support", 0.0))
     blur_score = float(quality["blur_score"])
     dark_score = float(quality["dark_score"])
     face_quality = float(quality["face_quality"])
 
-    smile_signal = max(0.0, smile_strength * 0.45 + mouth_curve * 0.32 + teeth_score * 0.23)
+    smile_signal = max(0.0, smile_strength * 0.38 + max(0.0, mouth_curve) * 0.4 + teeth_score * 0.14 + smile_support * 0.08)
     relaxed_signal = max(0.0, face_quality * 0.4 + eye_openness * 0.24 + (1.0 - symmetry_gap) * 0.12)
     strain_signal = max(0.0, edge_density * 0.34 + symmetry_gap * 0.18 + mouth_contrast * 0.16 + local_contrast * 0.12)
 
-    happy = min(1.0, smile_signal * 0.72 + relaxed_signal * 0.2 + eye_presence * 0.08)
+    happy = min(1.0, smile_signal * 0.54 + relaxed_signal * 0.16 + eye_presence * 0.06)
     tired = min(1.0, blur_score * 0.27 + dark_score * 0.22 + (1.0 - eye_presence) * 0.14 + (1.0 - eye_openness) * 0.2 + (1.0 - face_quality) * 0.1 + mouth_openness * 0.08)
-    sad = min(1.0, max(0.0, (1.0 - smile_signal) * 0.28 + dark_score * 0.22 + max(0.0, 0.55 - lower_brightness) * 0.32 + (1.0 - eye_openness) * 0.12 + symmetry_gap * 0.12))
+    sad = min(1.0, max(0.0, (1.0 - smile_signal) * 0.34 + dark_score * 0.22 + max(0.0, 0.55 - lower_brightness) * 0.32 + (1.0 - eye_openness) * 0.12 + symmetry_gap * 0.12 + max(0.0, -mouth_curve) * 0.16))
     anxious = min(1.0, max(0.0, strain_signal * 0.56 + eye_presence * 0.08 + mouth_openness * 0.12 + (1.0 - smile_signal) * 0.16))
     neutral = min(
         1.0,
@@ -403,10 +417,13 @@ def classify(emotions: dict, quality: dict, features: dict) -> tuple[dict, dict]
     smile_strength = float(features["smile_strength"])
     eye_presence = float(features["eye_presence"])
     eye_openness = float(features["eye_openness"])
+    lower_brightness = float(features["lower_brightness"])
     mouth_curve = float(features["mouth_curve"])
     mouth_openness = float(features["mouth_openness"])
     teeth_score = float(features["teeth_score"])
     tired_hint = float(emotions.get("tired_hint", 0.0)) / 100.0
+    raw_smile_strength = float(features.get("raw_smile_strength", smile_strength))
+    smile_support = float(features.get("smile_support", 0.0))
 
     anxious = max(angry, fear, (disgust * 0.85), (surprise * 0.45))
     tired = max(
@@ -422,10 +439,22 @@ def classify(emotions: dict, quality: dict, features: dict) -> tuple[dict, dict]
         - (smile_strength * 0.1),
     )
 
+    sad_visual_weight = (
+        max(0.0, -mouth_curve) * 0.24
+        + max(0.0, 0.58 - eye_openness) * 0.16
+        + max(0.0, 0.52 - lower_brightness) * 0.18
+        + max(0.0, 0.2 - smile_strength) * 0.12
+    )
+    smile_bias = (
+        smile_strength * 0.18
+        + max(0.0, mouth_curve) * 0.14
+        + teeth_score * 0.1
+    )
+
     scores = {
-        "happy": happy + (smile_strength * 0.12) + (max(0.0, mouth_curve) * 0.12) + (teeth_score * 0.08) + (face_quality * 0.04),
+        "happy": happy + (smile_strength * 0.08) + (max(0.0, mouth_curve) * 0.08) + (teeth_score * 0.05) + (face_quality * 0.03) - (sad_visual_weight * 0.16),
         "neutural": neutral + (face_quality * 0.06) + (eye_presence * 0.03) + (eye_openness * 0.03) - (sad * 0.05),
-        "sad": sad + (dark_score * 0.1) + ((1.0 - smile_strength) * 0.04) + (max(0.0, -mouth_curve) * 0.08),
+        "sad": sad + (dark_score * 0.13) + ((1.0 - smile_strength) * 0.05) + (max(0.0, -mouth_curve) * 0.12) + sad_visual_weight,
         "anxious": anxious + (surprise * 0.08) + (features["edge_density"] * 0.06) + (mouth_openness * 0.06),
         "tired": tired,
     }
@@ -433,7 +462,10 @@ def classify(emotions: dict, quality: dict, features: dict) -> tuple[dict, dict]
     dominant_type = max(scores, key=scores.get)
     dominant_score = float(scores[dominant_type])
 
-    if happy >= 0.3 and (smile_strength >= 0.26 or mouth_curve >= 0.14):
+    if sad >= 0.22 and sad_visual_weight >= 0.08 and smile_bias < 0.08:
+        dominant_type = "sad"
+        dominant_score = scores["sad"]
+    elif happy >= 0.34 and (smile_strength >= 0.34 or mouth_curve >= 0.18 or teeth_score >= 0.12):
         dominant_type = "happy"
         dominant_score = scores["happy"]
     elif tired >= 0.54 and happy < 0.28 and eye_openness < 0.62:
@@ -442,7 +474,7 @@ def classify(emotions: dict, quality: dict, features: dict) -> tuple[dict, dict]
     elif anxious >= 0.28 and smile_strength < 0.18 and mouth_curve < 0.08:
         dominant_type = "anxious"
         dominant_score = scores["anxious"]
-    elif sad >= 0.24 and smile_strength < 0.16 and mouth_curve < 0.02:
+    elif sad >= 0.2 and smile_strength < 0.22 and mouth_curve < 0.08:
         dominant_type = "sad"
         dominant_score = scores["sad"]
     elif neutral >= 0.28:
@@ -479,8 +511,12 @@ def classify(emotions: dict, quality: dict, features: dict) -> tuple[dict, dict]
         "mouth_curve": round(mouth_curve, 4),
         "mouth_openness": round(mouth_openness, 4),
         "teeth_score": round(teeth_score, 4),
+        "raw_smile_strength": round(raw_smile_strength, 4),
+        "smile_support": round(smile_support, 4),
         "mouth_contrast": round(float(features["mouth_contrast"]), 4),
         "local_contrast": round(float(features["local_contrast"]), 4),
+        "sad_visual_weight": round(sad_visual_weight, 4),
+        "smile_bias": round(smile_bias, 4),
     }
     metrics.update(quality)
 

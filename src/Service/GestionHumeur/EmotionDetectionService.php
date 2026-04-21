@@ -198,18 +198,29 @@ final class EmotionDetectionService
         $groupedByType = [];
         foreach ($successfulDetections as $detection) {
             $type = $detection['type'];
+            $metrics = is_array($detection['metrics'] ?? null) ? $detection['metrics'] : [];
+            $dominantRaw = max(0.0, min(1.0, (float) ($metrics['dominant_emotion_raw'] ?? $detection['confidence'])));
+            $weightedVote = max(0.05, ((float) $detection['confidence'] * 0.7) + ($dominantRaw * 0.3));
+
             if (!isset($groupedByType[$type])) {
                 $groupedByType[$type] = [
                     'frames' => [],
                     'score' => 0.0,
+                    'voteWeight' => 0.0,
                 ];
             }
 
             $groupedByType[$type]['frames'][] = $detection;
             $groupedByType[$type]['score'] += (float) $detection['confidence'];
+            $groupedByType[$type]['voteWeight'] += $weightedVote;
         }
 
         uasort($groupedByType, static function (array $left, array $right): int {
+            $voteWeightComparison = $right['voteWeight'] <=> $left['voteWeight'];
+            if ($voteWeightComparison !== 0) {
+                return $voteWeightComparison;
+            }
+
             $leftFrameCount = count($left['frames']);
             $rightFrameCount = count($right['frames']);
 
