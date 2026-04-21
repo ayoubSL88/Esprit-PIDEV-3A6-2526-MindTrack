@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Habitude;
+use App\Entity\Utilisateur;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -34,6 +35,12 @@ class HabitudeRepository extends ServiceEntityRepository
         $direction = strtoupper((string) ($filters['direction'] ?? 'ASC')) === 'DESC' ? 'DESC' : 'ASC';
         $qb = $this->createQueryBuilder('h');
 
+        if (($filters['owner'] ?? null) instanceof Utilisateur) {
+            $qb
+                ->andWhere('h.idU = :owner')
+                ->setParameter('owner', $filters['owner']);
+        }
+
         if (($filters['q'] ?? '') !== '') {
             $qb
                 ->andWhere('h.nom LIKE :term OR h.objectif LIKE :term OR h.unit LIKE :term')
@@ -51,6 +58,38 @@ class HabitudeRepository extends ServiceEntityRepository
         $qb->orderBy($allowedSorts[$sort] ?? 'h.nom', $direction);
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @return list<Habitude>
+     */
+    public function findForUser(Utilisateur $user, array $filters = []): array
+    {
+        $filters['owner'] = $user;
+
+        return $this->findAdminList($filters);
+    }
+
+    public function countForUser(Utilisateur $user): int
+    {
+        return (int) $this->createQueryBuilder('h')
+            ->select('COUNT(h.idHabitude)')
+            ->andWhere('h.idU = :owner')
+            ->setParameter('owner', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countByTypeForUser(Utilisateur $user, string $type): int
+    {
+        return (int) $this->createQueryBuilder('h')
+            ->select('COUNT(h.idHabitude)')
+            ->andWhere('h.idU = :owner')
+            ->andWhere('h.habitType = :type')
+            ->setParameter('owner', $user)
+            ->setParameter('type', $type)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     public function nextId(): int

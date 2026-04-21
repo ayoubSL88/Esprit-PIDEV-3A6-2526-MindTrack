@@ -11,8 +11,11 @@ use App\Form\Admin\GestionSuiviHabitudes\SuivihabitudeType;
 use App\Repository\HabitudeRepository;
 use App\Repository\RappelHabitudeRepository;
 use App\Repository\SuivihabitudeRepository;
+use App\Service\Habitude\BadContentDetectionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -80,11 +83,15 @@ final class OverviewController extends AbstractController
     }
 
     #[Route('/habitude/new', name: 'habitude_new', methods: ['GET', 'POST'])]
-    public function newHabitude(Request $request, EntityManagerInterface $entityManager, HabitudeRepository $habitudeRepository): Response
+    public function newHabitude(Request $request, EntityManagerInterface $entityManager, HabitudeRepository $habitudeRepository, BadContentDetectionService $badContentDetectionService): Response
     {
         $habitude = new Habitude();
         $form = $this->createForm(HabitudeType::class, $habitude);
         $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            $this->guardHabitFormAgainstBadContent($form, $habitude, $badContentDetectionService);
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
             $habitude->setIdHabitude($habitudeRepository->nextId());
@@ -104,10 +111,14 @@ final class OverviewController extends AbstractController
     }
 
     #[Route('/habitude/{idHabitude}/edit', name: 'habitude_edit', methods: ['GET', 'POST'])]
-    public function editHabitude(Request $request, Habitude $habitude, EntityManagerInterface $entityManager): Response
+    public function editHabitude(Request $request, Habitude $habitude, EntityManagerInterface $entityManager, BadContentDetectionService $badContentDetectionService): Response
     {
         $form = $this->createForm(HabitudeType::class, $habitude);
         $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            $this->guardHabitFormAgainstBadContent($form, $habitude, $badContentDetectionService);
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
@@ -137,12 +148,16 @@ final class OverviewController extends AbstractController
     }
 
     #[Route('/suivi/new', name: 'suivi_new', methods: ['GET', 'POST'])]
-    public function newSuivi(Request $request, EntityManagerInterface $entityManager, SuivihabitudeRepository $suivihabitudeRepository): Response
+    public function newSuivi(Request $request, EntityManagerInterface $entityManager, SuivihabitudeRepository $suivihabitudeRepository, BadContentDetectionService $badContentDetectionService): Response
     {
         $suivi = new Suivihabitude();
         $suivi->setDate(new \DateTime('today'));
         $form = $this->createForm(SuivihabitudeType::class, $suivi);
         $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            $this->guardSuiviFormAgainstBadContent($form, $suivi, $badContentDetectionService);
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
             $suivi->setIdSuivi($suivihabitudeRepository->nextId());
@@ -162,10 +177,14 @@ final class OverviewController extends AbstractController
     }
 
     #[Route('/suivi/{idSuivi}/edit', name: 'suivi_edit', methods: ['GET', 'POST'])]
-    public function editSuivi(Request $request, Suivihabitude $suivihabitude, EntityManagerInterface $entityManager): Response
+    public function editSuivi(Request $request, Suivihabitude $suivihabitude, EntityManagerInterface $entityManager, BadContentDetectionService $badContentDetectionService): Response
     {
         $form = $this->createForm(SuivihabitudeType::class, $suivihabitude);
         $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            $this->guardSuiviFormAgainstBadContent($form, $suivihabitude, $badContentDetectionService);
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
@@ -195,12 +214,16 @@ final class OverviewController extends AbstractController
     }
 
     #[Route('/rappel/new', name: 'rappel_new', methods: ['GET', 'POST'])]
-    public function newRappel(Request $request, EntityManagerInterface $entityManager, RappelHabitudeRepository $rappelHabitudeRepository): Response
+    public function newRappel(Request $request, EntityManagerInterface $entityManager, RappelHabitudeRepository $rappelHabitudeRepository, BadContentDetectionService $badContentDetectionService): Response
     {
         $rappel = new Rappel_habitude();
         $rappel->setCreatedAt(new \DateTime());
         $form = $this->createForm(RappelHabitudeType::class, $rappel);
         $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            $this->guardRappelFormAgainstBadContent($form, $rappel, $badContentDetectionService);
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
             $rappel->setIdRappel($rappelHabitudeRepository->nextId());
@@ -220,10 +243,14 @@ final class OverviewController extends AbstractController
     }
 
     #[Route('/rappel/{idRappel}/edit', name: 'rappel_edit', methods: ['GET', 'POST'])]
-    public function editRappel(Request $request, Rappel_habitude $rappelHabitude, EntityManagerInterface $entityManager): Response
+    public function editRappel(Request $request, Rappel_habitude $rappelHabitude, EntityManagerInterface $entityManager, BadContentDetectionService $badContentDetectionService): Response
     {
         $form = $this->createForm(RappelHabitudeType::class, $rappelHabitude);
         $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            $this->guardRappelFormAgainstBadContent($form, $rappelHabitude, $badContentDetectionService);
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
@@ -250,5 +277,79 @@ final class OverviewController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_gestion_suivi_habitudes_index');
+    }
+
+    private function guardHabitFormAgainstBadContent(FormInterface $form, Habitude $habitude, BadContentDetectionService $badContentDetectionService): void
+    {
+        $result = $badContentDetectionService->analyzeFields([
+            'nom' => $habitude->getNom(),
+            'objectif' => $habitude->getObjectif(),
+            'unite' => $habitude->getUnit(),
+        ]);
+
+        if (!$result['blocked']) {
+            return;
+        }
+
+        $message = $this->buildBadContentErrorMessage($result['label'], $result['reason'], $result['categories']);
+        $fieldMap = ['nom' => 'nom', 'objectif' => 'objectif', 'unite' => 'unit'];
+        $fieldName = $fieldMap[$result['field']] ?? null;
+
+        if (is_string($fieldName) && $form->has($fieldName)) {
+            $form->get($fieldName)->addError(new FormError($message));
+        }
+    }
+
+    private function guardSuiviFormAgainstBadContent(FormInterface $form, Suivihabitude $suivi, BadContentDetectionService $badContentDetectionService): void
+    {
+        $habit = $suivi->getIdHabitude();
+        if (!$habit instanceof Habitude) {
+            return;
+        }
+
+        $result = $badContentDetectionService->analyzeFields([
+            'nom de l habitude' => $habit->getNom(),
+            'objectif de l habitude' => $habit->getObjectif(),
+        ]);
+
+        if (!$result['blocked']) {
+            return;
+        }
+
+        $message = $this->buildBadContentErrorMessage('habitude selectionnee', $result['reason'], $result['categories']);
+        if ($form->has('idHabitude')) {
+            $form->get('idHabitude')->addError(new FormError($message));
+        }
+    }
+
+    private function guardRappelFormAgainstBadContent(FormInterface $form, Rappel_habitude $rappel, BadContentDetectionService $badContentDetectionService): void
+    {
+        $habit = $rappel->getIdHabitude();
+        $result = $badContentDetectionService->analyzeFields([
+            'message' => $rappel->getMessage(),
+            'jours' => $rappel->getJours(),
+            'nom de l habitude' => $habit?->getNom(),
+            'objectif de l habitude' => $habit?->getObjectif(),
+        ]);
+
+        if (!$result['blocked']) {
+            return;
+        }
+
+        $message = $this->buildBadContentErrorMessage($result['label'], $result['reason'], $result['categories']);
+        $fieldMap = ['message' => 'message', 'jours' => 'jours'];
+        $fieldName = $fieldMap[$result['field']] ?? 'idHabitude';
+
+        if ($form->has($fieldName)) {
+            $form->get($fieldName)->addError(new FormError($message));
+        }
+    }
+
+    /**
+     * @param list<string> $categories
+     */
+    private function buildBadContentErrorMessage(string $fieldLabel, string $reason, array $categories): string
+    {
+        return 'Mauvais contenu.';
     }
 }

@@ -4,6 +4,16 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    app.badcontent.api_key: '%env(default::BADCONTENT_API_KEY)%'
+    app.badcontent.model: '%env(default::BADCONTENT_MODEL)%'
+    app.badcontent.api_url: '%env(default::BADCONTENT_API_URL)%'
+    app.badcontent.site_url: '%env(default::BADCONTENT_SITE_URL)%'
+    app.badcontent.site_name: '%env(default::BADCONTENT_SITE_NAME)%'
+    app.ollama.url: '%env(default::OLLAMA_API_URL)%'
+    app.ollama.model: '%env(default::OLLAMA_MODEL)%'
+    app.weather.latitude: 36.8
+    app.weather.longitude: 10.18
+    app.weather.location_label: 'Tunis'
 
 services:
     # default configuration for services in *this* file
@@ -50,6 +60,24 @@ services:
             $smtpEncryption: '%env(PASSWORD_RESET_SMTP_ENCRYPTION)%'
             $smtpUsername: '%env(PASSWORD_RESET_SMTP_USERNAME)%'
             $smtpPassword: '%env(PASSWORD_RESET_SMTP_PASSWORD)%'
+    App\Service\Habitude\BadContentDetectionService:
+        arguments:
+            $apiKey: '%app.badcontent.api_key%'
+            $model: '%app.badcontent.model%'
+            $apiUrl: '%app.badcontent.api_url%'
+            $siteUrl: '%app.badcontent.site_url%'
+            $siteName: '%app.badcontent.site_name%'
+
+    App\Service\Habitude\OpenMeteoWeatherService:
+        arguments:
+            $latitude: '%app.weather.latitude%'
+            $longitude: '%app.weather.longitude%'
+            $locationLabel: '%app.weather.location_label%'
+
+    App\Service\Chat\OllamaChatService:
+        arguments:
+            $apiUrl: '%app.ollama.url%'
+            $model: '%app.ollama.model%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

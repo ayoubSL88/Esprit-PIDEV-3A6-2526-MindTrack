@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Suivihabitude;
+use App\Entity\Utilisateur;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -36,6 +37,12 @@ class SuivihabitudeRepository extends ServiceEntityRepository
             ->leftJoin('s.idHabitude', 'h')
             ->addSelect('h');
 
+        if (($filters['owner'] ?? null) instanceof Utilisateur) {
+            $qb
+                ->andWhere('h.idU = :owner')
+                ->setParameter('owner', $filters['owner']);
+        }
+
         if (($filters['habitude'] ?? '') !== '') {
             $qb->andWhere('IDENTITY(s.idHabitude) = :habitude')->setParameter('habitude', (int) $filters['habitude']);
         }
@@ -51,6 +58,29 @@ class SuivihabitudeRepository extends ServiceEntityRepository
         $qb->orderBy($allowedSorts[$sort] ?? 's.date', $direction);
 
         return $qb->getQuery()->getResult();
+    }
+
+    public function countAllForUser(Utilisateur $user): int
+    {
+        return (int) $this->createQueryBuilder('s')
+            ->select('COUNT(s.idSuivi)')
+            ->innerJoin('s.idHabitude', 'h')
+            ->andWhere('h.idU = :owner')
+            ->setParameter('owner', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countCompletedForUser(Utilisateur $user): int
+    {
+        return (int) $this->createQueryBuilder('s')
+            ->select('COUNT(s.idSuivi)')
+            ->innerJoin('s.idHabitude', 'h')
+            ->andWhere('h.idU = :owner')
+            ->andWhere('s.etat = true')
+            ->setParameter('owner', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     public function nextId(): int

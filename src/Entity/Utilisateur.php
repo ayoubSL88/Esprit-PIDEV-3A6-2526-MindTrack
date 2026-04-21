@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Profilpsychologique;
 use App\Repository\UtilisateurRepository;
@@ -53,6 +54,16 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: "boolean")]
     private bool $totp_enabled;
+
+    #[ORM\OneToMany(mappedBy: 'idU', targetEntity: Habitude::class)]
+    private Collection $habitudes;
+
+    public function __construct()
+    {
+        $this->habitudes = new ArrayCollection();
+        $this->password_reset_tokenss = new ArrayCollection();
+        $this->profilpsychologiques = new ArrayCollection();
+    }
 
     public function getIdU()
     {
@@ -206,6 +217,30 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function eraseCredentials(): void
     {
+    }
+
+    public function getHabitudes(): Collection
+    {
+        return $this->habitudes;
+    }
+
+    public function addHabitude(Habitude $habitude): self
+    {
+        if (!$this->habitudes->contains($habitude)) {
+            $this->habitudes->add($habitude);
+            $habitude->setIdU($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHabitude(Habitude $habitude): self
+    {
+        if ($this->habitudes->removeElement($habitude) && $habitude->getIdU() === $this) {
+            $habitude->setIdU(null);
+        }
+
+        return $this;
     }
 
     #[ORM\OneToMany(mappedBy: "user_id", targetEntity: Password_reset_tokens::class)]
