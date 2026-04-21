@@ -12,7 +12,7 @@ class Objectif
 {
 
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(type: "integer", name: "id_obj")]
     private int $idObj;
 
     #[ORM\Column(type: "string", length: 255)]
@@ -21,10 +21,10 @@ class Objectif
     #[ORM\Column(type: "string", length: 255)]
     private string $descriprion;
 
-    #[ORM\Column(type: "date")]
+    #[ORM\Column(type: "date", name: "date_debut")]
     private \DateTimeInterface $dateDebut;
 
-    #[ORM\Column(type: "date")]
+    #[ORM\Column(type: "date", name: "date_fin")]
     private \DateTimeInterface $dateFin;
 
     #[ORM\Column(type: "string", length: 255)]

@@ -16,25 +16,25 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
 
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(type: "integer", name: "id_u")]
     private int $idU;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: "string", length: 255, name: "nom_u")]
     private string $nomU;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: "string", length: 255, name: "prenom_u")]
     private string $prenomU;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: "string", length: 255, name: "email_u")]
     private string $emailU;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: "string", length: 255, name: "mdps_u")]
     private string $mdpsU;
 
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(type: "integer", name: "age_u")]
     private int $ageU;
 
-    #[ORM\Column(type: "string", length: 20)]
+    #[ORM\Column(type: "string", length: 20, name: "role_u")]
     private string $roleU;
 
     #[ORM\Column(type: "string", length: 255)]
