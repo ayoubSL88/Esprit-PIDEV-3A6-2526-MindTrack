@@ -19,6 +19,104 @@
             {% endfor %}
         </div>
 
+        <section class="panel-section form-stack">
+            <header class="page-header">
+                <h2 class="panel-title">Trust Score</h2>
+                <p class="panel-copy">Your score tracks profile completeness, verified email signal, 2FA coverage, and recent security hygiene (last {{ integrity.window_days }} days).</p>
+            </header>
+
+            <div class="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
+                <article class="rounded-3xl border border-border bg-panel p-5 shadow-soft">
+                    <p class="feature-label">Integrity</p>
+                    <p class="mt-3 text-2xl font-semibold text-ink">{{ integrity.score }}/100</p>
+                    <p class="mt-2 text-sm text-muted">{{ integrity.band|capitalize }} confidence</p>
+                    <div class="mt-4 h-2 overflow-hidden rounded-full bg-white/70">
+                        <div class="h-full rounded-full bg-gradient-to-r from-brand to-emphasis" style="width: {{ integrity.score }}%"></div>
+                    </div>
+                </article>
+
+                <article class="rounded-3xl border border-border bg-white/90 p-5 shadow-soft">
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-2xl border border-border bg-panel p-4">
+                            <p class="feature-label">Profile Completeness</p>
+                            <p class="mt-2 text-lg font-semibold text-ink">{{ integrity.profile_completeness.points }}/{{ integrity.profile_completeness.max }}</p>
+                            <p class="text-sm text-muted">{{ integrity.profile_completeness.percent }}% complete</p>
+                        </div>
+
+                        <div class="rounded-2xl border border-border bg-panel p-4">
+                            <p class="feature-label">Verified Email</p>
+                            <p class="mt-2 text-lg font-semibold text-ink">{{ integrity.verified_email.points }}/{{ integrity.verified_email.max }}</p>
+                            <p class="text-sm text-muted">{{ integrity.verified_email.verified ? 'Verification signal found' : 'Verification signal missing' }}</p>
+                        </div>
+
+                        <div class="rounded-2xl border border-border bg-panel p-4">
+                            <p class="feature-label">Two-Factor</p>
+                            <p class="mt-2 text-lg font-semibold text-ink">{{ integrity.two_factor.points }}/{{ integrity.two_factor.max }}</p>
+                            <p class="text-sm text-muted">{{ integrity.two_factor.enabled ? '2FA enabled' : '2FA disabled' }}</p>
+                        </div>
+
+                        <div class="rounded-2xl border border-border bg-panel p-4">
+                            <p class="feature-label">Security Hygiene</p>
+                            <p class="mt-2 text-lg font-semibold text-ink">{{ integrity.security_hygiene.points }}/{{ integrity.security_hygiene.max }}</p>
+                            <p class="text-sm text-muted">{{ integrity.security_hygiene.suspicious_events == 0 ? 'No suspicious events in last ' ~ integrity.window_days ~ ' days' : integrity.security_hygiene.suspicious_events ~ ' risk signal(s) detected' }}</p>
+                            <p class="mt-2 text-xs font-semibold uppercase tracking-[0.14em] {{ integrity.security_hygiene.risk_level == 'high' ? 'text-danger' : (integrity.security_hygiene.risk_level == 'medium' ? 'text-amber-700' : 'text-success') }}">
+                                {{ integrity.security_hygiene.risk_level|capitalize }} risk
+                            </p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                <article class="rounded-3xl border border-border bg-white/90 p-5 shadow-soft">
+                    <p class="feature-label">Suggested Actions</p>
+                    <div class="grid gap-3 mt-3">
+                        {% for action in integrity.actions %}
+                            <div class="rounded-2xl border border-border bg-panel p-4">
+                                <p class="text-xs font-semibold uppercase tracking-[0.14em] {{ action.priority == 'high' ? 'text-danger' : (action.priority == 'medium' ? 'text-brand' : 'text-muted') }}">
+                                    {{ action.priority }} priority
+                                </p>
+                                <p class="text-sm font-semibold text-ink">{{ action.label }}</p>
+                                <div class="button-row mt-3">
+                                    {% if action.code == 'enable_2fa' %}
+                                        <a class="btn-primary" href="{{ path('front_gestion_user_totp_setup') }}">Enable 2FA</a>
+                                    {% elseif action.code == 'enable_face_id' %}
+                                        <button type="button" class="btn-secondary" id="focus-face-id-action">Open Face ID section</button>
+                                    {% elseif action.code == 'complete_profile' %}
+                                        <button type="button" class="btn-secondary" id="focus-edit-profile-action">Complete profile</button>
+                                    {% elseif action.code == 'verify_email_signal' %}
+                                        <a class="btn-secondary" href="{{ path('app_forgot_password') }}">Run email verification flow</a>
+                                    {% elseif action.code == 'change_password' %}
+                                        <button type="button" class="btn-secondary" id="focus-password-action">Review password section</button>
+                                    {% else %}
+                                        <span class="badge">Stable</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <article class="rounded-3xl border border-border bg-white/90 p-5 shadow-soft">
+                    <p class="feature-label">Risk Signals</p>
+                    <p class="panel-copy mt-3">{{ integrity.verified_email.note }}</p>
+                    <p class="mt-2 text-xs text-muted">Score last calculated at {{ integrity.calculated_at|date('Y-m-d H:i') }}</p>
+
+                    {% if integrity.suspicious_events is empty %}
+                        <p class="rounded-2xl border border-success-border bg-success-soft px-4 py-3 text-sm text-success mt-4">
+                            No suspicious account events were detected in the last {{ integrity.window_days }} days.
+                        </p>
+                    {% else %}
+                        <div class="grid gap-3 mt-4">
+                            {% for event in integrity.suspicious_events %}
+                                <p class="rounded-2xl border border-danger-border bg-danger-soft px-4 py-3 text-sm text-danger">{{ event }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </article>
+            </div>
+        </section>
+
         <section class="hero-grid">
             <article class="panel-section">
                 <p class="feature-label">Account Overview</p>
@@ -231,6 +329,9 @@
             const faceVideo = document.getElementById('profile-face-video');
             const faceCaptureInput = document.getElementById('profile-face-capture-input');
             const faceForm = document.getElementById('profile-face-form');
+            const focusFaceIdButton = document.getElementById('focus-face-id-action');
+            const focusEditProfileButton = document.getElementById('focus-edit-profile-action');
+            const focusPasswordButton = document.getElementById('focus-password-action');
 
             if (!editButton || !cancelButton || !editForm || !faceActionButton || !faceStatus || !facePreviewShell || !faceVideo || !faceCaptureInput || !faceForm) {
                 return;
@@ -263,9 +364,34 @@
                 editForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
 
+            if (focusEditProfileButton) {
+                focusEditProfileButton.addEventListener('click', function () {
+                    editForm.classList.remove('hidden');
+                    editForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            }
+
             cancelButton.addEventListener('click', function () {
                 editForm.classList.add('hidden');
             });
+
+            if (focusFaceIdButton) {
+                focusFaceIdButton.addEventListener('click', function () {
+                    faceActionButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+            }
+
+            if (focusPasswordButton) {
+                focusPasswordButton.addEventListener('click', function () {
+                    const passwordInput = document.getElementById('current_password');
+                    if (!passwordInput) {
+                        return;
+                    }
+
+                    passwordInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    passwordInput.focus();
+                });
+            }
 
             if (!editForm.classList.contains('hidden')) {
                 editForm.scrollIntoView({ behavior: 'smooth', block: 'start' });

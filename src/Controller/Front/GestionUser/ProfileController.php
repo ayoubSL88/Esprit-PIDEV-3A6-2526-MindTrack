@@ -5,6 +5,7 @@ namespace App\Controller\Front\GestionUser;
 use App\Entity\Utilisateur;
 use App\Exception\FaceAuthenticationException;
 use App\Service\CompreFaceService;
+use App\Service\GestionUser\ProfileIntegrityService;
 use App\Service\GestionUser\ValidationService;
 use App\Service\TotpService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,6 +24,7 @@ final class ProfileController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         ValidationService $inputValidation,
+        ProfileIntegrityService $profileIntegrityService,
     ): Response|RedirectResponse
     {
         $currentUser = $this->getUser();
@@ -90,6 +92,7 @@ final class ProfileController extends AbstractController
             'fieldErrors' => $fieldErrors,
             'formSubmitted' => $formSubmitted,
             'openEdit' => $openEdit,
+            'integrity' => $profileIntegrityService->buildForUser($currentUser),
         ]);
     }
 
