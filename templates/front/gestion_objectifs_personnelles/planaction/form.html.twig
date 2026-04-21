@@ -1,0 +1,39 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+    {% include 'front/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
+
+    <section class="page-header">
+        <div>
+            <h1>{{ page_title }}</h1>
+            <p>Définis une étape claire et son niveau de priorité.</p>
+        </div>
+        <a class="btn btn-secondary" href="{{ path('front_planaction_index') }}">Retour à la liste</a>
+    </section>
+
+    <section class="form-card">
+        {{ form_start(form, {attr: {class: 'form-grid'}}) }}
+            {{ form_errors(form) }}
+            <div>
+                {{ form_label(form.idObj) }}
+                {{ form_widget(form.idObj) }}
+                <div class="field-error">{{ form_errors(form.idObj) }}</div>
+            </div>
+            <div>
+                {{ form_label(form.etape) }}
+                {{ form_widget(form.etape) }}
+                <div class="field-error">{{ form_errors(form.etape) }}</div>
+            </div>
+            <div>
+                {{ form_label(form.priorite) }}
+                {{ form_widget(form.priorite) }}
+                <div class="field-error">{{ form_errors(form.priorite) }}</div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+            </div>
+        {{ form_end(form) }}
+    </section>
+{% endblock %}

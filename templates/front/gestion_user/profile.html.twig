@@ -1,0 +1,155 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+    <div class="page-stack">
+        <header class="page-header">
+            <h1 class="page-title">My Profile</h1>
+            <p class="page-copy">Review your account information by section. Use Edit profile to unlock the form.</p>
+        </header>
+
+        <div class="flash-stack">
+            {% for message in app.flashes('success') %}
+                <div class="flash flash-success">{{ message }}</div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="flash flash-error">{{ message }}</div>
+            {% endfor %}
+        </div>
+
+        <section class="hero-grid">
+            <article class="panel-section">
+                <p class="feature-label">Account Overview</p>
+                <h2 class="panel-title mt-4">{{ currentUser.prenomU }} {{ currentUser.nomU }}</h2>
+                <p class="panel-copy">{{ currentUser.emailU }}</p>
+
+                <div class="button-row mt-6">
+                    <button type="button" class="btn-primary" id="edit-profile-button">Edit profile</button>
+                    <a href="{{ path('app_logout') }}" class="btn-secondary">Logout</a>
+                </div>
+            </article>
+
+            <article class="panel-section">
+                <p class="feature-label">Access</p>
+                <h2 class="panel-title mt-4">Session Summary</h2>
+                <ul class="feature-list">
+                    <li>Role: {{ currentUser.roleU }}</li>
+                    <li>Status: Active session</li>
+                    <li>Email: {{ currentUser.emailU }}</li>
+                </ul>
+            </article>
+        </section>
+
+        <section class="feature-grid">
+            <article class="feature-card">
+                <p class="feature-label">Identity</p>
+                <h3 class="feature-title">First Name</h3>
+                <p class="feature-copy">{{ currentUser.prenomU }}</p>
+            </article>
+
+            <article class="feature-card">
+                <p class="feature-label">Identity</p>
+                <h3 class="feature-title">Last Name</h3>
+                <p class="feature-copy">{{ currentUser.nomU }}</p>
+            </article>
+
+            <article class="feature-card">
+                <p class="feature-label">Contact</p>
+                <h3 class="feature-title">Email</h3>
+                <p class="feature-copy">{{ currentUser.emailU }}</p>
+            </article>
+
+            <article class="feature-card">
+                <p class="feature-label">Profile</p>
+                <h3 class="feature-title">Age</h3>
+                <p class="feature-copy">{{ currentUser.ageU }}</p>
+            </article>
+        </section>
+
+        <form method="post" id="profile-edit-form" class="panel-section form-stack {{ openEdit ? '' : 'hidden' }}" novalidate>
+            <header class="page-header">
+                <h2 class="panel-title">Edit Profile</h2>
+                <p class="panel-copy">Update your details, then save.</p>
+            </header>
+
+            <div class="form-grid">
+                <div class="field">
+                    <label class="field-label" for="prenom">First name</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.prenom is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="prenom" name="prenom" type="text" value="{{ form.prenom|default(currentUser.prenomU) }}">
+                    {% if fieldErrors.prenom is defined %}
+                        <p class="field-error">{{ fieldErrors.prenom }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="nom">Last name</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.nom is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="nom" name="nom" type="text" value="{{ form.nom|default(currentUser.nomU) }}">
+                    {% if fieldErrors.nom is defined %}
+                        <p class="field-error">{{ fieldErrors.nom }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="email">Email</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.email is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="email" name="email" type="text" inputmode="email" value="{{ form.email|default(currentUser.emailU) }}">
+                    {% if fieldErrors.email is defined %}
+                        <p class="field-error">{{ fieldErrors.email }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="age">Age</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.age is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="age" name="age" type="text" inputmode="numeric" value="{{ form.age|default(currentUser.ageU) }}">
+                    {% if fieldErrors.age is defined %}
+                        <p class="field-error">{{ fieldErrors.age }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('front_profile_edit_' ~ currentUser.idU) }}">
+
+            <div class="button-row">
+                <button type="submit" class="btn-primary">Save changes</button>
+                <button type="button" class="btn-secondary" id="cancel-edit-button">Cancel</button>
+            </div>
+        </form>
+
+        <section class="panel-section">
+            <p class="feature-label">Danger Zone</p>
+            <h2 class="panel-title mt-4">Delete Account</h2>
+            <p class="panel-copy">This action is permanent and cannot be undone.</p>
+
+            <form method="post" action="{{ path('front_gestion_user_delete_account') }}" onsubmit="return confirm('Delete your account? This action cannot be undone.');" class="button-row mt-4">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('front_delete_account_' ~ currentUser.idU) }}">
+                <button type="submit" class="btn-danger">Delete my account</button>
+            </form>
+        </section>
+    </div>
+
+    <script>
+        (function () {
+            const editButton = document.getElementById('edit-profile-button');
+            const cancelButton = document.getElementById('cancel-edit-button');
+            const editForm = document.getElementById('profile-edit-form');
+
+            if (!editButton || !cancelButton || !editForm) {
+                return;
+            }
+
+            editButton.addEventListener('click', function () {
+                editForm.classList.remove('hidden');
+                editForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+
+            cancelButton.addEventListener('click', function () {
+                editForm.classList.add('hidden');
+            });
+
+            if (!editForm.classList.contains('hidden')) {
+                editForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        })();
+    </script>
+{% endblock %}

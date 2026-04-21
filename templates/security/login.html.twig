@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Sign in{% endblock %}
+
+{% block body %}
+    <main class="page-shell">
+        <div class="app-shell max-w-2xl">
+            <section class="page-card">
+                <div class="page-stack">
+                    {{ component('PageHeader', {
+                        eyebrow: 'Access',
+                        title: 'Sign in',
+                        copy: 'Use your MindTrack account to enter the front area or the admin area, depending on your role.'
+                    }) }}
+
+                    {{ component('FlashStack', {
+                        errorMessage: error ? error.messageKey|trans(error.messageData, 'security') : null
+                    }) }}
+
+                    <form method="post" class="form-stack">
+                        <div class="field">
+                            <label class="field-label" for="username">Email</label>
+                            <input class="field-input" type="email" id="username" name="_username" value="{{ last_username }}" autocomplete="email" required autofocus>
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label" for="password">Password</label>
+                            <input class="field-input" type="password" id="password" name="_password" autocomplete="current-password" required>
+                        </div>
+
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                        <div class="button-row">
+                            <button class="btn-primary" type="submit">Sign in</button>
+                            <a class="btn-secondary" href="{{ path('app_register') }}">Create account</a>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </main>
+{% endblock %}

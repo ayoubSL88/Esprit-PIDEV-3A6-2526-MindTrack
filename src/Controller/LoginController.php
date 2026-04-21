@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+
+final class LoginController extends AbstractController
+{
+    #[Route('/post-login', name: 'app_post_login')]
+    public function postLogin(): RedirectResponse
+    {
+        if ($this->getUser() === null) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        return $this->isGranted('ROLE_ADMIN')
+            ? $this->redirectToRoute('admin_dashboard')
+            : $this->redirectToRoute('front_home');
+    }
+
+    #[Route('/login', name: 'app_login')]
+    public function login(AuthenticationUtils $authenticationUtils): Response|RedirectResponse
+    {
+        if ($this->getUser() !== null) {
+            return $this->isGranted('ROLE_ADMIN')
+                ? $this->redirectToRoute('admin_dashboard')
+                : $this->redirectToRoute('front_home');
+        }
+
+        return $this->render('security/login.html.twig', [
+            'last_username' => $authenticationUtils->getLastUsername(),
+            'error' => $authenticationUtils->getLastAuthenticationError(),
+        ]);
+    }
+
+    #[Route('/logout', name: 'app_logout')]
+    public function logout(): void
+    {
+        throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
+    }
+}

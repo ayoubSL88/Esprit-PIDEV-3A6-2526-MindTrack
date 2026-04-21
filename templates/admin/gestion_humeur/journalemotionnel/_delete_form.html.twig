@@ -1,0 +1,4 @@
+<form method="post" action="{{ delete_path }}" onsubmit="return confirm('Are you sure you want to delete this journal entry?');">
+    <input type="hidden" name="_token" value="{{ csrf_token }}">
+    <button class="btn-danger px-4 py-2" type="submit">{{ button_label }}</button>
+</form>

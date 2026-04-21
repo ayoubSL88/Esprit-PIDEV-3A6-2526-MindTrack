@@ -3,6 +3,21 @@
 {% block page_title %}Gestion Objectifs Personnelles{% endblock %}
 
 {% block content %}
-    <h1>Gestion Objectifs Personnelles</h1>
-    <p>Entities: Jalonprogression, Objectif, Planificateurintelligent, Planaction.</p>
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Administration',
+            title: 'Gestion Objectifs Personnelles',
+            copy: 'Consultez les 4 modules et gerer les enregistrements depuis le back office.'
+        }) }}
+
+        <section class="feature-grid">
+            {% for module in modules %}
+                <article class="feature-card">
+                    <h3 class="feature-title">{{ module.title }}</h3>
+                    <p class="feature-copy">{{ module.description }}</p>
+                    <a class="btn-primary mt-4" href="{{ path(module.route) }}">Ouvrir</a>
+                </article>
+            {% endfor %}
+        </section>
+    </div>
 {% endblock %}

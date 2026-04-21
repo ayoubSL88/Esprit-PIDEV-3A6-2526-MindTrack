@@ -1,0 +1,60 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}Edit User{% endblock %}
+
+{% block content %}
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Administration',
+            title: 'Edit User',
+            copy: 'Update account details without introducing one-off form styles.'
+        }) }}
+
+        {{ component('FlashStack') }}
+
+        <form method="post" class="form-stack max-w-3xl" novalidate>
+            <div class="form-grid">
+                <div class="field">
+                    <label class="field-label" for="prenom">First name</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.prenom is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="prenom" name="prenom" type="text" value="{{ form.prenom|default(targetUser.prenomU) }}">
+                    {% if fieldErrors.prenom is defined %}
+                        <p class="field-error">{{ fieldErrors.prenom }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="nom">Last name</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.nom is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="nom" name="nom" type="text" value="{{ form.nom|default(targetUser.nomU) }}">
+                    {% if fieldErrors.nom is defined %}
+                        <p class="field-error">{{ fieldErrors.nom }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="field">
+                    <label class="field-label" for="email">Email</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.email is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="email" name="email" type="text" inputmode="email" value="{{ form.email|default(targetUser.emailU) }}">
+                    {% if fieldErrors.email is defined %}
+                        <p class="field-error">{{ fieldErrors.email }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="age">Age</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.age is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="age" name="age" type="text" inputmode="numeric" value="{{ form.age|default(targetUser.ageU) }}">
+                    {% if fieldErrors.age is defined %}
+                        <p class="field-error">{{ fieldErrors.age }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('edit_user_' ~ targetUser.idU) }}">
+
+            <div class="button-row">
+                <button class="btn-primary" type="submit">Save changes</button>
+                <a class="btn-secondary" href="{{ path('admin_gestion_user_index') }}">Back</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

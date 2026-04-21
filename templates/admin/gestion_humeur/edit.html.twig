@@ -1,24 +1,24 @@
 {% extends 'layouts/admin_base.html.twig' %}
 
-{% block page_title %}Edit Humeur{% endblock %}
+{% block page_title %}Edit Mood{% endblock %}
 
 {% block content %}
-    {% include 'humeur/_crud_styles.html.twig' %}
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Administration',
+            title: 'Edit mood #' ~ humeur.idH,
+            copy: 'Update the selected mood entry.'
+        }) }}
 
-    <section class="crud-header">
-        <div>
-            <h1>Edit humeur #{{ humeur.idH }}</h1>
-            <p>Update the selected mood entry.</p>
-        </div>
-        <a class="button-secondary" href="{{ path('admin_gestion_humeur_index') }}">Back to list</a>
-    </section>
+        {{ component('FlashStack') }}
 
-    {% include 'humeur/_flash_messages.html.twig' %}
-
-    <div class="card-shell form-shell">
-        {% include 'humeur/_form.html.twig' with {
+        {% include 'admin/gestion_humeur/humeur/_form.html.twig' with {
             form: form,
             button_label: 'Save changes'
         } only %}
+
+        <div class="button-row">
+            <a class="btn-secondary" href="{{ path('admin_gestion_humeur_index') }}">Back to list</a>
+        </div>
     </div>
 {% endblock %}

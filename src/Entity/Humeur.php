@@ -15,25 +15,25 @@ class Humeur
     private int $idH;
 
     #[ORM\Column(type: "date")]
-    #[Assert\NotNull(message: 'La date est obligatoire.')]
-    private \DateTimeInterface $date;
+    #[Assert\NotNull(message: 'The date is required.')]
+    private ?\DateTimeInterface $date = null;
 
     #[ORM\Column(type: "string", length: 255)]
-    #[Assert\NotBlank(message: 'Le type d\'humeur est obligatoire.')]
+    #[Assert\NotBlank(message: 'The mood type is required.')]
     #[Assert\Choice(
-        choices: ['sad', 'anxious', 'happy', 'neutural'],
-        message: 'Choisissez une humeur valide.'
+        choices: ['sad', 'anxious', 'happy', 'neutural', 'tired'],
+        message: 'Choose a valid mood type.'
     )]
-    private string $TypeHumeur;
+    private ?string $TypeHumeur = null;
 
     #[ORM\Column(type: "integer")]
-    #[Assert\NotNull(message: 'L\'intensite est obligatoire.')]
+    #[Assert\NotNull(message: 'The intensity is required.')]
     #[Assert\Range(
         min: 1,
         max: 10,
-        notInRangeMessage: 'L\'intensite doit etre comprise entre {{ min }} et {{ max }}.'
+        notInRangeMessage: 'The intensity must be between {{ min }} and {{ max }}.'
     )]
-    private int $intensite;
+    private ?int $intensite = null;
 
     public function getIdH()
     {
@@ -45,33 +45,45 @@ class Humeur
         $this->idH = $value;
     }
 
-    public function getDate()
+    public function getDate(): ?\DateTimeInterface
     {
         return $this->date;
     }
 
-    public function setDate($value)
+    public function setDate(?\DateTimeInterface $value): void
     {
         $this->date = $value;
     }
 
-    public function getTypeHumeur()
+    public function getTypeHumeur(): ?string
     {
         return $this->TypeHumeur;
     }
 
-    public function setTypeHumeur($value)
+    public function setTypeHumeur(?string $value): void
     {
         $this->TypeHumeur = $value;
     }
 
-    public function getIntensite()
+    public function getIntensite(): ?int
     {
         return $this->intensite;
     }
 
-    public function setIntensite($value)
+    public function setIntensite(?int $value): void
     {
         $this->intensite = $value;
+    }
+
+    public function getMoodLabel(): string
+    {
+        return match (strtolower(trim((string) ($this->TypeHumeur ?? '')))) {
+            'sad' => 'Sad',
+            'anxious', 'stress', 'stressed' => 'Stressed',
+            'happy' => 'Happy',
+            'tired', 'fatigue', 'fatigued', 'exhausted' => 'Tired',
+            'neutral', 'neutural', 'neutre' => 'Neutral',
+            default => $this->TypeHumeur === null || trim($this->TypeHumeur) === '' ? 'Not set' : ucfirst($this->TypeHumeur),
+        };
     }
 }

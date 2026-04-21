@@ -1,8 +1,23 @@
 {% extends 'layouts/front_base.html.twig' %}
 
-{% block page_title %}Mes Objectifs{% endblock %}
+{% block page_title %}Gestion des objectifs{% endblock %}
 
 {% block content %}
-    <h1>Mes Objectifs</h1>
-    <p>Entities: Jalonprogression, Objectif, Planificateurintelligent, Planaction.</p>
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Front Office',
+            title: 'Mes Objectifs',
+            copy: 'Choisissez le module a gerer puis utilisez les ecrans de liste, ajout, modification et suppression.'
+        }) }}
+
+        <section class="feature-grid">
+            {% for module in modules %}
+                <article class="feature-card">
+                    <h3 class="feature-title">{{ module.title }}</h3>
+                    <p class="feature-copy">{{ module.description }}</p>
+                    <a class="btn-primary mt-4" href="{{ path(module.route) }}">Ouvrir</a>
+                </article>
+            {% endfor %}
+        </section>
+    </div>
 {% endblock %}

@@ -1,0 +1,109 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const typeField = document.querySelector('[data-habit-type-field]');
+            let targetField = document.querySelector('[data-target-value-field]');
+            const unitField = document.querySelector('[data-unit-field]');
+
+            if (!typeField || !targetField || !unitField) {
+                return;
+            }
+
+            const container = targetField.parentElement;
+            const unitContainer = unitField.parentElement;
+            const label = document.querySelector(`label[for="${targetField.id}"]`);
+            const help = document.getElementById(`${targetField.id}_help`);
+
+            const buildNumericField = (value) => {
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.name = targetField.name;
+                input.id = targetField.id;
+                input.value = value;
+                input.min = '0';
+                input.step = '1';
+                input.inputMode = 'numeric';
+                input.dataset.targetValueField = '1';
+
+                return input;
+            };
+
+            const buildBooleanField = (value) => {
+                const select = document.createElement('select');
+                select.name = targetField.name;
+                select.id = targetField.id;
+                select.dataset.targetValueField = '1';
+
+                [
+                    { value: '1', label: 'True' },
+                    { value: '0', label: 'False' },
+                ].forEach(optionData => {
+                    const option = document.createElement('option');
+                    option.value = optionData.value;
+                    option.textContent = optionData.label;
+                    option.selected = String(value) === optionData.value;
+                    select.appendChild(option);
+                });
+
+                return select;
+            };
+
+            const syncField = () => {
+                const currentValue = targetField.value === '' ? '0' : targetField.value;
+                const nextField = typeField.value === 'BOOLEAN'
+                    ? buildBooleanField(currentValue === '0' ? '0' : '1')
+                    : buildNumericField(currentValue);
+
+                container.replaceChild(nextField, targetField);
+                targetField = nextField;
+
+                if (label) {
+                    label.textContent = typeField.value === 'BOOLEAN' ? 'Valeur cible (True / False)' : 'Valeur cible';
+                }
+
+                if (help) {
+                    help.textContent = typeField.value === 'BOOLEAN'
+                        ? 'Choisissez True ou False pour une habitude booleenne.'
+                        : 'Saisissez un nombre pour une habitude numerique.';
+                }
+
+                if (typeField.value === 'BOOLEAN') {
+                    unitContainer.style.display = 'none';
+                    unitField.value = '';
+                } else {
+                    unitContainer.style.display = '';
+                }
+            };
+
+            typeField.addEventListener('change', syncField);
+            syncField();
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Administration',
+            title: page_title,
+            copy: 'Formulaire de gestion pour ' ~ entity_label ~ '.'
+        }) }}
+
+        {{ component('FlashStack') }}
+
+        <section class="panel-section">
+            {{ form_start(form, { attr: { class: 'form-stack' } }) }}
+                {{ form_widget(form) }}
+                <div class="button-row">
+                    <button class="btn-primary" type="submit">Enregistrer</button>
+                    <a class="btn-secondary" href="{{ path(back_route) }}">Retour a la liste</a>
+                </div>
+            {{ form_end(form) }}
+        </section>
+    </div>
+{% endblock %}

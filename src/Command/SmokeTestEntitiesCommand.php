@@ -16,7 +16,9 @@ use App\Entity\Todo;
 use App\Entity\Utilisateur;
 use DateTime;
 use Doctrine\DBAL\Connection;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\SchemaValidator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -52,6 +54,10 @@ final class SmokeTestEntitiesCommand extends Command
         }
 
         try {
+            $this->assertDatabaseConnection($io);
+            $this->assertMetadataLoading($io);
+            $this->assertDoctrineMappingAndSchema($io);
+
             $io->section('Testing Utilisateur + Password_reset_tokens relation');
 
             $nextUserId = (int) $this->connection->fetchOne('SELECT COALESCE(MAX(id_u), 0) + 1 FROM utilisateur');
@@ -328,5 +334,72 @@ final class SmokeTestEntitiesCommand extends Command
                 // Ignore rollback errors; we never want the command to crash here.
             }
         }
+    }
+
+    private function assertDatabaseConnection(SymfonyStyle $io): void
+    {
+        $io->section('Testing database connection');
+
+        $databaseName = $this->connection->getDatabase();
+        $result = $this->connection->fetchOne('SELECT 1');
+
+        if ((string) $result !== '1') {
+            throw new \RuntimeException('Database ping failed: SELECT 1 did not return the expected value.');
+        }
+
+        $io->success(sprintf(
+            'Database connection OK%s.',
+            $databaseName ? sprintf(' (database: %s)', $databaseName) : ''
+        ));
+    }
+
+    private function assertMetadataLoading(SymfonyStyle $io): void
+    {
+        $io->section('Testing Doctrine entity metadata');
+
+        /** @var list<ClassMetadata<object>> $metadata */
+        $metadata = $this->entityManager->getMetadataFactory()->getAllMetadata();
+
+        if ($metadata === []) {
+            throw new \RuntimeException('No Doctrine metadata found. Check your entity namespace and attribute mapping configuration.');
+        }
+
+        $io->success(sprintf('%d entity metadata definitions loaded successfully.', count($metadata)));
+    }
+
+    private function assertDoctrineMappingAndSchema(SymfonyStyle $io): void
+    {
+        $io->section('Validating Doctrine mapping and schema');
+
+        $validator = new SchemaValidator($this->entityManager);
+        $mappingErrors = $validator->validateMapping();
+
+        if ($mappingErrors !== []) {
+            $messages = [];
+
+            foreach ($mappingErrors as $className => $errors) {
+                foreach ($errors as $error) {
+                    $messages[] = sprintf('%s: %s', $className, $error);
+                }
+            }
+
+            throw new \RuntimeException("Doctrine mapping errors detected:\n- " . implode("\n- ", $messages));
+        }
+
+        if (!$validator->schemaInSyncWithMetadata()) {
+            $schemaDiff = array_values(array_filter(
+                $validator->getUpdateSchemaList(),
+                static fn (string $sql): bool => !str_contains(strtolower($sql), 'doctrine_migration_versions')
+            ));
+
+            if ($schemaDiff === []) {
+                $io->success('Doctrine schema is in sync for application entities (migration metadata table ignored).');
+                return;
+            }
+
+            throw new \RuntimeException("Database schema is not in sync with Doctrine entities:\n- " . implode("\n- ", $schemaDiff));
+        }
+
+        $io->success('Doctrine attributes, entity mapping, and database schema are in sync.');
     }
 }

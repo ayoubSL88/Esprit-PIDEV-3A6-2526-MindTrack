@@ -1,0 +1,51 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+    {% include 'front/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
+
+    <section class="page-header">
+        <div>
+            <h1>{{ page_title }}</h1>
+            <p>Complète les champs requis puis valide le formulaire.</p>
+        </div>
+        <a class="btn btn-secondary" href="{{ path('front_objectif_index') }}">Retour à la liste</a>
+    </section>
+
+    <section class="form-card">
+        {{ form_start(form, {attr: {class: 'form-grid'}}) }}
+            {{ form_errors(form) }}
+            <div>
+                {{ form_label(form.titre) }}
+                {{ form_widget(form.titre) }}
+                <div class="field-error">{{ form_errors(form.titre) }}</div>
+            </div>
+            <div>
+                {{ form_label(form.descriprion) }}
+                {{ form_widget(form.descriprion) }}
+                <div class="field-error">{{ form_errors(form.descriprion) }}</div>
+            </div>
+            <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                    {{ form_label(form.dateDebut) }}
+                    {{ form_widget(form.dateDebut) }}
+                    <div class="field-error">{{ form_errors(form.dateDebut) }}</div>
+                </div>
+                <div>
+                    {{ form_label(form.dateFin) }}
+                    {{ form_widget(form.dateFin) }}
+                    <div class="field-error">{{ form_errors(form.dateFin) }}</div>
+                </div>
+            </div>
+            <div>
+                {{ form_label(form.statut) }}
+                {{ form_widget(form.statut) }}
+                <div class="field-error">{{ form_errors(form.statut) }}</div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+            </div>
+        {{ form_end(form) }}
+    </section>
+{% endblock %}

@@ -3,6 +3,37 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
-    <h1>Admin Dashboard</h1>
-    <p>Shared entry point for the full backoffice.</p>
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Backoffice',
+            title: 'Admin Dashboard',
+            copy: 'Shared entry point for the full backoffice. This template is now standardized so the remaining admin sections can inherit the same spacing, palette, and structural patterns.'
+        }) }}
+
+        <section class="feature-grid">
+            {{ component('FeatureCard', {
+                eyebrow: 'Users',
+                title: 'Manage accounts',
+                copy: 'Create, edit, filter, delete, and change roles from a single consistent admin screen.'
+            }) }}
+
+            {{ component('FeatureCard', {
+                eyebrow: 'Objectifs',
+                title: 'Plan future modules',
+                copy: 'Keep this area ready for personal goal workflows without touching the shell again.'
+            }) }}
+
+            {{ component('FeatureCard', {
+                eyebrow: 'Habitudes',
+                title: 'Extend safely',
+                copy: 'New gestion pages can plug into the same page card and component classes.'
+            }) }}
+
+            {{ component('FeatureCard', {
+                eyebrow: 'Humeur',
+                title: 'Stay consistent',
+                copy: 'Spacing, hierarchy, and contrast now come from shared classes instead of per-file inline styling.'
+            }) }}
+        </section>
+    </div>
 {% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Administration',
+            title: 'User Management',
+            copy: 'Manage accounts from a shared table and form system that can be reused by future admin modules.'
+        }) }}
+
+        <div class="button-row">
+            <a class="btn-primary" href="{{ path('admin_gestion_user_create') }}">Create user</a>
+        </div>
+
+        {{ component('FlashStack') }}
+
+        <form method="get" class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px_auto] lg:items-end">
+            <div class="field">
+                <label class="field-label" for="q">Search</label>
+                <input
+                    class="field-input"
+                    id="q"
+                    name="q"
+                    type="text"
+                    value="{{ filters.q }}"
+                    placeholder="Name or email"
+                >
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="role">Role</label>
+                <select class="field-select" id="role" name="role">
+                    <option value="" {{ filters.role == '' ? 'selected' : '' }}>All</option>
+                    <option value="USER" {{ filters.role == 'USER' ? 'selected' : '' }}>USER</option>
+                    <option value="ADMIN" {{ filters.role == 'ADMIN' ? 'selected' : '' }}>ADMIN</option>
+                </select>
+            </div>
+
+            <div class="button-row">
+                <button class="btn-primary" type="submit">Filter</button>
+                <a class="btn-secondary" href="{{ path('admin_gestion_user_index') }}">Reset</a>
+            </div>
+        </form>
+
+        <div class="table-shell">
+            <div class="table-wrap">
+                <table class="table">
+                    <thead class="table-head">
+                        <tr>
+                            <th class="table-th">ID</th>
+                            <th class="table-th">Name</th>
+                            <th class="table-th">Email</th>
+                            <th class="table-th">Age</th>
+                            <th class="table-th">Role</th>
+                            <th class="table-th">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td class="table-td">{{ user.idU }}</td>
+                                <td class="table-td">{{ user.prenomU }} {{ user.nomU }}</td>
+                                <td class="table-td">{{ user.emailU }}</td>
+                                <td class="table-td">{{ user.ageU }}</td>
+                                <td class="table-td">
+                                    <form method="post" action="{{ path('admin_gestion_user_change_role', { id: user.idU }) }}" class="flex flex-wrap items-center gap-2">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('role_change_' ~ user.idU) }}">
+                                        <select class="field-select min-w-28 py-2" name="role">
+                                            <option value="USER" {{ user.roleU == 'USER' ? 'selected' : '' }}>USER</option>
+                                            <option value="ADMIN" {{ user.roleU == 'ADMIN' ? 'selected' : '' }}>ADMIN</option>
+                                        </select>
+                                        <button class="btn-secondary px-4 py-2" type="submit">Apply</button>
+                                    </form>
+                                </td>
+                                <td class="table-td">
+                                    <div class="button-row">
+                                        <a class="btn-secondary px-4 py-2" href="{{ path('admin_gestion_user_edit', { id: user.idU }) }}">Edit</a>
+
+                                        <form method="post" action="{{ path('admin_gestion_user_delete', { id: user.idU }) }}" onsubmit="return confirm('Delete this user? This action cannot be undone.');">
+                                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('delete_user_' ~ user.idU) }}">
+                                            <button class="btn-danger px-4 py-2" type="submit">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td class="table-empty" colspan="6">No users found for the current filters.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

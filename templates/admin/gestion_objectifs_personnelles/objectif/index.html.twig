@@ -1,0 +1,81 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}Objectifs{% endblock %}
+
+{% block content %}
+    {% include 'admin/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
+
+    <section class="page-header">
+        <div>
+            <h1>Liste admin des objectifs</h1>
+            <p>L’admin peut consulter, rechercher, trier, filtrer et supprimer les objectifs.</p>
+        </div>
+        <a class="btn btn-secondary" href="{{ path('admin_gestion_objectifs_personnelles_index') }}">Retour au module</a>
+    </section>
+
+    <form method="get" class="table-card filter-bar">
+        <div>
+            <label for="admin_objectif_q">Mot-clé</label>
+            <input id="admin_objectif_q" type="text" name="q" value="{{ filters.q }}" placeholder="Titre, description, statut">
+        </div>
+        <div>
+            <label for="admin_objectif_sort">Tri</label>
+            <select id="admin_objectif_sort" name="sort">
+                {% for label, value in sort_choices %}
+                    <option value="{{ value }}" {{ filters.sort == value ? 'selected' : '' }}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="admin_objectif_status">Statut</label>
+            <select id="admin_objectif_status" name="status">
+                <option value="">Tous</option>
+                {% for label, value in status_choices %}
+                    <option value="{{ value }}" {{ filters.status == value ? 'selected' : '' }}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Filtrer</button>
+            <a class="btn btn-secondary" href="{{ path('admin_objectif_index') }}">Réinitialiser</a>
+        </div>
+    </form>
+
+    <section class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Titre</th>
+                    <th>Description</th>
+                    <th>Début</th>
+                    <th>Fin</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for objectif in objectifs %}
+                    <tr>
+                        <td>{{ objectif.idObj }}</td>
+                        <td>{{ objectif.titre }}</td>
+                        <td>{{ objectif.descriprion }}</td>
+                        <td>{{ objectif.dateDebut|date('d/m/Y') }}</td>
+                        <td>{{ objectif.dateFin|date('d/m/Y') }}</td>
+                        <td><span class="badge">{{ objectif.statut|replace({'_': ' '})|title }}</span></td>
+                        <td>
+                            <form method="post" action="{{ path('admin_objectif_delete', {idObj: objectif.idObj}) }}" onsubmit="return confirm('Supprimer cet objectif ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_objectif_' ~ objectif.idObj) }}">
+                                <button class="btn btn-danger" type="submit">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="muted">Aucun objectif trouvé.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% endblock %}

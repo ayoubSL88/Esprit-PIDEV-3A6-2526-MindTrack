@@ -2,7 +2,311 @@
 
 {% block page_title %}Mes Habitudes{% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.querySelector('[data-live-filter-form]');
+            const results = document.querySelector('[data-live-results]');
+            const notifButton = document.querySelector('[data-enable-reminder-notifications]');
+            const reminderItems = {{ notificationRappels|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }};
+
+            if (!form || !results) {
+                return;
+            }
+
+            let debounceTimer = null;
+            let controller = null;
+            let requestId = 0;
+
+            const runLiveFilter = () => {
+                const scrollY = window.scrollY;
+                const params = new URLSearchParams();
+
+                form.querySelectorAll('input, select').forEach(field => {
+                    if (!field.name) {
+                        return;
+                    }
+
+                    if ((field.type === 'checkbox' || field.type === 'radio') && !field.checked) {
+                        return;
+                    }
+
+                    params.set(field.name, field.value);
+                });
+
+                const historyUrl = `${form.action || window.location.pathname}?${params.toString()}`;
+                const fetchParams = new URLSearchParams(params);
+                fetchParams.set('_live', String(Date.now()));
+                const fetchUrl = `${form.action || window.location.pathname}?${fetchParams.toString()}`;
+                const currentRequestId = ++requestId;
+
+                if (controller) {
+                    controller.abort();
+                }
+
+                controller = new AbortController();
+                results.classList.add('opacity-60', 'pointer-events-none');
+
+                fetch(fetchUrl, {
+                    cache: 'no-store',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    signal: controller.signal,
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Request failed');
+                        }
+
+                        return response.text();
+                    })
+                    .then(html => {
+                        if (currentRequestId !== requestId) {
+                            return;
+                        }
+
+                        results.innerHTML = html;
+                        window.history.replaceState({}, '', historyUrl);
+                        window.scrollTo({ top: scrollY, behavior: 'auto' });
+                    })
+                    .catch(error => {
+                        if (error.name !== 'AbortError') {
+                            console.error(error);
+                        }
+                    })
+                    .finally(() => {
+                        if (currentRequestId === requestId) {
+                            results.classList.remove('opacity-60', 'pointer-events-none');
+                        }
+                    });
+            };
+
+            form.addEventListener('submit', event => {
+                event.preventDefault();
+                runLiveFilter();
+            });
+
+            form.querySelectorAll('input, select').forEach(field => {
+                const eventName = field.tagName === 'SELECT' ? 'change' : 'input';
+
+                field.addEventListener(eventName, () => {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(runLiveFilter, 220);
+                });
+
+                if (field.type === 'search') {
+                    field.addEventListener('search', runLiveFilter);
+                }
+            });
+
+            const dayMap = {
+                0: ['DIM', 'DIMANCHE'],
+                1: ['LUN', 'LUNDI'],
+                2: ['MAR', 'MARDI'],
+                3: ['MER', 'MERCREDI'],
+                4: ['JEU', 'JEUDI'],
+                5: ['VEN', 'VENDREDI'],
+                6: ['SAM', 'SAMEDI'],
+            };
+
+            const normalizeDayToken = value => value
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .trim()
+                .toUpperCase();
+
+            const reminderMatchesNow = reminder => {
+                const now = new Date();
+                const currentTime = now.toTimeString().slice(0, 5);
+                const allowedDays = (reminder.jours || '')
+                    .split(',')
+                    .map(normalizeDayToken)
+                    .filter(Boolean);
+
+                const todayTokens = dayMap[now.getDay()] || [];
+
+                return currentTime === reminder.heure
+                    && (allowedDays.length === 0 || todayTokens.some(token => allowedDays.includes(token)));
+            };
+
+            const reminderStorageKey = reminder => {
+                const now = new Date();
+                const yyyy = now.getFullYear();
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+
+                return `mindtrack-rappel-${reminder.id}-${yyyy}-${mm}-${dd}-${reminder.heure}`;
+            };
+
+            const triggerReminderNotifications = () => {
+                if (!('Notification' in window) || Notification.permission !== 'granted') {
+                    return;
+                }
+
+                reminderItems.forEach(reminder => {
+                    if (!reminderMatchesNow(reminder)) {
+                        return;
+                    }
+
+                    const storageKey = reminderStorageKey(reminder);
+                    if (window.localStorage.getItem(storageKey) === 'sent') {
+                        return;
+                    }
+
+                    new Notification(`Rappel: ${reminder.habitude}`, {
+                        body: reminder.message || `Il est temps de faire votre habitude "${reminder.habitude}".`,
+                        tag: `habit-reminder-${reminder.id}`,
+                    });
+
+                    window.localStorage.setItem(storageKey, 'sent');
+                });
+            };
+
+            if (notifButton) {
+                const updateNotifButton = () => {
+                    if (!('Notification' in window)) {
+                        notifButton.textContent = 'Notifications non supportees';
+                        notifButton.disabled = true;
+                        return;
+                    }
+
+                    if (Notification.permission === 'granted') {
+                        notifButton.textContent = 'Notifications actives';
+                        notifButton.disabled = true;
+                        return;
+                    }
+
+                    if (Notification.permission === 'denied') {
+                        notifButton.textContent = 'Notifications bloquees';
+                        notifButton.disabled = true;
+                        return;
+                    }
+
+                    notifButton.textContent = 'Activer les notifications';
+                };
+
+                notifButton.addEventListener('click', async () => {
+                    if (!('Notification' in window)) {
+                        return;
+                    }
+
+                    const permission = await Notification.requestPermission();
+                    updateNotifButton();
+
+                    if (permission === 'granted') {
+                        triggerReminderNotifications();
+                    }
+                });
+
+                updateNotifButton();
+            }
+
+            triggerReminderNotifications();
+            window.setInterval(triggerReminderNotifications, 30000);
+        });
+    </script>
+{% endblock %}
+
 {% block content %}
-    <h1>Mes Habitudes</h1>
-    <p>Entities: Habitude, Rappel_habitude, Suivihabitude.</p>
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Habitudes',
+            title: 'Construisez votre routine',
+            copy: 'Suivez vos habitudes, gardez vos rappels visibles et mesurez votre progression sans quitter votre espace personnel.'
+        }) }}
+
+        <div class="button-row">
+            <a class="btn-primary" href="{{ path('front_gestion_suivi_habitudes_habitude_new') }}">Nouvelle habitude</a>
+            <a class="btn-secondary" href="{{ path('front_gestion_suivi_habitudes_suivi_new') }}">Ajouter un suivi</a>
+            <a class="btn-secondary" href="{{ path('front_gestion_suivi_habitudes_rappel_new') }}">Programmer un rappel</a>
+            <button class="btn-secondary" type="button" data-enable-reminder-notifications>Activer les notifications</button>
+        </div>
+
+        <form method="get" class="panel-section grid gap-4 lg:grid-cols-6 lg:items-end" data-live-filter-form>
+            <input class="field-input" type="text" name="q" placeholder="Rechercher une habitude, un objectif..." value="{{ filters.q }}">
+            <select class="field-select" name="frequence"><option value="">Toutes les frequences</option><option value="QUOTIDIEN" {{ filters.frequence == 'QUOTIDIEN' ? 'selected' : '' }}>Quotidien</option><option value="HEBDOMADAIRE" {{ filters.frequence == 'HEBDOMADAIRE' ? 'selected' : '' }}>Hebdomadaire</option><option value="MENSUEL" {{ filters.frequence == 'MENSUEL' ? 'selected' : '' }}>Mensuel</option></select>
+            <select class="field-select" name="type"><option value="">Tous les types</option><option value="BOOLEAN" {{ filters.habitType == 'BOOLEAN' ? 'selected' : '' }}>Booleen</option><option value="NUMERIC" {{ filters.habitType == 'NUMERIC' ? 'selected' : '' }}>Numerique</option></select>
+            <select class="field-select" name="sort"><option value="nom" {{ filters.sort == 'nom' ? 'selected' : '' }}>Trier par nom</option><option value="objectif" {{ filters.sort == 'objectif' ? 'selected' : '' }}>Trier par objectif</option><option value="frequence" {{ filters.sort == 'frequence' ? 'selected' : '' }}>Trier par frequence</option><option value="target" {{ filters.sort == 'target' ? 'selected' : '' }}>Trier par valeur cible</option><option value="type" {{ filters.sort == 'type' ? 'selected' : '' }}>Trier par type</option></select>
+            <select class="field-select" name="direction"><option value="" {{ filters.direction == '' ? 'selected' : '' }}>Choisir l'ordre</option><option value="ASC" {{ filters.direction == 'ASC' ? 'selected' : '' }}>Ordre croissant</option><option value="DESC" {{ filters.direction == 'DESC' ? 'selected' : '' }}>Ordre decroissant</option></select>
+            <button class="btn-primary" type="submit">Filtrer</button>
+        </form>
+
+        {{ component('FlashStack') }}
+
+        <section class="feature-grid">
+            <article class="feature-card"><p class="feature-label">Habitudes actives</p><p class="feature-title">{{ stats.habitudes }}</p></article>
+            <article class="feature-card"><p class="feature-label">Rappels actifs</p><p class="feature-title">{{ stats.rappels_actifs }}</p></article>
+            <article class="feature-card"><p class="feature-label">Suivis completes</p><p class="feature-title">{{ stats.suivis_completed }}</p></article>
+            <article class="feature-card"><p class="feature-label">Suivis total</p><p class="feature-title">{{ stats.suivis_total }}</p></article>
+        </section>
+
+        <section class="hero-grid">
+            <article class="panel-section">
+                <h2 class="panel-title">Mes habitudes</h2>
+                <p class="panel-copy">Gardez un oeil sur vos objectifs et adaptez-les facilement.</p>
+                <div data-live-results class="mt-4">
+                    {% include 'front/gestion_suivi_habitudes/_habitudes_results.html.twig' with { habitudes: habitudes } %}
+                </div>
+            </article>
+
+            <div class="page-stack">
+                <aside class="panel-section">
+                    <h2 class="panel-title">Rappels du moment</h2>
+                    {% if todayRappels is empty %}
+                        <p class="table-empty mt-3">Aucun rappel actif pour le moment.</p>
+                    {% else %}
+                        <div class="mt-3 space-y-3">
+                            {% for rappel in todayRappels %}
+                                <div class="rounded-2xl border border-border bg-white/80 p-4">
+                                    <p class="text-sm font-semibold text-ink">{{ rappel.idHabitude ? rappel.idHabitude.nom : 'Habitude' }}</p>
+                                    <p class="mt-1 text-sm text-muted">{{ rappel.message }}</p>
+                                    <p class="mt-1 text-xs text-muted">{{ rappel.jours }} a {{ rappel.heureRappel }}</p>
+                                    <div class="button-row mt-3">
+                                        <a class="btn-secondary px-4 py-2" href="{{ path('front_gestion_suivi_habitudes_rappel_edit', {idRappel: rappel.idRappel}) }}">Modifier</a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </aside>
+
+                <aside class="panel-section">
+                    <h2 class="panel-title">Progression du jour</h2>
+                    {% if todaySuivis is empty %}
+                        <p class="table-empty mt-3">Aucun suivi enregistre aujourd hui.</p>
+                    {% else %}
+                        <div class="mt-3 space-y-3">
+                            {% for suivi in todaySuivis %}
+                                <div class="rounded-2xl border border-border bg-white/80 p-4">
+                                    <p class="text-sm font-semibold text-ink">{{ suivi.idHabitude ? suivi.idHabitude.nom : 'Habitude' }}</p>
+                                    <p class="mt-1 text-sm text-muted">{{ suivi.etat ? 'Objectif atteint' : 'Encore en cours' }}</p>
+                                    <p class="mt-1 text-xs text-muted">Valeur du jour : {{ suivi.valeur }}</p>
+                                    <div class="button-row mt-3">
+                                        <a class="btn-secondary px-4 py-2" href="{{ path('front_gestion_suivi_habitudes_suivi_edit', {idSuivi: suivi.idSuivi}) }}">Modifier</a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </aside>
+
+                <aside class="panel-section">
+                    <h2 class="panel-title">Historique recent</h2>
+                    {% if recentSuivis is empty %}
+                        <p class="table-empty mt-3">Aucun historique disponible.</p>
+                    {% else %}
+                        <div class="mt-3 space-y-3">
+                            {% for suivi in recentSuivis %}
+                                <div class="rounded-2xl border border-border bg-white/80 p-4">
+                                    <p class="text-sm font-semibold text-ink">{{ suivi.idHabitude ? suivi.idHabitude.nom : 'Habitude' }}</p>
+                                    <p class="mt-1 text-xs text-muted">{{ suivi.date ? suivi.date|date('d/m/Y') : '' }}</p>
+                                    <p class="mt-1 text-sm text-muted">{{ suivi.etat ? 'Complete' : 'Non complete' }} - Valeur {{ suivi.valeur }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </aside>
+            </div>
+        </section>
+    </div>
 {% endblock %}

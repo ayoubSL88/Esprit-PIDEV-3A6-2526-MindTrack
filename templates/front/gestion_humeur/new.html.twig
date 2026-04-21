@@ -1,22 +1,24 @@
 {% extends 'layouts/front_base.html.twig' %}
 
-{% block page_title %}New Humeur{% endblock %}
+{% block page_title %}New Mood{% endblock %}
 
 {% block content %}
-    {% include 'humeur/_crud_styles.html.twig' %}
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Mood',
+            title: 'Add a mood entry',
+            copy: 'Record how you feel today.'
+        }) }}
 
-    <section class="crud-header">
-        <div>
-            <h1>Add a mood entry</h1>
-            <p>Record how you feel today.</p>
-        </div>
-        <a class="button-secondary" href="{{ path('front_gestion_humeur_index') }}">Back to list</a>
-    </section>
+        {{ component('FlashStack') }}
 
-    <div class="card-shell form-shell">
-        {% include 'humeur/_form.html.twig' with {
+        {% include 'admin/gestion_humeur/humeur/_form.html.twig' with {
             form: form,
             button_label: 'Save entry'
         } only %}
+
+        <div class="button-row">
+            <a class="btn-secondary" href="{{ path('front_gestion_humeur_index') }}">Back to list</a>
+        </div>
     </div>
 {% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Sign up{% endblock %}
+
+{% block body %}
+    <main class="page-shell">
+        <div class="app-shell max-w-3xl">
+            <section class="page-card">
+                <div class="page-stack">
+                    {{ component('PageHeader', {
+                        eyebrow: 'Onboarding',
+                        title: 'Create your account',
+                        copy: 'Fill the fields below, then sign in with your new credentials.'
+                    }) }}
+
+                    {{ component('FlashStack') }}
+
+                    <form method="post" class="form-stack" novalidate>
+                        <div class="form-grid">
+                            <div class="field">
+                                <label class="field-label" for="nom">Last name</label>
+                                <input class="field-input {{ formSubmitted and fieldErrors.nom is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" type="text" id="nom" name="nom" value="{{ form.nom|default('') }}">
+                                {% if fieldErrors.nom is defined %}
+                                    <p class="field-error">{{ fieldErrors.nom }}</p>
+                                {% endif %}
+                            </div>
+
+                            <div class="field">
+                                <label class="field-label" for="prenom">First name</label>
+                                <input class="field-input {{ formSubmitted and fieldErrors.prenom is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" type="text" id="prenom" name="prenom" value="{{ form.prenom|default('') }}">
+                                {% if fieldErrors.prenom is defined %}
+                                    <p class="field-error">{{ fieldErrors.prenom }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="field">
+                                <label class="field-label" for="email">Email</label>
+                                <input class="field-input {{ formSubmitted and fieldErrors.email is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" type="text" inputmode="email" id="email" name="email" value="{{ form.email|default('') }}">
+                                {% if fieldErrors.email is defined %}
+                                    <p class="field-error">{{ fieldErrors.email }}</p>
+                                {% endif %}
+                            </div>
+
+                            <div class="field">
+                                <label class="field-label" for="age">Age</label>
+                                <input class="field-input {{ formSubmitted and fieldErrors.age is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" type="text" inputmode="numeric" id="age" name="age" value="{{ form.age|default('') }}">
+                                {% if fieldErrors.age is defined %}
+                                    <p class="field-error">{{ fieldErrors.age }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label" for="password">Password</label>
+                            <input class="field-input {{ formSubmitted and fieldErrors.password is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" type="password" id="password" name="password">
+                            {% if fieldErrors.password is defined %}
+                                <p class="field-error">{{ fieldErrors.password }}</p>
+                            {% endif %}
+                        </div>
+
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('register') }}">
+
+                        <div class="button-row">
+                            <button class="btn-primary" type="submit">Create account</button>
+                            <a class="btn-secondary" href="{{ path('app_login') }}">Back to sign in</a>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </main>
+{% endblock %}

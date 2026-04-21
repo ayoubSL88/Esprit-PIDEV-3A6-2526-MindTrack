@@ -3,35 +3,67 @@
 {% block page_title %}Journal Details{% endblock %}
 
 {% block content %}
-    {% include 'humeur/_crud_styles.html.twig' %}
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Mood',
+            title: 'Journal entry',
+            copy: 'Review your journal entry in detail.'
+        }) }}
 
-    <section class="crud-header">
-        <div>
-            <h1>Journal entry</h1>
-            <p>Review your journal entry in detail.</p>
-        </div>
-        <div class="header-actions">
-            <a class="button-secondary" href="{{ path('front_gestion_humeur_journal_index') }}">Back to list</a>
-            <a class="button-primary" href="{{ path('front_gestion_humeur_journal_edit', {idJ: journal.idJ}) }}">Edit</a>
-        </div>
-    </section>
+        {{ component('FlashStack') }}
 
-    <div class="card-shell details-grid">
-        <div>
-            <span class="detail-label">Date creation</span>
-            <strong>{{ journal.dateCreation|date('Y-m-d H:i') }}</strong>
+        <div class="button-row">
+            <a class="btn-secondary" href="{{ path('front_gestion_humeur_journal_index') }}">Back to list</a>
+            {% if canEdit %}
+                <a class="btn-primary" href="{{ path('front_gestion_humeur_journal_edit', {idJ: journal.idJ}) }}">Edit</a>
+            {% else %}
+                <span class="px-3 py-1 text-xs font-semibold text-muted">Editing is available only for 1 day after creation.</span>
+            {% endif %}
         </div>
-        <div style="grid-column: 1 / -1;">
-            <span class="detail-label">Note personnelle</span>
-            <strong>{{ journal.notePersonnelle }}</strong>
-        </div>
-    </div>
 
-    <div class="danger-zone">
-        {% include 'journalemotionnel/_delete_form.html.twig' with {
-            delete_path: path('front_gestion_humeur_journal_delete', {idJ: journal.idJ}),
-            csrf_token: csrf_token('delete_journal_' ~ journal.idJ),
-            button_label: 'Delete journal'
-        } only %}
+        <div class="panel-section grid gap-4 sm:grid-cols-2">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Date creation</p>
+                <p class="mt-2 text-sm font-semibold text-ink">{{ journal.dateCreation|date('Y-m-d H:i') }}</p>
+            </div>
+            <div class="sm:col-span-2">
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Note personnelle</p>
+                <div class="mt-2 space-y-3 text-sm leading-7 text-ink">{{ journal.notePersonnelle|raw }}</div>
+            </div>
+        </div>
+
+        {% if journal.screenshotPath or journal.audioPath %}
+            <div class="panel-section grid gap-4 lg:grid-cols-2">
+                {% if journal.screenshotPath %}
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Screenshot</p>
+                        <img
+                            src="{{ asset(journal.screenshotPath) }}"
+                            alt="Journal screenshot"
+                            class="mt-3 max-h-80 w-full rounded-2xl object-cover"
+                        >
+                    </div>
+                {% endif %}
+
+                {% if journal.audioPath %}
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Audio note</p>
+                        <audio class="mt-3 w-full" controls preload="metadata">
+                            <source src="{{ asset(journal.audioPath) }}">
+                            Your browser does not support audio playback.
+                        </audio>
+                        <a class="btn-secondary mt-3 inline-flex" href="{{ asset(journal.audioPath) }}" download>Download audio</a>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <div class="button-row">
+            {% include 'admin/gestion_humeur/journalemotionnel/_delete_form.html.twig' with {
+                delete_path: path('front_gestion_humeur_journal_delete', {idJ: journal.idJ}),
+                csrf_token: csrf_token('delete_journal_' ~ journal.idJ),
+                button_label: 'Delete journal'
+            } only %}
+        </div>
     </div>
 {% endblock %}

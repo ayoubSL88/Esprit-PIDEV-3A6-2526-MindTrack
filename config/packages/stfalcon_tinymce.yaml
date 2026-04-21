@@ -1,0 +1,18 @@
+stfalcon_tinymce:
+    selector:
+        - '.tinymce'
+    theme:
+        journal:
+            menubar: false
+            branding: false
+            height: 420
+            plugins:
+                - 'autolink lists link charmap preview anchor searchreplace visualblocks code fullscreen'
+                - 'insertdatetime table wordcount paste'
+            toolbar1: 'undo redo | blocks | bold italic underline | forecolor | alignleft aligncenter alignright alignjustify'
+            toolbar2: 'bullist numlist outdent indent | link table blockquote | removeformat code preview'
+            block_formats: 'Paragraph=p; Heading 2=h2; Heading 3=h3; Quote=blockquote'
+            paste_as_text: false
+            browser_spellcheck: true
+            contextmenu: false
+            content_style: 'body { font-family: Georgia, serif; font-size: 16px; line-height: 1.7; margin: 1rem; }'
