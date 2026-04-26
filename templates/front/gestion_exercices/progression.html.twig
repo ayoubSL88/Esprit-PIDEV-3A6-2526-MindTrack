@@ -3,311 +3,546 @@
 {% block page_title %}Ma progression{% endblock %}
 
 {% block stylesheets %}
-{{ parent() }}
-<style>
-    /* Styles personnalisés */
-    .gradient-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    
-    /* Carte de conseil bien-être */
-    .wellness-advice {
-        margin-bottom: 2rem;
-    }
-    
-    .advice-card {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        border-radius: 15px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease;
-    }
-    
-    .advice-card:hover {
-        transform: translateY(-5px);
-    }
-    
-    .advice-text {
-        font-size: 1.2rem;
-        font-style: italic;
-        color: #2c3e50;
-        margin-bottom: 0.5rem;
-        line-height: 1.6;
-    }
-    
-    .advice-text::before {
-        content: "« ";
-        font-size: 1.5rem;
-        color: #764ba2;
-    }
-    
-    .advice-text::after {
-        content: " »";
-        font-size: 1.5rem;
-        color: #764ba2;
-    }
-    
-    .advice-source {
-        color: #6c757d;
-        font-size: 0.9rem;
-        display: block;
-        text-align: right;
-    }
-    
-    /* Cartes de statistiques */
-    .stat-card {
-        transition: transform 0.2s;
-    }
-    
-    .stat-card:hover {
-        transform: translateY(-5px);
-    }
-    
-    .stat-icon {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    /* Animation pour la progression */
-    .progress-bar {
-        transition: width 1s ease-in-out;
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-        .advice-text {
+    {{ parent() }}
+    <style>
+        /* STYLE MODERNE */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+        
+        /* CARTE CONSEIL BIEN-ÊTRE */
+        .wellness-card {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 28px;
+            padding: 28px 32px;
+            margin-bottom: 32px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .wellness-card::before {
+            content: "✨";
+            position: absolute;
+            bottom: -20px;
+            right: -20px;
+            font-size: 100px;
+            opacity: 0.1;
+        }
+        
+        .wellness-card h5 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
             font-size: 1rem;
         }
         
-        .stat-card {
-            margin-bottom: 1rem;
+        .advice-text {
+            font-size: 1.2rem;
+            font-style: italic;
+            line-height: 1.5;
+            margin-bottom: 12px;
         }
-    }
-</style>
+        
+        .advice-text::before {
+            content: "« ";
+            opacity: 0.7;
+        }
+        
+        .advice-text::after {
+            content: " »";
+            opacity: 0.7;
+        }
+        
+        .advice-source {
+            opacity: 0.7;
+            font-size: 0.75rem;
+            display: block;
+        }
+        
+        /* GRILLE STATS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 24px;
+            padding: 28px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        /* CARTE GRAPHIQUE */
+        .chart-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+            margin-bottom: 32px;
+        }
+        
+        .chart-header {
+            padding: 20px 24px;
+            border-bottom: 2px solid #f1f5f9;
+            background: white;
+        }
+        
+        .chart-header h5 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .chart-body {
+            padding: 24px;
+        }
+        
+        /* TABLEAU PROGRESSION */
+        .progression-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+        }
+        
+        .progression-header {
+            padding: 20px 24px;
+            border-bottom: 2px solid #f1f5f9;
+            background: white;
+        }
+        
+        .progression-header h5 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .progression-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .progression-table th {
+            padding: 16px 20px;
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .progression-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #475569;
+            vertical-align: middle;
+        }
+        
+        .progression-table tbody tr:hover {
+            background: #fafcff;
+        }
+        
+        .progress-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 140px;
+        }
+        
+        .progress-bar-bg {
+            flex: 1;
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+        
+        .btn-refaire {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 8px 16px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-refaire:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+        
+        .btn-export {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 10px 20px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-export:hover {
+            background: #fee2e2;
+            transform: translateY(-2px);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #94a3b8;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .progression-table {
+                display: block;
+                overflow-x: auto;
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .wellness-card {
+                padding: 20px;
+            }
+            .advice-text {
+                font-size: 1rem;
+            }
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-        <h1>
-            <i class="bi bi-graph-up text-success"></i> 
-            Ma progression
-        </h1>
-        <a href="{{ path('front_gestion_exercices_home') }}" class="btn btn-outline-primary mt-2 mt-sm-0">
-            <i class="bi bi-arrow-left"></i> Retour à l'espace d'exercices
-        </a>
+    <div style="max-width: 1280px; margin: 0 auto; padding: 20px;">
+        <!-- EN-TÊTE -->
+        <section class="page-header">
+            <div>
+                <h1>📈 Ma progression</h1>
+                <p style="color: #64748b; margin-top: 8px;">Suis ton évolution et célèbre tes progrès</p>
+            </div>
+            <div>
+                <a href="{{ path('front_progression_export_pdf') }}" class="btn-export" target="_blank">
+                    📄 Exporter en PDF
+                </a>
+                <a href="{{ path('front_gestion_exercices_home') }}" class="btn-refaire" style="margin-left: 12px;">
+                    ← Retour
+                </a>
+            </div>
+        </section>
 
-    </div>
-
-    <!-- Conseil bien-être du jour -->
-    {% if advice is defined and advice is not empty %}
-    <div class="wellness-advice">
-        <div class="advice-card">
-            <h5 class="mb-3">
-                <i class="bi bi-flower1 text-primary"></i> 
-                Conseil bien-être du jour
+        <!-- CONSEIL BIEN-ÊTRE -->
+        {% if advice is defined and advice is not empty %}
+        <div class="wellness-card">
+            <h5>
+                <span>🌸</span> Conseil bien-être du jour
             </h5>
             <p class="advice-text">{{ advice }}</p>
             <small class="advice-source">
                 <i class="bi bi-chat-quote"></i> AdviceSlip API
             </small>
         </div>
-    </div>
-    {% endif %}
+        {% endif %}
 
-    <!-- Bouton d'export PDF -->
-    <div class="text-end mb-4">
-        <a href="{{ path('front_progression_export_pdf') }}" class="btn btn-danger" target="_blank">
-            <i class="bi bi-file-pdf"></i> Exporter ma progression en PDF
-        </a>
-    </div>
-
-    <!-- Progression globale -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header gradient-primary text-white">
-            <h5 class="mb-0"><i class="bi bi-trophy-fill"></i> Vue d'ensemble</h5>
+        <!-- STATISTIQUES GLOBALES -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value">{{ global_progression.sessionsTerminees|default(0) }}</div>
+                <div class="stat-label">Exercices terminés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-value">{{ (global_progression.tempsTotal|default(0) / 60)|round }} min</div>
+                <div class="stat-label">Temps total passé</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value">
+                    {% set totalProgress = 0 %}
+                    {% set count = 0 %}
+                    {% for item in sessions_by_exercice %}
+                        {% if item.total_sessions > 0 %}
+                            {% set totalProgress = totalProgress + item.moyenne_progression %}
+                            {% set count = count + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ count > 0 ? (totalProgress / count)|round : 0 }}%
+                </div>
+                <div class="stat-label">Progression moyenne</div>
+            </div>
         </div>
-        <div class="card-body">
-            <div class="row text-center">
-                <div class="col-md-4 mb-3 mb-md-0">
-                    <div class="border-end-md">
-                        <div class="stat-icon">
-                            <i class="bi bi-check-circle-fill text-primary"></i>
-                        </div>
-                        <h6 class="text-muted">Exercices terminés</h6>
-                        <h2 class="text-primary">{{ global_progression.sessionsTerminees|default(0) }}</h2>
+
+        <!-- GRAPHIQUE D'ÉVOLUTION -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h5>
+                    <span>📅</span> Évolution des exercices (7 derniers jours)
+                </h5>
+            </div>
+            <div class="chart-body">
+                <canvas id="evolutionChart" style="width: 100%; max-height: 300px;"></canvas>
+            </div>
+        </div>
+
+        <!-- PROGRESSION PAR EXERCICE -->
+        <div class="progression-card">
+            <div class="progression-header">
+                <h5>
+                    <span>📋</span> Progression par exercice
+                </h5>
+            </div>
+            <div style="padding: 0;">
+                {% set hasSessions = false %}
+                {% for item in sessions_by_exercice %}
+                    {% if item.total_sessions > 0 %}
+                        {% set hasSessions = true %}
+                    {% endif %}
+                {% endfor %}
+                
+                {% if not hasSessions %}
+                    <div class="empty-state">
+                        <div style="font-size: 3rem; margin-bottom: 16px;">📭</div>
+                        <h4>Aucune activité pour le moment</h4>
+                        <p>Commence un exercice pour suivre ta progression ici.</p>
+                        <a href="{{ path('front_gestion_exercices_index') }}" class="btn-refaire" style="margin-top: 16px;">
+                            🎯 Découvrir les exercices
+                        </a>
                     </div>
-                </div>
-                <div class="col-md-4 mb-3 mb-md-0">
-                    <div class="border-end-md">
-                        <div class="stat-icon">
-                            <i class="bi bi-clock-fill text-success"></i>
-                        </div>
-                        <h6 class="text-muted">Temps total passé</h6>
-                        <h2 class="text-success">{{ (global_progression.tempsTotal|default(0) / 60)|round }} min</h2>
+                {% else %}
+                    <div style="overflow-x: auto;">
+                        <table class="progression-table">
+                            <thead>
+                                <tr>
+                                    <th>Exercice</th>
+                                    <th>Type</th>
+                                    <th>Difficulté</th>
+                                    <th>Sessions</th>
+                                    <th>Progression moyenne</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in sessions_by_exercice %}
+                                    {% if item.total_sessions > 0 %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ item.exercice.nom }}</strong>
+                                        </td>
+                                        <td>{{ item.exercice.type }}</td>
+                                        <td>
+                                            <span class="badge-difficulte 
+                                                {% if item.exercice.difficulte == 'FACILE' %}badge-facile
+                                                {% elseif item.exercice.difficulte == 'MOYEN' %}badge-moyen
+                                                {% else %}badge-difficile{% endif %}">
+                                                {{ item.exercice.difficulte|capitalize }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span style="display: flex; align-items: center; gap: 6px;">
+                                                <span>📋</span> {{ item.total_sessions }} session(s)
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="progress-wrapper">
+                                                <div class="progress-bar-bg">
+                                                    <div class="progress-fill" style="width: {{ item.moyenne_progression }}%"></div>
+                                                </div>
+                                                <span style="font-size: 0.8rem; font-weight: 600;">{{ item.moyenne_progression }}%</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a href="{{ path('front_session_start', {'idEx': item.exercice.idEx}) }}" class="btn-refaire">
+                                                🔄 Refaire
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-icon">
-                        <i class="bi bi-graph-up text-info"></i>
-                    </div>
-                    <h6 class="text-muted">Progression moyenne</h6>
-                    <h2 class="text-info">
-                        {% set avg = 0 %}
-                        {% for item in sessions_by_exercice %}
-                            {% set avg = avg + item.moyenne_progression %}
-                        {% endfor %}
-                        {{ sessions_by_exercice|length > 0 ? (avg / sessions_by_exercice|length)|round : 0 }}%
-                    </h2>
-                </div>
+                {% endif %}
             </div>
         </div>
     </div>
-
-    <!-- Graphique d'évolution -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white">
-            <h5 class="mb-0"><i class="bi bi-calendar-week"></i> Évolution des exercices (7 derniers jours)</h5>
-        </div>
-        <div class="card-body">
-            <canvas id="evolutionChart" height="100"></canvas>
-        </div>
-    </div>
-
-    <!-- Progression par exercice -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-white">
-            <h5 class="mb-0"><i class="bi bi-bar-chart-steps"></i> Progression par exercice</h5>
-        </div>
-        <div class="card-body">
-            {% if sessions_by_exercice is empty or sessions_by_exercice|filter(item => item.total_sessions > 0)|length == 0 %}
-                <div class="text-center py-5">
-                    <i class="bi bi-emoji-frown fs-1 text-muted"></i>
-                    <h4 class="mt-3">Aucune activité pour le moment</h4>
-                    <p>Commencez un exercice pour suivre votre progression ici.</p>
-                    <a href="{{ path('front_gestion_exercices_index') }}" class="btn btn-primary">
-                        <i class="bi bi-play-fill"></i> Découvrir les exercices
-                    </a>
-                </div>
-            {% else %}
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Exercice</th>
-                                <th>Type</th>
-                                <th>Difficulté</th>
-                                <th>Sessions</th>
-                                <th>Progression moyenne</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in sessions_by_exercice %}
-                                {% if item.total_sessions > 0 %}
-                                <tr>
-                                    <td>
-                                        <strong>{{ item.exercice.nom }}</strong>
-                                    </td>
-                                    <td>{{ item.exercice.type }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ item.exercice.difficulte == 'FACILE' ? 'success' : (item.exercice.difficulte == 'MOYEN' ? 'warning' : 'danger') }}">
-                                            {{ item.exercice.difficulte }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <i class="bi bi-calendar-check"></i> 
-                                        {{ item.total_sessions }} session(s)
-                                    </td>
-                                    <td style="min-width: 150px;">
-                                        <div class="progress" style="height: 25px;">
-                                            <div class="progress-bar bg-success" 
-                                                 style="width: {{ item.moyenne_progression }}%">
-                                                {{ item.moyenne_progression }}%
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <a href="{{ path('front_session_start', {'idEx': item.exercice.idEx}) }}" 
-                                           class="btn btn-sm btn-outline-success">
-                                            <i class="bi bi-play-fill"></i> Refaire
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endif %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block javascripts %}
-{{ parent() }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('evolutionChart').getContext('2d');
-    const evolutionData = {{ evolution|json_encode|raw }};
-    
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: evolutionData.labels,
-            datasets: [{
-                label: 'Exercices réalisés',
-                data: evolutionData.data,
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 2,
-                tension: 0.3,
-                fill: true,
-                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                pointRadius: 4,
-                pointHoverRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    position: 'top',
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('evolutionChart').getContext('2d');
+            const evolutionData = {{ evolution|json_encode|raw }};
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: evolutionData.labels,
+                    datasets: [{
+                        label: '📊 Exercices réalisés',
+                        data: evolutionData.data,
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderColor: '#6366f1',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: '#8b5cf6',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointHoverBackgroundColor: '#6366f1'
+                    }]
                 },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `Exercices: ${context.parsed.y}`;
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 10
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#cbd5e1',
+                            padding: 10,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return `🎯 Exercices: ${context.parsed.y}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                precision: 0,
+                                color: '#64748b'
+                            },
+                            grid: {
+                                color: '#f1f5f9'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Nombre d\'exercices',
+                                color: '#64748b',
+                                font: { size: 11 }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#64748b'
+                            },
+                            grid: {
+                                color: '#f1f5f9'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Date',
+                                color: '#64748b',
+                                font: { size: 11 }
+                            }
                         }
                     }
                 }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1,
-                        precision: 0
-                    },
-                    title: {
-                        display: true,
-                        text: 'Nombre d\'exercices'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Date'
-                    }
-                }
-            }
+            });
+        });
+    </script>
+    
+    <style>
+        .badge-difficulte {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
         }
-    });
-});
-</script>
+        .badge-facile { background: #d1fae5; color: #065f46; }
+        .badge-moyen { background: #fed7aa; color: #9a3412; }
+        .badge-difficile { background: #fee2e2; color: #dc2626; }
+    </style>
 {% endblock %}

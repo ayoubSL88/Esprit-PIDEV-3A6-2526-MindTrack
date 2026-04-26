@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/app/session')]
-//#[IsGranted('ROLE_USER')]
+#[IsGranted('ROLE_USER')]
 final class SessionController extends AbstractController
 {
     #[Route('/start/{idEx}', name: 'front_session_start')]

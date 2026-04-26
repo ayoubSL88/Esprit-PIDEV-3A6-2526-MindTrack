@@ -14,9 +14,10 @@ use Knp\Component\Pager\PaginatorInterface;  // ✅ AJOUT IMPORTANT !
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/app/exercices')]
-//#[IsGranted('ROLE_USER')]
+#[IsGranted('ROLE_USER')]
 final class ExerciceController extends AbstractController
 {
     #[Route('/', name: 'front_gestion_exercices_home')]

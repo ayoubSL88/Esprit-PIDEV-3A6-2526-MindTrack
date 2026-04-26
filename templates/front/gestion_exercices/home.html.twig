@@ -2,201 +2,715 @@
 
 {% block page_title %}Espace Exercices{% endblock %}
 
-{% block content %}
-<div class="container py-4">
-    <!-- Hero Section -->
-    <div class="text-center mb-5">
-        <h1 class="display-4 fw-bold text-primary">🧘 Espace Exercices</h1>
-        <p class="lead">Développement personnel et bien-être</p>
-        <hr class="w-50 mx-auto">
-        <a href="{{ path('front_home') }}" class="btn btn-outline-primary">
-            <i class="bi bi-arrow-left"></i> Retour
-        </a>
-    </div>
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* STYLE MODERNE AVEC ANIMATIONS */
+        .hero-section {
+            text-align: center;
+            margin-bottom: 48px;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        
+        .hero-section h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+        
+        .hero-section p {
+            color: #64748b;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        /* CARTE IA MODERNE AVEC EFFET GLASS */
+        .ia-card {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 28px;
+            padding: 32px;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.5s ease-out 0.1s both;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ia-card::before {
+            content: "✨";
+            position: absolute;
+            bottom: -30px;
+            right: -30px;
+            font-size: 120px;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        
+        .ia-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .ia-subtitle {
+            opacity: 0.9;
+            margin-bottom: 24px;
+        }
+        
+        .ia-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        .ia-suggestion {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 24px;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .ia-suggestion:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-6px);
+        }
+        
+        .ia-suggestion-icon {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+        
+        .ia-suggestion h5 {
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .ia-suggestion p {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin-bottom: 16px;
+        }
+        
+        .btn-ia {
+            background: white;
+            color: #6366f1;
+            padding: 10px 20px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-ia:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        /* GRILLE DE BOUTONS D'HUMEUR - COULEURS INVERSÉES */
+        /* 1 = Très basse (rouge/énergique) → 10 = Excellente (violet/calme) */
+        .mood-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        
+        .mood-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(255,255,255,0.3);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .mood-btn:hover {
+            transform: scale(1.12) translateY(-3px);
+            border-color: white;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        /* Couleurs inversées : 1 (rouge intense) → 10 (violet profond) */
+        .mood-1 { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; box-shadow: 0 2px 8px rgba(239,68,68,0.3); }
+        .mood-2 { background: linear-gradient(135deg, #f97316, #ea580c); color: white; }
+        .mood-3 { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .mood-4 { background: linear-gradient(135deg, #eab308, #ca8a04); color: #1e293b; }
+        .mood-5 { background: linear-gradient(135deg, #84cc16, #65a30d); color: #1e293b; }
+        .mood-6 { background: linear-gradient(135deg, #22c55e, #16a34a); color: white; }
+        .mood-7 { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .mood-8 { background: linear-gradient(135deg, #14b8a6, #0d9488); color: white; }
+        .mood-9 { background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; }
+        .mood-10 { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; box-shadow: 0 2px 8px rgba(139,92,246,0.3); }
+        
+        /* Animation au clic */
+        .mood-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .mood-legend {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-top: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+        
+        .legend-color.low { background: linear-gradient(135deg, #ef4444, #f97316); }
+        .legend-color.normal { background: linear-gradient(135deg, #eab308, #22c55e); }
+        .legend-color.high { background: linear-gradient(135deg, #10b981, #8b5cf6); }
+        
+        /* STATS CARDS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 24px;
+            padding: 28px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.03);
+            animation: fadeInUp 0.5s ease-out 0.2s both;
+        }
+        
+        .stat-card:nth-child(1) { animation-delay: 0.15s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.25s; }
+        
+        .stat-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        /* NAVIGATION CARDS */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .nav-card {
+            background: white;
+            border-radius: 24px;
+            padding: 32px 24px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.03);
+            text-decoration: none;
+            display: block;
+            animation: fadeInUp 0.5s ease-out 0.3s both;
+        }
+        
+        .nav-card:nth-child(1) { animation-delay: 0.2s; }
+        .nav-card:nth-child(2) { animation-delay: 0.25s; }
+        .nav-card:nth-child(3) { animation-delay: 0.3s; }
+        
+        .nav-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 35px -12px rgba(0,0,0,0.15);
+        }
+        
+        .nav-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+        
+        .nav-card h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        
+        .nav-card p {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+        
+        .nav-link {
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .nav-card:nth-child(1) .nav-link { color: #6366f1; }
+        .nav-card:nth-child(2) .nav-link { color: #10b981; }
+        .nav-card:nth-child(3) .nav-link { color: #f59e0b; }
+        
+        /* SECTION DERNIÈRES SESSIONS */
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .recent-table-container {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+        }
+        
+        .recent-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .recent-table th {
+            padding: 16px 20px;
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .recent-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #475569;
+            vertical-align: middle;
+        }
+        
+        .recent-table tbody tr {
+            transition: all 0.2s;
+        }
+        
+        .recent-table tbody tr:hover {
+            background: #fafcff;
+        }
+        
+        .recent-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .exercice-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .progress-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 120px;
+        }
+        
+        .progress-bar-sm {
+            flex: 1;
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 6px;
+            max-width: 80px;
+            overflow: hidden;
+        }
+        
+        .progress-fill-sm {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 10px;
+        }
+        
+        .btn-detail {
+            background: #eff6ff;
+            color: #1d4ed8;
+            padding: 6px 14px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .btn-detail:hover {
+            background: #dbeafe;
+            transform: translateY(-1px);
+        }
+        
+        /* EXERCICES GRID */
+        .exercices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 20px;
+        }
+        
+        .small-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border: 1px solid #f1f5f9;
+            animation: fadeInUp 0.5s ease-out 0.35s both;
+        }
+        
+        .small-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -10px rgba(0,0,0,0.1);
+        }
+        
+        .small-card h5 {
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        
+        .small-card p {
+            color: #64748b;
+            font-size: 0.8rem;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+        
+        .btn-view-small {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 8px 16px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-view-small:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            background: #f8fafc;
+            border-radius: 24px;
+            color: #94a3b8;
+        }
+        
+        /* ANIMATIONS */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 1.8rem;
+            }
+            
+            .ia-card {
+                padding: 24px;
+            }
+            
+            .ia-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .mood-grid {
+                gap: 8px;
+            }
+            
+            .mood-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 0.85rem;
+            }
+            
+            .mood-legend {
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .stats-grid {
+                gap: 16px;
+            }
+            
+            .nav-grid {
+                gap: 16px;
+            }
+            
+            .recent-table th, .recent-table td {
+                padding: 12px;
+            }
+            
+            .progress-wrapper {
+                min-width: 100px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .mood-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 0.75rem;
+            }
+            
+            .stat-value {
+                font-size: 1.8rem;
+            }
+            
+            .stat-card {
+                padding: 20px;
+            }
+        }
+    </style>
+{% endblock %}
 
-    <!-- ========== NOUVEAU : SECTION IA SUGGESTIONS ========== -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <div class="card bg-gradient bg-dark text-white shadow-lg">
-                <div class="card-body text-center py-4">
-                    <i class="bi bi-robot fs-1"></i>
-                    <h2 class="mt-2">🤖 Suggestions IA personnalisées</h2>
-                    <p class="mb-3">Basé sur votre humeur et votre historique d'exercices</p>
+{% block content %}
+    <div style="max-width: 1280px; margin: 0 auto; padding: 20px;">
+        <!-- HERO SECTION -->
+        <section class="hero-section">
+            <h1>🧘 Espace Exercices</h1>
+            <p>Développement personnel et bien-être — Progresse à ton rythme</p>
+        </section>
+
+        <!-- CARTE IA SUGGESTIONS -->
+        <div class="ia-card">
+            <div class="ia-title">
+                <span>🤖</span> Suggestions IA personnalisées
+            </div>
+            <div class="ia-subtitle">
+                Basé sur ton humeur et ton historique d'exercices
+            </div>
+            
+            <div class="ia-grid">
+                <!-- Recommandation personnalisée -->
+                <div class="ia-suggestion">
+                    <div class="ia-suggestion-icon">🎯</div>
+                    <h5>Recommandation pour vous</h5>
+                    <p>Basée sur votre historique et progression</p>
+                    <a href="{{ path('front_suggestion_for_you') }}" class="btn-ia">
+                        🤖 Exercice recommandé →
+                    </a>
+                </div>
+                
+                <!-- Sélecteur d'humeur avec couleurs inversées -->
+                <div class="ia-suggestion">
+                    <div class="ia-suggestion-icon">😊</div>
+                    <h5>Basé sur votre humeur</h5>
+                    <p>Comment vous sentez-vous aujourd'hui ?</p>
                     
-                    <div class="row mt-4">
-                        <!-- Suggestion personnalisée -->
-                        <div class="col-md-6 mb-3">
-                            <div class="bg-white bg-opacity-10 rounded p-3">
-                                <i class="bi bi-magic fs-3"></i>
-                                <h5 class="mt-2">Recommandation pour vous</h5>
-                                <p class="small">Basée sur votre historique et progression</p>
-                                <a href="{{ path('front_suggestion_for_you') }}" class="btn btn-light">
-                                    🤖 Exercice recommandé →
-                                </a>
-                            </div>
+                    <div class="mood-grid">
+                        {% for mood in 1..10 %}
+                            <a href="{{ path('front_suggestion_by_mood', {'mood': mood}) }}" 
+                               class="mood-btn mood-{{ mood }}"
+                               title="Humeur: {{ mood }}/10">
+                                {{ mood }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mood-legend">
+                        <div class="legend-item">
+                            <div class="legend-color low"></div>
+                            <span>❶-❸ Très basse</span>
                         </div>
-                        
-                        <!-- Sélecteur d'humeur -->
-                        <div class="col-md-6 mb-3">
-                            <div class="bg-white bg-opacity-10 rounded p-3">
-                                <i class="bi bi-emoji-smile fs-3"></i>
-                                <h5 class="mt-2">Basé sur votre humeur</h5>
-                                <p class="small">Comment vous sentez-vous aujourd'hui ?</p>
-                                <div class="d-flex flex-wrap justify-content-center gap-2">
-                                    {% for mood in 1..10 %}
-                                        <a href="{{ path('front_suggestion_by_mood', {'mood': mood}) }}" 
-                                           class="btn btn-sm {% if mood <= 3 %}btn-danger{% elseif mood <= 6 %}btn-warning{% else %}btn-success{% endif %}"
-                                           title="Humeur: {{ mood }}/10">
-                                            {{ mood }}
-                                        </a>
-                                    {% endfor %}
-                                </div>
-                                <div class="small text-white-50 mt-2">
-                                    <span class="text-danger">❶-❸</span> Très basse 
-                                    <span class="text-warning">❹-❻</span> Normale 
-                                    <span class="text-success">❼-❿</span> Excellente
-                                </div>
-                            </div>
+                        <div class="legend-item">
+                            <div class="legend-color normal"></div>
+                            <span>❹-❻ Normale</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color high"></div>
+                            <span>❼-❿ Excellente</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Dashboard public (sans condition de connexion) -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <h2 class="mb-4"><i class="bi bi-speedometer2"></i> Votre tableau de bord</h2>
-        </div>
-        <div class="col-md-4">
-            <div class="card bg-primary text-white shadow-sm">
-                <div class="card-body text-center">
-                    <i class="bi bi-check-circle fs-1"></i>
-                    <h3 class="mt-2">{{ stats.total|default(0) }}</h3>
-                    <p class="mb-0">Exercices terminés</p>
-                </div>
+        <!-- STATISTIQUES RAPIDES -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value">{{ stats.total|default(0) }}</div>
+                <div class="stat-label">Exercices terminés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-value">{{ stats.temps|default(0) }} min</div>
+                <div class="stat-label">Temps total passé</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-value">{{ stats.moyenne|default(0) }}%</div>
+                <div class="stat-label">Progression moyenne</div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card bg-success text-white shadow-sm">
-                <div class="card-body text-center">
-                    <i class="bi bi-stopwatch fs-1"></i>
-                    <h3 class="mt-2">{{ stats.temps|default(0) }} min</h3>
-                    <p class="mb-0">Temps total passé</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card bg-info text-white shadow-sm">
-                <div class="card-body text-center">
-                    <i class="bi bi-graph-up fs-1"></i>
-                    <h3 class="mt-2">{{ stats.moyenne|default(0) }}%</h3>
-                    <p class="mb-0">Progression moyenne</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Navigation rapide -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <h2 class="mb-4"><i class="bi bi-compass"></i> Accès rapide</h2>
+        <!-- ACCÈS RAPIDE -->
+        <div class="nav-grid">
+            <a href="{{ path('front_gestion_exercices_index') }}" class="nav-card">
+                <div class="nav-icon">📚</div>
+                <h4>Tous les exercices</h4>
+                <p>Découvrez notre catalogue d'exercices</p>
+                <span class="nav-link">Voir les exercices →</span>
+            </a>
+            <a href="{{ path('front_historique_index') }}" class="nav-card">
+                <div class="nav-icon">📜</div>
+                <h4>Mon historique</h4>
+                <p>Consultez vos séances passées</p>
+                <span class="nav-link">Voir l'historique →</span>
+            </a>
+            <a href="{{ path('front_progression_index') }}" class="nav-card">
+                <div class="nav-icon">📊</div>
+                <h4>Ma progression</h4>
+                <p>Suivez votre évolution</p>
+                <span class="nav-link">Voir la progression →</span>
+            </a>
         </div>
-        <div class="col-md-4">
-            <div class="card text-center h-100 shadow-sm">
-                <div class="card-body">
-                    <i class="bi bi-files fs-1 text-primary"></i>
-                    <h4 class="mt-3">Tous les exercices</h4>
-                    <p>Découvrez notre catalogue d'exercices</p>
-                    <a href="{{ path('front_gestion_exercices_index') }}" class="btn btn-outline-primary">
-                        Voir les exercices →
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center h-100 shadow-sm">
-                <div class="card-body">
-                    <i class="bi bi-clock-history fs-1 text-success"></i>
-                    <h4 class="mt-3">Mon historique</h4>
-                    <p>Consultez vos séances passées</p>
-                    <a href="{{ path('front_historique_index') }}" class="btn btn-outline-success">
-                        Voir l'historique →
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center h-100 shadow-sm">
-                <div class="card-body">
-                    <i class="bi bi-graph-up fs-1 text-info"></i>
-                    <h4 class="mt-3">Ma progression</h4>
-                    <p>Suivez votre évolution</p>
-                    <a href="{{ path('front_progression_index') }}" class="btn btn-outline-info">
-                        Voir la progression →
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Dernières sessions (si existantes) -->
-    {% if stats.recent_sessions is defined and stats.recent_sessions|length > 0 %}
-    <div class="row">
-        <div class="col-12">
-            <h2 class="mb-4"><i class="bi bi-clock-history"></i> Dernières séances</h2>
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Exercice</th>
-                            <th>Date</th>
-                            <th>Progression</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for session in stats.recent_sessions %}
-                        <tr>
-                            <td><strong>{{ session.exercice.nom }}</strong></td>
-                            <td>{{ session.dateFin|date('d/m/Y H:i') }}</td>
-                            <td>
-                                <div class="progress" style="height: 20px; width: 100px;">
-                                    <div class="progress-bar" style="width: {{ session.progress }}%">
-                                        {{ session.progress }}%
+        <!-- DERNIÈRES SESSIONS -->
+        {% if stats.recent_sessions is defined and stats.recent_sessions|length > 0 %}
+        <div style="margin-bottom: 40px;">
+            <div class="section-title">
+                <span>🕐</span> Dernières séances
+            </div>
+            <div class="recent-table-container">
+                <div style="overflow-x: auto;">
+                    <table class="recent-table">
+                        <thead>
+                            <tr>
+                                <th>Exercice</th>
+                                <th>Date</th>
+                                <th>Progression</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in stats.recent_sessions %}
+                            <tr>
+                                <td>
+                                    <div class="exercice-name">{{ session.exercice.nom }}</div>
+                                    <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">{{ session.exercice.type }}</div>
+                                </td>
+                                <td>{{ session.dateFin|date('d/m/Y H:i') }}</td>
+                                <td>
+                                    <div class="progress-wrapper">
+                                        <div class="progress-bar-sm">
+                                            <div class="progress-fill-sm" style="width: {{ session.progress }}%"></div>
+                                        </div>
+                                        <span style="font-size: 0.75rem; font-weight: 600; color: #6366f1;">{{ session.progress }}%</span>
                                     </div>
-                                </div>
-                            </td>
-                            <td>
-                                <a href="{{ path('front_historique_show', {'idSession': session.idSession}) }}" 
-                                   class="btn btn-sm btn-info">Détail</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Aperçu des derniers exercices -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <h2 class="mb-4"><i class="bi bi-star"></i> Découvrez nos exercices</h2>
-        </div>
-        {% for exercice in recent_exercices %}
-        <div class="col-md-4 mb-3">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">{{ exercice.nom }}</h5>
-                    <p class="card-text text-muted small">{{ exercice.description|slice(0, 80) }}...</p>
-                    <a href="{{ path('front_gestion_exercices_show', {'idEx': exercice.idEx}) }}" class="btn btn-sm btn-outline-primary">Voir l'exercice</a>
+                                 </td>
+                                <td>
+                                    <a href="{{ path('front_historique_show', {'idSession': session.idSession}) }}" class="btn-detail">
+                                        👁️ Détail
+                                    </a>
+                                 </td>
+                             </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-        {% endfor %}
+        {% endif %}
+
+        <!-- APERÇU DES DERNIERS EXERCICES -->
+        <div class="section-title">
+            <span>⭐</span> Découvrez nos exercices
+        </div>
+        <div class="exercices-grid">
+            {% for exercice in recent_exercices %}
+                <div class="small-card">
+                    <h5>{{ exercice.nom }}</h5>
+                    <p>{{ exercice.description|slice(0, 80) }}{% if exercice.description|length > 80 %}...{% endif %}</p>
+                    <a href="{{ path('front_gestion_exercices_show', {'idEx': exercice.idEx}) }}" class="btn-view-small">
+                        Voir l'exercice →
+                    </a>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div style="font-size: 3rem; margin-bottom: 16px;">📭</div>
+                    <p>Aucun exercice disponible pour le moment.</p>
+                </div>
+            {% endfor %}
+        </div>
     </div>
-</div>
 {% endblock %}

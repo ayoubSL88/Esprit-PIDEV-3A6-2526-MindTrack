@@ -2,107 +2,386 @@
 
 {% block page_title %}Détail de la séance - {{ session.exercice.nom }}{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* STYLE MODERNE */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+        
+        .page-header p {
+            color: #64748b;
+            margin-top: 8px;
+        }
+        
+        /* GRILLE PRINCIPALE */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 0.8fr;
+            gap: 28px;
+        }
+        
+        /* CARTES MODERNES */
+        .modern-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+            margin-bottom: 28px;
+        }
+        
+        .card-header-gradient {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            padding: 18px 24px;
+            color: white;
+        }
+        
+        .card-header-gradient h5 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .card-header-success {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            padding: 18px 24px;
+            color: white;
+        }
+        
+        .card-header-success h5 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .card-header-secondary {
+            background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%);
+            padding: 18px 24px;
+            color: white;
+        }
+        
+        .card-header-secondary h5 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+align-items: center;
+            gap: 8px;
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        /* BADGES */
+        .badge-modern {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .badge-type {
+            background: #eef2ff;
+            color: #4f46e5;
+        }
+        
+        .badge-facile {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-moyen {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        
+        .badge-difficile {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .badge-duree {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        /* TABLEAU DÉTAILS */
+        .detail-table {
+            width: 100%;
+        }
+        
+        .detail-table tr {
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .detail-table tr:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-table th {
+            padding: 14px 0;
+            text-align: left;
+            font-weight: 600;
+            color: #1e293b;
+            width: 130px;
+        }
+        
+        .detail-table td {
+            padding: 14px 0;
+            color: #64748b;
+        }
+        
+        /* PROGRESS BAR */
+        .progress-large {
+            background: #e2e8f0;
+            border-radius: 12px;
+            height: 32px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+        
+        .progress-fill-large {
+            height: 100%;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 16px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: white;
+        }
+        
+        .progress-fill-large.success {
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+        
+        .progress-fill-large.primary {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        }
+        
+        /* ZONE DÉMARCHE */
+        .demarche-box {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 20px;
+            padding: 20px;
+            line-height: 1.7;
+            color: #334155;
+        }
+        
+        .notes-box {
+            background: #fffbeb;
+            border-radius: 20px;
+            padding: 20px;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        /* BOUTONS */
+        .btn-group-modern {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-modern {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-secondary-modern {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .btn-secondary-modern:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary-modern {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+        
+        .btn-primary-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99,102,241,0.3);
+        }
+        
+        @media (max-width: 900px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .btn-group-modern {
+                margin-top: 16px;
+            }
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>
-            <i class="bi bi-journal-bookmark-fill text-primary"></i> 
-            Détail de ma séance
-        </h1>
-        <div>
-            <a href="{{ path('front_historique_index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Retour à l'historique
-            </a>
-            <a href="{{ path('front_session_start', {'idEx': session.exercice.idEx}) }}" class="btn btn-primary">
-                <i class="bi bi-arrow-repeat"></i> Refaire l'exercice
-            </a>
-        </div>
-    </div>
+    <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+        <!-- EN-TÊTE -->
+        <section class="page-header">
+            <div>
+                <h1>📖 Détail de ma séance</h1>
+                <p>🔍 Analyse complète de ton exercice et de ta progression</p>
+            </div>
+            <div class="btn-group-modern">
+                <a class="btn-modern btn-secondary-modern" href="{{ path('front_historique_index') }}">
+                    ← Retour à l'historique
+                </a>
+                <a class="btn-modern btn-primary-modern" href="{{ path('front_session_start', {'idEx': session.exercice.idEx}) }}">
+                    🔄 Refaire l'exercice
+                </a>
+            </div>
+        </section>
 
-    <div class="row">
-        <div class="col-md-7">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-file-text"></i> {{ session.exercice.nom }}
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <span class="badge bg-secondary me-2">{{ session.exercice.type }}</span>
-                        <span class="badge bg-{{ session.exercice.difficulte == 'FACILE' ? 'success' : (session.exercice.difficulte == 'MOYEN' ? 'warning' : 'danger') }}">
-                            {{ session.exercice.difficulte }}
-                        </span>
-                        <span class="badge bg-info">{{ session.exercice.duree }} min estimées</span>
+        <div class="detail-grid">
+            <!-- COLONNE GAUCHE -->
+            <div>
+                <!-- Carte Exercice -->
+                <div class="modern-card">
+                    <div class="card-header-gradient">
+                        <h5>
+                            <span>🎯</span> {{ session.exercice.nom }}
+                        </h5>
                     </div>
-                    
-                    <h6>Description</h6>
-                    <p>{{ session.exercice.description|nl2br }}</p>
-                    
-                    <h6 class="mt-3">Démarche</h6>
-                    <div class="p-3 bg-light rounded">
-                        {{ session.exercice.demarche|nl2br }}
+                    <div class="card-body">
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
+                            <span class="badge-modern badge-type">🏷️ {{ session.exercice.type }}</span>
+                            <span class="badge-modern 
+                                {% if session.exercice.difficulte == 'FACILE' %}badge-facile
+                                {% elseif session.exercice.difficulte == 'MOYEN' %}badge-moyen
+                                {% else %}badge-difficile{% endif %}">
+                                📊 {{ session.exercice.difficulte|capitalize }}
+                            </span>
+                            <span class="badge-modern badge-duree">
+                                ⏱️ {{ session.exercice.duree }} min estimées
+                            </span>
+                        </div>
+                        
+                        <h6 style="color: #1e293b; margin-bottom: 12px;">📝 Description</h6>
+                        <p style="color: #64748b; line-height: 1.6; margin-bottom: 24px;">{{ session.exercice.description|nl2br }}</p>
+                        
+                        <h6 style="color: #1e293b; margin-bottom: 12px;">📋 Démarche</h6>
+                        <div class="demarche-box">
+                            {{ session.exercice.demarche|nl2br }}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-md-5">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-calendar-check"></i> Ma séance
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm">
-                        <tr><th>Date de début</th><td>{{ session.dateDebut|date('d/m/Y H:i:s') }}</td></tr>
-                        <tr><th>Date de fin</th><td>{{ session.dateFin|date('d/m/Y H:i:s') }}</td></tr>
-                        <tr>
-                            <th>Durée réelle</th>
-                            <td>
-                                {% if session.dureeReelle %}
-                                    <strong>{{ (session.dureeReelle / 60)|round }} minutes</strong>
-                                    ({{ session.dureeReelle }} secondes)
-                                {% else %} - {% endif %}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Progression</th>
-                            <td>
-                                <div class="progress" style="height: 25px;">
-                                    <div class="progress-bar bg-{{ session.progress == 100 ? 'success' : 'primary' }}" 
-                                         style="width: {{ session.progress }}%">
-                                        {{ session.progress }}%
+            <!-- COLONNE DROITE -->
+            <div>
+                <!-- Carte Ma séance -->
+                <div class="modern-card">
+                    <div class="card-header-success">
+                        <h5>
+                            <span>✅</span> Ma séance
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="detail-table">
+                            <tr>
+                                <th>📅 Date de début</th>
+                                <td>{{ session.dateDebut|date('d/m/Y H:i:s') }}</td>
+                            </tr>
+                            <tr>
+                                <th>🏁 Date de fin</th>
+                                <td>{{ session.dateFin|date('d/m/Y H:i:s') }}</td>
+                            </tr>
+                            <tr>
+                                <th>⏱️ Durée réelle</th>
+                                <td>
+                                    {% if session.dureeReelle %}
+                                        <strong style="color: #10b981;">{{ (session.dureeReelle / 60)|round }} minutes</strong>
+                                        <span style="color: #94a3b8;">({{ session.dureeReelle }} secondes)</span>
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>📊 Progression</th>
+                                <td>
+                                    <div class="progress-large">
+                                        <div class="progress-fill-large {% if session.progress == 100 %}success{% else %}primary{% endif %}" 
+                                             style="width: {{ session.progress|default(0) }}%">
+                                            {{ session.progress|default(0) }}%
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Résultat</th>
-                            <td>
-                                {% if session.resultat %}
-                                    <span class="badge bg-success">{{ session.resultat }}</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">Terminé</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>🎖️ Résultat</th>
+                                <td>
+                                    {% if session.resultat %}
+                                        <span class="badge-modern badge-facile">✅ {{ session.resultat }}</span>
+                                    {% else %}
+                                        <span class="badge-modern badge-duree">✓ Terminé</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
-            </div>
 
-            {% if session.commentaires %}
-            <div class="card shadow-sm">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0"><i class="bi bi-chat-dots"></i> Mes notes</h5>
+                <!-- Carte Notes personnelles -->
+                {% if session.commentaires %}
+                <div class="modern-card">
+                    <div class="card-header-secondary">
+                        <h5>
+                            <span>💬</span> Mes notes personnelles
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="notes-box">
+                            {{ session.commentaires|nl2br }}
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <p class="mb-0">{{ session.commentaires|nl2br }}</p>
-                </div>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
     </div>
-</div>
 {% endblock %}

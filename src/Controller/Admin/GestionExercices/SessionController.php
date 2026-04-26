@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/admin/sessions')]
-//#[IsGranted('ROLE_ADMIN')]
+#[IsGranted('ROLE_ADMIN')]
 final class SessionController extends AbstractController
 {
     #[Route('/', name: 'admin_sessions_index')]

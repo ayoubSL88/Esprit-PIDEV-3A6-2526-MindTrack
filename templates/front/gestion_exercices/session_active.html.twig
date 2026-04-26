@@ -2,60 +2,400 @@
 
 {% block page_title %}{{ exercice.nom }} - Session en cours{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* STYLE MODERNE SESSION ACTIVE */
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .session-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+        
+        /* GRILLE PRINCIPALE */
+        .session-grid {
+            display: grid;
+            grid-template-columns: 1fr 0.9fr;
+            gap: 28px;
+        }
+        
+        /* CARTE EXERCICE */
+        .exercise-card {
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+        }
+        
+        .exercise-header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            padding: 24px;
+            color: white;
+        }
+        
+        .exercise-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .exercise-body {
+            padding: 24px;
+        }
+        
+        .exercise-body h5 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .exercise-description {
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        
+        /* ZONE DES ÉTAPES */
+        .steps-container {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 20px;
+        }
+        
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .step-item:last-child {
+            border-bottom: none;
+        }
+        
+        .step-checkbox-custom {
+            width: 22px;
+            height: 22px;
+            border-radius: 8px;
+            border: 2px solid #cbd5e1;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .step-checkbox-custom.checked {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            border-color: #10b981;
+        }
+        
+        .step-checkbox-custom.checked::after {
+            content: "✓";
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .step-checkbox-hidden {
+            display: none;
+        }
+        
+        .step-label {
+            color: #334155;
+            line-height: 1.5;
+            cursor: pointer;
+        }
+        
+        .step-label.completed {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+        
+        /* CARTE SESSION (Sticky) */
+        .session-card {
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .session-header-card {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            padding: 20px 24px;
+            color: white;
+        }
+        
+        .session-header-card h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .session-body {
+            padding: 24px;
+        }
+        
+        /* TIMER */
+        .timer-display {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .timer-value {
+            font-size: 3rem;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 4px;
+        }
+        
+        .timer-label {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 4px;
+        }
+        
+        /* PROGRESSION */
+        .progress-section {
+            margin-bottom: 24px;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+        
+        .progress-bar-large {
+            background: #e2e8f0;
+            border-radius: 12px;
+            height: 12px;
+            overflow: hidden;
+        }
+        
+        .progress-fill-large {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 12px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .progress-percent {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #6366f1;
+        }
+        
+        /* FORMULAIRES */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+        
+        .form-select:focus, .form-textarea:focus {
+            border-color: #6366f1;
+            outline: none;
+            background: white;
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        /* BOUTONS */
+        .btn-group-session {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .btn-terminer {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-terminer:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(239,68,68,0.3);
+        }
+        
+        .btn-sauvegarder {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-sauvegarder:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+        
+        @media (max-width: 900px) {
+            .session-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .session-card {
+                position: static;
+            }
+            .session-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .timer-value {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">{{ exercice.nom }}</h3>
+    <div style="max-width: 1280px; margin: 0 auto; padding: 20px;">
+        <!-- EN-TÊTE -->
+        <section class="session-header">
+            <div>
+                <h1>🏃 {{ exercice.nom }}</h1>
+                <p style="color: #64748b; margin-top: 8px;">Session en cours — Concentre-toi et donne le meilleur de toi-même !</p>
+            </div>
+            <a href="{{ path('front_gestion_exercices_index') }}" style="background: #f1f5f9; color: #475569; padding: 10px 20px; border-radius: 40px; text-decoration: none; font-weight: 500;">
+                ← Retour aux exercices
+            </a>
+        </section>
+
+        <div class="session-grid">
+            <!-- COLONNE GAUCHE : EXERCICE -->
+            <div class="exercise-card">
+                <div class="exercise-header">
+                    <h3>📖 Description de l'exercice</h3>
                 </div>
-                <div class="card-body">
-                    <div class="mb-4">
-                        <h5>Description</h5>
-                        <p>{{ exercice.description|nl2br }}</p>
+                <div class="exercise-body">
+                    <div class="exercise-description">
+                        {{ exercice.description|nl2br }}
                     </div>
-                    <div class="mb-4">
-                        <h5>Démarche à suivre</h5>
-                        <div class="p-3 bg-light rounded" id="stepsContainer">
-                            {% set steps = exercice.demarche|split("\n") %}
-                            {% for step in steps %}
-                                {% if step|trim is not empty %}
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input step-checkbox" type="checkbox" 
-                                               id="step{{ loop.index }}" value="{{ step|trim }}">
-                                        <label class="form-check-label" for="step{{ loop.index }}">
-                                            {{ step|trim }}
-                                        </label>
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
+                    
+                    <h5>
+                        <span>✓</span> Démarche à suivre
+                    </h5>
+                    <div class="steps-container" id="stepsContainer">
+                        {% set steps = exercice.demarche|split("\n") %}
+                        {% for step in steps %}
+                            {% if step|trim is not empty %}
+                                <div class="step-item" data-step-index="{{ loop.index0 }}">
+                                    <div class="step-checkbox-custom" data-step="{{ loop.index0 }}"></div>
+                                    <span class="step-label">{{ step|trim }}</span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="col-lg-4">
-            <div class="card shadow-sm sticky-top" style="top: 20px;">
-                <div class="card-header bg-success text-white">
-                    <h4 class="mb-0">Session en cours</h4>
+
+            <!-- COLONNE DROITE : SESSION ACTIVE (STICKY) -->
+            <div class="session-card">
+                <div class="session-header-card">
+                    <h4>
+                        <span>⏱️</span> Session en cours
+                    </h4>
                 </div>
-                <div class="card-body text-center">
-                    <div class="display-1 fw-bold mb-3" id="timer">00:00</div>
-                    
-                    <div class="mb-3">
-                        <label>Progression</label>
-                        <div class="progress" style="height: 30px;">
-                            <div class="progress-bar bg-success" id="progress-bar" 
-                                 role="progressbar" style="width: 0%">
-                                0%
-                            </div>
-                        </div>
+                <div class="session-body">
+                    <!-- TIMER -->
+                    <div class="timer-display">
+                        <div class="timer-value" id="timer">00:00</div>
+                        <div class="timer-label">Temps écoulé</div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Mon ressenti (1-5)</label>
+
+                    <!-- PROGRESSION -->
+                    <div class="progress-section">
+                        <div class="progress-label">
+                            <span>📊 Progression</span>
+                            <span id="progressPercent">0</span>%
+                        </div>
+                        <div class="progress-bar-large">
+                            <div class="progress-fill-large" id="progressFill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-percent" id="progressDisplay">0% complété</div>
+                    </div>
+
+                    <!-- RESSENTI -->
+                    <div class="form-group">
+                        <label>😊 Mon ressenti (1-5)</label>
                         <select id="ressenti" class="form-select">
                             <option value="">Sélectionner</option>
                             <option value="1">⭐ - Très difficile</option>
@@ -65,117 +405,174 @@
                             <option value="5">⭐⭐⭐⭐⭐ - Très facile</option>
                         </select>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Notes personnelles</label>
-                        <textarea id="commentaires" class="form-control" rows="3" 
-                                  placeholder="Notez vos impressions, difficultés rencontrées..."></textarea>
+
+                    <!-- NOTES -->
+                    <div class="form-group">
+                        <label>📝 Notes personnelles</label>
+                        <textarea id="commentaires" class="form-textarea" rows="3" 
+                                  placeholder="Notez vos impressions, difficultés rencontrées, ce que vous avez appris..."></textarea>
                     </div>
-                    
-                    <button class="btn btn-danger w-100" id="terminerBtn">
-                        <i class="bi bi-check-circle"></i> Terminer l'exercice
-                    </button>
-                    
-                    <button class="btn btn-secondary w-100 mt-2" id="sauvegarderBtn">
-                        <i class="bi bi-save"></i> Sauvegarder progression
-                    </button>
+
+                    <!-- BOUTONS -->
+                    <div class="btn-group-session">
+                        <button class="btn-terminer" id="terminerBtn">
+                            ✅ Terminer l'exercice
+                        </button>
+                        <button class="btn-sauvegarder" id="sauvegarderBtn">
+                            💾 Sauvegarder ma progression
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-let startTime = new Date();
-let timerInterval;
-let currentProgress = {{ session.progress|default(0) }};
-
-function updateTimer() {
-    const now = new Date();
-    const elapsed = Math.floor((now - startTime) / 1000);
-    const minutes = Math.floor(elapsed / 60);
-    const seconds = elapsed % 60;
-    document.getElementById('timer').textContent = 
-        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-}
-
-function startTimer() {
-    timerInterval = setInterval(updateTimer, 1000);
-}
-
-function updateProgress(value) {
-    currentProgress = Math.min(100, Math.max(0, value));
-    document.getElementById('progress-bar').style.width = currentProgress + '%';
-    document.getElementById('progress-bar').textContent = currentProgress + '%';
-}
-
-function saveProgress() {
-    const stepsCompleted = [];
-    document.querySelectorAll('.step-checkbox:checked').forEach(checkbox => {
-        stepsCompleted.push(checkbox.nextElementSibling.textContent.trim());
-    });
-    
-    fetch('{{ path('front_session_save_progress', {'idSession': session.idSession}) }}', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ 
-            progress: currentProgress,
-            steps: stepsCompleted
-        })
-    }).catch(err => console.error('Erreur sauvegarde:', err));
-}
-
-// Calculer la progression en fonction des étapes cochées
-function calculateProgress() {
-    const total = document.querySelectorAll('.step-checkbox').length;
-    const checked = document.querySelectorAll('.step-checkbox:checked').length;
-    return Math.round((checked / total) * 100);
-}
-
-// Écouter les changements sur les checkboxes
-document.querySelectorAll('.step-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', () => {
-        updateProgress(calculateProgress());
-        saveProgress();
-    });
-});
-
-document.getElementById('terminerBtn').addEventListener('click', () => {
-    const dureeReelle = Math.floor((new Date() - startTime) / 1000);
-    const ressenti = document.getElementById('ressenti').value;
-    const commentaires = document.getElementById('commentaires').value;
-    
-    let finalComment = commentaires;
-    if (ressenti) {
-        finalComment += (commentaires ? '\n\n' : '') + `Ressenti: ${ressenti}/5`;
-    }
-    
-    if (confirm('Terminer cet exercice ? Votre progression sera enregistrée définitivement.')) {
-        fetch('{{ path('front_session_finish', {'idSession': session.idSession}) }}', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                dureeReelle: dureeReelle,
-                resultat: currentProgress >= 80 ? 'Réussi' : (currentProgress >= 50 ? 'Partiellement réussi' : 'À refaire'),
-                commentaires: finalComment
-            })
-        }).then(response => response.json()).then(data => {
-            if (data.success) {
-                window.location.href = data.redirect;
+    <script>
+        // ==================== VARIABLES ====================
+        let startTime = new Date();
+        let timerInterval;
+        let currentProgress = {{ session.progress|default(0) }};
+        const totalSteps = document.querySelectorAll('.step-item').length;
+        
+        // ==================== TIMER ====================
+        function updateTimer() {
+            const now = new Date();
+            const elapsed = Math.floor((now - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+        
+        // ==================== PROGRESSION ====================
+        function calculateProgress() {
+            const checked = document.querySelectorAll('.step-checkbox-custom.checked').length;
+            return Math.round((checked / totalSteps) * 100);
+        }
+        
+        function updateProgress(value) {
+            currentProgress = Math.min(100, Math.max(0, value));
+            document.getElementById('progressFill').style.width = currentProgress + '%';
+            document.getElementById('progressPercent').textContent = currentProgress;
+            document.getElementById('progressDisplay').textContent = currentProgress + '% complété';
+        }
+        
+        function refreshProgress() {
+            updateProgress(calculateProgress());
+        }
+        
+        // ==================== SAUVEGARDE ====================
+        function saveProgress() {
+            const stepsCompleted = [];
+            document.querySelectorAll('.step-checkbox-custom.checked').forEach((checkbox, index) => {
+                const stepItem = checkbox.closest('.step-item');
+                const stepLabel = stepItem.querySelector('.step-label');
+                if (stepLabel) {
+                    stepsCompleted.push(stepLabel.textContent.trim());
+                }
+            });
+            
+            fetch('{{ path('front_session_save_progress', {'idSession': session.idSession}) }}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ 
+                    progress: currentProgress,
+                    steps: stepsCompleted
+                })
+            }).catch(err => console.error('Erreur sauvegarde:', err));
+        }
+        
+        // ==================== GESTION DES CHECKBOX ====================
+        function initCheckboxes() {
+            const checkboxes = document.querySelectorAll('.step-checkbox-custom');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    this.classList.toggle('checked');
+                    
+                    const stepItem = this.closest('.step-item');
+                    const stepLabel = stepItem.querySelector('.step-label');
+                    if (this.classList.contains('checked')) {
+                        stepLabel.classList.add('completed');
+                    } else {
+                        stepLabel.classList.remove('completed');
+                    }
+                    
+                    refreshProgress();
+                    saveProgress();
+                });
+                
+                const stepLabel = checkbox.closest('.step-item').querySelector('.step-label');
+                stepLabel.addEventListener('click', function() {
+                    checkbox.click();
+                });
+            });
+        }
+        
+        // ==================== FINALISATION ====================
+        document.getElementById('terminerBtn').addEventListener('click', () => {
+            const dureeReelle = Math.floor((new Date() - startTime) / 1000);
+            const ressenti = document.getElementById('ressenti').value;
+            let commentaires = document.getElementById('commentaires').value;
+            
+            if (ressenti) {
+                commentaires += (commentaires ? '\n\n' : '') + `🎯 Ressenti: ${ressenti}/5`;
+            }
+            
+            const resultatText = currentProgress >= 80 ? '✅ Réussi' : (currentProgress >= 50 ? '⚠️ Partiellement réussi' : '🔄 À refaire');
+            
+            if (confirm(`Votre progression est de ${currentProgress}%. ${resultatText}\n\nTerminer cette session ?`)) {
+                fetch('{{ path('front_session_finish', {'idSession': session.idSession}) }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        dureeReelle: dureeReelle,
+                        resultat: currentProgress >= 80 ? 'Réussi' : (currentProgress >= 50 ? 'Partiellement réussi' : 'À refaire'),
+                        commentaires: commentaires
+                    })
+                }).then(response => response.json()).then(data => {
+                    if (data.success) {
+                        window.location.href = data.redirect;
+                    }
+                });
             }
         });
-    }
-});
-
-document.getElementById('sauvegarderBtn').addEventListener('click', () => {
-    saveProgress();
-    alert('Progression sauvegardée !');
-});
-
-// Restaurer la progression sauvegardée
-updateProgress(currentProgress);
-
-// Démarrer le timer
-startTimer();
-</script>
+        
+        document.getElementById('sauvegarderBtn').addEventListener('click', () => {
+            saveProgress();
+            
+            // Feedback visuel
+            const btn = document.getElementById('sauvegarderBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✓ Sauvegardé !';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+            }, 2000);
+        });
+        
+        // ==================== INITIALISATION ====================
+        function init() {
+            // Restaurer la progression sauvegardée
+            updateProgress(currentProgress);
+            
+            // Initialiser les checkboxes
+            initCheckboxes();
+            
+            // Démarrer le timer
+            startTimer();
+            
+            // Sauvegarde auto toutes les 30 secondes
+            setInterval(() => {
+                saveProgress();
+            }, 30000);
+        }
+        
+        init();
+    </script>
 {% endblock %}

@@ -4,12 +4,9 @@ namespace App\Command;
 
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Console\Question\Question;
 
 // ✅ CORRECTION : importer le bon namespace
 use App\Service\AIExerciceSuggester;
@@ -32,9 +29,8 @@ class TestAiSuggesterCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $helper = $this->getHelper('question');
-        $question = new Question('Entrez votre humeur (1-10) : ', 5);
-        $mood = $helper->ask($input, $output, $question);
+        $io = new SymfonyStyle($input, $output);
+        $mood = $io->ask('Entrez votre humeur (1-10)', 5);
         
         $output->writeln("\n🧠 Appel à l'IA en cours...\n");
         

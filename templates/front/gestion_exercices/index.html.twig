@@ -2,107 +2,421 @@
 
 {% block page_title %}Mes Exercices{% endblock %}
 
-{% block content %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="d-flex align-items-center gap-3">
-            {# Bouton Retour - redirige vers l'accueil général #}
-                <a href="{{ path('front_gestion_exercices_home') }}" class="btn btn-outline-primary">
-                <i class="bi bi-arrow-left"></i> Retour à l'espace d'exercices
-                </a>
-            <h1 class="mb-0">Mes Exercices</h1>
-        </div>
-        <div class="dropdown">
-            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                <i class="bi bi-funnel"></i> Filtrer
-            </button>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="{{ path('front_gestion_exercices_index') }}">Tous</a></li>
-                <li><a class="dropdown-item" href="{{ path('front_gestion_exercices_index', {'difficulte': 'FACILE'}) }}">Facile</a></li>
-                <li><a class="dropdown-item" href="{{ path('front_gestion_exercices_index', {'difficulte': 'MOYEN'}) }}">Moyen</a></li>
-                <li><a class="dropdown-item" href="{{ path('front_gestion_exercices_index', {'difficulte': 'DIFFICILE'}) }}">Difficile</a></li>
-            </ul>
-        </div>
-    </div>
-
-    {# Barre de recherche #}
-    <div class="card mb-4 shadow-sm">
-        <div class="card-body">
-            <form method="get" class="row g-3">
-                <div class="col-md-9">
-                    <input type="text" name="search" value="{{ search }}" class="form-control form-control-lg" 
-                           placeholder="Rechercher un exercice par nom ou type...">
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary btn-lg w-100">
-                        <i class="bi bi-search"></i> Rechercher
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {# Grille des exercices #}
-    {% if exercices is empty %}
-        <div class="alert alert-info text-center py-5">
-            <i class="bi bi-emoji-frown fs-1"></i>
-            <h4 class="mt-3">Aucun exercice trouvé</h4>
-            <p>Essayez de modifier vos critères de recherche.</p>
-        </div>
-    {% else %}
-        <div class="row">
-            {% for exercice in exercices %}
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 shadow-sm hover-shadow transition">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title text-primary">{{ exercice.nom }}</h5>
-                                <span class="badge 
-                                    {% if exercice.difficulte == 'FACILE' %}bg-success
-                                    {% elseif exercice.difficulte == 'MOYEN' %}bg-warning text-dark
-                                    {% else %}bg-danger
-                                    {% endif %} px-3 py-2">
-                                    {{ exercice.difficulte|capitalize }}
-                                </span>
-                            </div>
-                            <h6 class="card-subtitle mb-2 text-muted">
-                                <i class="bi bi-tag"></i> {{ exercice.type }}
-                            </h6>
-                            <p class="card-text">{{ exercice.description|slice(0, 100) }}{% if exercice.description|length > 100 %}...{% endif %}</p>
-                            <div class="mb-3">
-                                <small class="text-muted">
-                                    <i class="bi bi-clock"></i> {{ exercice.duree }} minutes
-                                </small>
-                                <br>
-                                <small class="text-muted">
-                                    <i class="bi bi-calendar"></i> Créé le {{ exercice.dateCreation|date('d/m/Y') }}
-                                </small>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <a href="{{ path('front_gestion_exercices_show', {'idEx': exercice.idEx}) }}" 
-                                   class="btn btn-outline-primary">
-                                    <i class="bi bi-eye"></i> Voir l'exercice
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-</div>
-{% endblock %}
-
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        .hover-shadow:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-            transition: all 0.3s ease;
+        /* STYLE MODERNE - MÊME DESIGN QUE GESTION OBJECTIFS */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
         }
-        .transition {
-            transition: all 0.3s ease;
+        
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+        
+        /* BARRE DE FILTRE MODERNE */
+        .filter-bar {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 32px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            border: 1px solid #f1f5f9;
+        }
+        
+        .filter-bar > div {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .filter-bar label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        
+        .filter-bar input, .filter-bar select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+        
+        .filter-bar input:focus, .filter-bar select:focus {
+            border-color: #6366f1;
+            outline: none;
+            background: white;
+        }
+        
+        /* DROPDOWN FILTRE PERSONNALISÉ */
+        .dropdown-filter {
+            position: relative;
+        }
+        
+        .dropdown-filter-btn {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            color: #1e293b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .dropdown-filter-btn:hover {
+            border-color: #6366f1;
+            background: white;
+        }
+        
+        .dropdown-filter-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            border: 1px solid #f1f5f9;
+            overflow: hidden;
+            min-width: 150px;
+            z-index: 100;
+            display: none;
+        }
+        
+        .dropdown-filter-menu.show {
+            display: block;
+            animation: fadeInUp 0.2s ease-out;
+        }
+        
+        .dropdown-filter-menu a {
+            display: block;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #475569;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+        
+        .dropdown-filter-menu a:hover {
+            background: #f1f5f9;
+            color: #6366f1;
+        }
+        
+        /* GRILLE DES EXERCICES */
+        .exercices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 28px;
+            margin-top: 24px;
+        }
+        
+        .exercice-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.03);
+            position: relative;
+        }
+        
+        .exercice-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 35px -12px rgba(0,0,0,0.15);
+        }
+        
+        /* ENTÊTE CARTE */
+        .exercice-header {
+            padding: 20px 20px 12px;
+            border-bottom: 2px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .exercice-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        
+        /* BADGES DIFFICULTÉ */
+        .badge-difficulte {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .badge-facile {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-moyen {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        
+        .badge-difficile {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        /* CORPS CARTE */
+        .exercice-body {
+            padding: 16px 20px;
+        }
+        
+        .exercice-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #eef2ff;
+            color: #4f46e5;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+        
+        .exercice-description {
+            color: #64748b;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        
+        .exercice-meta {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+        
+        .exercice-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        /* ACTIONS CARTE */
+        .exercice-actions {
+            padding: 16px 20px 20px;
+            border-top: 1px solid #f1f5f9;
+            background: #fafcff;
+        }
+        
+        .btn-front {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-view {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .btn-view:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99,102,241,0.3);
+        }
+        
+        .btn-outline {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .btn-outline:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            background: #f8fafc;
+            border-radius: 24px;
+            color: #94a3b8;
+            grid-column: 1 / -1;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .exercice-card {
+            animation: fadeInUp 0.4s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .exercice-card:nth-child(1) { animation-delay: 0.05s; }
+        .exercice-card:nth-child(2) { animation-delay: 0.1s; }
+        .exercice-card:nth-child(3) { animation-delay: 0.15s; }
+        .exercice-card:nth-child(4) { animation-delay: 0.2s; }
+        .exercice-card:nth-child(5) { animation-delay: 0.25s; }
+        .exercice-card:nth-child(6) { animation-delay: 0.3s; }
+        
+        @media (max-width: 640px) {
+            .exercices-grid {
+                grid-template-columns: 1fr;
+            }
+            .filter-bar {
+                flex-direction: column;
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
     </style>
+{% endblock %}
+
+{% block content %}
+    <div style="max-width: 1280px; margin: 0 auto; padding: 20px;">
+        <!-- EN-TÊTE -->
+        <section class="page-header">
+            <div>
+                <h1>📚 Mes Exercices</h1>
+                <p style="color: #64748b; margin-top: 8px;">Découvre et pratique des exercices adaptés à ton niveau</p>
+            </div>
+            <div>
+                <a href="{{ path('front_gestion_exercices_home') }}" class="btn-front btn-outline">
+                    ← Retour à l'espace d'exercices
+                </a>
+            </div>
+        </section>
+
+        <!-- BARRE DE RECHERCHE ET FILTRES -->
+        <div class="filter-bar">
+            <div style="flex: 2;">
+                <label for="search">🔍 Recherche</label>
+                <form method="get" style="display: flex; gap: 8px;">
+                    <input type="text" name="search" id="search" value="{{ search }}" 
+                           placeholder="Nom ou type d'exercice..." style="flex: 1;">
+                    <button type="submit" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; border-radius: 12px; padding: 0 20px; cursor: pointer;">
+                        🔍
+                    </button>
+                </form>
+            </div>
+            <div>
+                <label for="difficulte">📊 Difficulté</label>
+                <select id="difficulte" name="difficulte" onchange="window.location.href=this.value">
+                    <option value="{{ path('front_gestion_exercices_index') }}" {% if not app.request.get('difficulte') %}selected{% endif %}>Tous</option>
+                    <option value="{{ path('front_gestion_exercices_index', {'difficulte': 'FACILE'}) }}" {% if app.request.get('difficulte') == 'FACILE' %}selected{% endif %}>🟢 Facile</option>
+                    <option value="{{ path('front_gestion_exercices_index', {'difficulte': 'MOYEN'}) }}" {% if app.request.get('difficulte') == 'MOYEN' %}selected{% endif %}>🟠 Moyen</option>
+                    <option value="{{ path('front_gestion_exercices_index', {'difficulte': 'DIFFICILE'}) }}" {% if app.request.get('difficulte') == 'DIFFICILE' %}selected{% endif %}>🔴 Difficile</option>
+                </select>
+            </div>
+            <div style="display: flex; align-items: flex-end;">
+                <a href="{{ path('front_gestion_exercices_index') }}" class="btn-front btn-outline" style="padding: 10px 20px;">
+                    Réinitialiser
+                </a>
+            </div>
+        </div>
+
+        <!-- GRILLE DES EXERCICES -->
+        <div class="exercices-grid">
+            {% if exercices is empty %}
+                <div class="empty-state">
+                    <div style="font-size: 3rem; margin-bottom: 16px;">📭</div>
+                    <h4>Aucun exercice trouvé</h4>
+                    <p>Essayez de modifier vos critères de recherche.</p>
+                    <a href="{{ path('front_gestion_exercices_index') }}" class="btn-front btn-view" style="display: inline-block; width: auto; margin-top: 16px;">
+                        Voir tous les exercices
+                    </a>
+                </div>
+            {% else %}
+                {% for exercice in exercices %}
+                    <div class="exercice-card">
+                        <div class="exercice-header">
+                            <h3 class="exercice-title">{{ exercice.nom }}</h3>
+                            <span class="badge-difficulte 
+                                {% if exercice.difficulte == 'FACILE' %}badge-facile
+                                {% elseif exercice.difficulte == 'MOYEN' %}badge-moyen
+                                {% else %}badge-difficile{% endif %}">
+                                {{ exercice.difficulte|capitalize }}
+                            </span>
+                        </div>
+                        <div class="exercice-body">
+                            <div class="exercice-type">
+                                <span>🏷️</span> {{ exercice.type }}
+                            </div>
+                            <p class="exercice-description">
+                                {{ exercice.description|slice(0, 100) }}{% if exercice.description|length > 100 %}...{% endif %}
+                            </p>
+                            <div class="exercice-meta">
+                                <span>⏱️ {{ exercice.duree }} minutes</span>
+                                <span>📅 {{ exercice.dateCreation|date('d/m/Y') }}</span>
+                            </div>
+                        </div>
+                        <div class="exercice-actions">
+                            <a href="{{ path('front_gestion_exercices_show', {'idEx': exercice.idEx}) }}" class="btn-front btn-view">
+                                👁️ Voir l'exercice
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Fermeture du dropdown au clic extérieur
+        document.addEventListener('click', function(e) {
+            const dropdowns = document.querySelectorAll('.dropdown-filter-menu');
+            dropdowns.forEach(dropdown => {
+                if (!dropdown.parentElement.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        });
+    </script>
 {% endblock %}
