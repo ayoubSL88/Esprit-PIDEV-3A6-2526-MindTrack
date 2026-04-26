@@ -4,24 +4,29 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    compreface.base_url: 'http://localhost:8000'
 
 services:
-    # default configuration for services in *this* file
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        autowire: true
+        autoconfigure: true
 
-
-    App\Service\CompreFaceService:
-        arguments:
-            $baseUrl: '%env(COMPREFACE_URL)%'
-
+    # Configuration pour GoogleOAuthService
     App\Service\GoogleOAuthService:
         arguments:
             $clientId: '%env(GOOGLE_CLIENT_ID)%'
             $clientSecret: '%env(GOOGLE_CLIENT_SECRET)%'
+            $redirectUri: '%env(GOOGLE_REDIRECT_URI)%'
+    
+    # Configuration pour CompreFaceService - CORRIGÉE
+    App\Service\CompreFaceService:
+        arguments:
+            $baseUrl: 'http://localhost:8000'
+            $apiKey: '%env(COMPREFACE_API_KEY)%'
+            $similarityThreshold: '0.7'      # Valeur par défaut
+            $detectionThreshold: '0.6'       # Valeur par défaut
+    
     # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
         exclude:
@@ -33,5 +38,3 @@ services:
         arguments:
             $exerciceRepo: '@App\Repository\ExerciceRepository'
             $sessionRepo: '@App\Repository\SessionRepository'
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones

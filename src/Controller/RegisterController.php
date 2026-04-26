@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Utilisateur;
 use App\Exception\FaceAuthenticationException;
-use App\Service\CompreFaceService;
+// use App\Service\CompreFaceService;
 use App\Service\GestionUser\ValidationService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,7 +24,7 @@ final class RegisterController extends AbstractController
         Connection $connection,
         UserPasswordHasherInterface $passwordHasher,
         ValidationService $inputValidation,
-        CompreFaceService $compreFaceService,
+        // CompreFaceService $compreFaceService,
     ): Response|RedirectResponse {
         if ($this->getUser() !== null) {
             return $this->isGranted('ROLE_ADMIN')
@@ -92,7 +92,13 @@ final class RegisterController extends AbstractController
             $nextUserId = (int) $connection->fetchOne('SELECT COALESCE(MAX(id_u), 0) + 1 FROM utilisateur');
             $faceEnrollment = null;
 
+            // SECTION FACE ID COMPLÈTEMENT DÉSACTIVÉE
             if ($faceEnabled) {
+                // Désactiver forcément Face ID
+                $faceEnabled = false;
+                
+                // Version commentée du code original
+                /*
                 if ($faceCapture === '') {
                     $fieldErrors['face_capture'] = 'Capture your face before enabling Face ID.';
 
@@ -116,6 +122,7 @@ final class RegisterController extends AbstractController
                         'faceEnabled' => $faceEnabled,
                     ]);
                 }
+                */
             }
 
             $user = new Utilisateur();
@@ -126,9 +133,9 @@ final class RegisterController extends AbstractController
             $user->setEmailU($formData['email']);
             $user->setAgeU($age);
             $user->setRoleU('USER');
-            $user->setFace_subject((string) ($faceEnrollment['subject'] ?? ''));
-            $user->setFace_image_id((string) ($faceEnrollment['image_id'] ?? ''));
-            $user->setFace_enabled($faceEnabled && $faceEnrollment !== null);
+            $user->setFace_subject('');  // Forcé à vide
+            $user->setFace_image_id('');  // Forcé à vide
+            $user->setFace_enabled(false);  // Forcé à false
             $user->setProfile_picture_path('');
             $user->setTotp_secret('');
             $user->setTotp_enabled(false);

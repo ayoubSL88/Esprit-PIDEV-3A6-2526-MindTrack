@@ -2,163 +2,454 @@
 
 {% block page_title %}Détail de la session #{{ session.idSession }}{% endblock %}
 
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Détail de la session #{{ session.idSession }}</h1>
-    <div>
-        <a href="{{ path('admin_sessions_index') }}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Retour
-        </a>
-        <a href="{{ path('admin_sessions_user', {'idU': session.user.idU}) }}" class="btn btn-info">
-            <i class="bi bi-person"></i> Voir toutes les sessions de l'utilisateur
-        </a>
-    </div>
-</div>
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .admin-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+        }
+        
+        .card-header-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            padding: 16px 20px;
+            color: white;
+        }
+        
+        .card-header-success {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            padding: 16px 20px;
+            color: white;
+        }
+        
+        .card-header-info {
+            background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+            padding: 16px 20px;
+            color: white;
+        }
+        
+        .card-header-secondary {
+            background: linear-gradient(135deg, #64748b, #94a3b8);
+            padding: 16px 20px;
+            color: white;
+        }
+        
+        .card-header-dark {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            padding: 16px 20px;
+            color: white;
+        }
+        
+        .card-header-primary h5,
+        .card-header-success h5,
+        .card-header-info h5,
+        .card-header-secondary h5,
+        .card-header-dark h5 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .info-table {
+            width: 100%;
+        }
+        
+        .info-table tr {
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .info-table tr:last-child {
+            border-bottom: none;
+        }
+        
+        .info-table th {
+            padding: 12px 0;
+            text-align: left;
+            font-weight: 600;
+            color: #1e293b;
+            width: 130px;
+        }
+        
+        .info-table td {
+            padding: 12px 0;
+            color: #64748b;
+        }
+        
+        .badge-facile {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .badge-moyen {
+            background: #fed7aa;
+            color: #9a3412;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .badge-difficile {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .badge-warning {
+            background: #fed7aa;
+            color: #9a3412;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .progress-large {
+            background: #e2e8f0;
+            border-radius: 12px;
+            height: 32px;
+            overflow: hidden;
+        }
+        
+        .progress-fill-large {
+            height: 100%;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 16px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: white;
+        }
+        
+        .progress-fill-large.success {
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+        
+        .progress-fill-large.primary {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        }
+        
+        .steps-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .steps-list li {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .steps-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .steps-list li::before {
+            content: "✓";
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .comment-box {
+            background: #fffbeb;
+            border-radius: 16px;
+            padding: 20px;
+            border-left: 4px solid #f59e0b;
+            line-height: 1.6;
+            color: #78350f;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn-admin-info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            padding: 10px 20px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-admin-info:hover {
+            background: #dbeafe;
+            transform: translateY(-1px);
+        }
+        
+        .btn-admin-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 10px 20px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-admin-secondary:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+        
+        @media (max-width: 900px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .admin-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+{% endblock %}
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Informations utilisateur</h5>
-            </div>
-            <div class="card-body">
-                <table class="table">
-                    <tr>
-                        <th>Nom complet</th>
-                        <td>{{ session.user.nomU }} {{ session.user.prenomU }}</td>
-                    </tr>
-                    <tr>
-                        <th>Email</th>
-                        <td>{{ session.user.emailU }}</td>
-                    </tr>
-                    <tr>
-                        <th>Âge</th>
-                        <td>{{ session.user.ageU }} ans</td>
-                    </tr>
-                    <tr>
-                        <th>Rôle</th>
-                        <td><span class="badge bg-secondary">{{ session.user.roleU }}</span></td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-        
-        <div class="card mb-4">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0">Informations exercice</h5>
-            </div>
-            <div class="card-body">
-                <table class="table">
-                    <tr>
-                        <th>Nom</th>
-                        <td><strong>{{ session.exercice.nom }}</strong></td>
-                    </tr>
-                    <tr>
-                        <th>Type</th>
-                        <td>{{ session.exercice.type }}</td>
-                    </tr>
-                    <tr>
-                        <th>Difficulté</th>
-                        <td>
-                            <span class="badge bg-{{ session.exercice.difficulte == 'FACILE' ? 'success' : (session.exercice.difficulte == 'MOYEN' ? 'warning' : 'danger') }}">
-                                {{ session.exercice.difficulte }}
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Durée estimée</th>
-                        <td>{{ session.exercice.duree }} minutes</td>
-                    </tr>
-                </table>
-            </div>
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    <!-- EN-TÊTE -->
+    <div class="admin-header">
+        <h1>📋 Détail de la session #{{ session.idSession }}</h1>
+        <div class="btn-group">
+            <a href="{{ path('admin_sessions_user', {'idU': session.user.idU}) }}" class="btn-admin-info">
+                👤 Voir toutes les sessions de l'utilisateur
+            </a>
+            <a href="{{ path('admin_sessions_index') }}" class="btn-admin-secondary">
+                ← Retour
+            </a>
         </div>
     </div>
-    
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">Informations session</h5>
+
+    <div class="detail-grid">
+        <!-- COLONNE GAUCHE -->
+        <div>
+            <!-- CARTE UTILISATEUR -->
+            <div class="info-card">
+                <div class="card-header-primary">
+                    <h5>👤 Informations utilisateur</h5>
+                </div>
+                <div class="card-body">
+                    <table class="info-table">
+                        <tr>
+                            <th>Nom complet</th>
+                            <td><strong>{{ session.user.nomU }} {{ session.user.prenomU }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td>{{ session.user.emailU }}</td>
+                        </tr>
+                        <tr>
+                            <th>Âge</th>
+                            <td>{{ session.user.ageU }} ans</td>
+                        </tr>
+                        <tr>
+                            <th>Rôle</th>
+                            <td><span class="badge-secondary" style="background:#f1f5f9; padding:4px 12px; border-radius:30px;">{{ session.user.roleU }}</span></td>
+                        </tr>
+                    </table>
+                </div>
             </div>
-            <div class="card-body">
-                <table class="table">
-                    <tr>
-                        <th>Date début</th>
-                        <td>{{ session.dateDebut|date('d/m/Y H:i:s') }}</td>
-                    </tr>
-                    <tr>
-                        <th>Date fin</th>
-                        <td>
-                            {% if session.dateFin %}
-                                {{ session.dateFin|date('d/m/Y H:i:s') }}
-                            {% else %}
-                                <span class="badge bg-warning">Non terminée</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Durée réelle</th>
-                        <td>
-                            {% if session.dureeReelle %}
-                                {{ (session.dureeReelle / 60)|round }} minutes ({{ session.dureeReelle }} secondes)
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Progression</th>
-                        <td>
-                            <div class="progress" style="height: 30px;">
-                                <div class="progress-bar bg-{{ session.progress == 100 ? 'success' : 'primary' }}" 
-                                     style="width: {{ session.progress }}%">
-                                    {{ session.progress }}%
+            
+            <!-- CARTE EXERCICE -->
+            <div class="info-card">
+                <div class="card-header-success">
+                    <h5>🎯 Informations exercice</h5>
+                </div>
+                <div class="card-body">
+                    <table class="info-table">
+                        <tr>
+                            <th>Nom</th>
+                            <td><strong>{{ session.exercice.nom }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Type</th>
+                            <td>{{ session.exercice.type }}</td>
+                        </tr>
+                        <tr>
+                            <th>Difficulté</th>
+                            <td>
+                                {% if session.exercice.difficulte == 'FACILE' %}
+                                    <span class="badge-facile">🟢 Facile</span>
+                                {% elseif session.exercice.difficulte == 'MOYEN' %}
+                                    <span class="badge-moyen">🟠 Moyen</span>
+                                {% else %}
+                                    <span class="badge-difficile">🔴 Difficile</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Durée estimée</th>
+                            <td>{{ session.exercice.duree }} minutes</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- COLONNE DROITE -->
+        <div>
+            <!-- CARTE SESSION -->
+            <div class="info-card">
+                <div class="card-header-info">
+                    <h5>⏱️ Informations session</h5>
+                </div>
+                <div class="card-body">
+                    <table class="info-table">
+                        <tr>
+                            <th>Date début</th>
+                            <td>{{ session.dateDebut|date('d/m/Y H:i:s') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date fin</th>
+                            <td>
+                                {% if session.dateFin %}
+                                    {{ session.dateFin|date('d/m/Y H:i:s') }}
+                                {% else %}
+                                    <span class="badge-warning">Non terminée</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Durée réelle</th>
+                            <td>
+                                {% if session.dureeReelle %}
+                                    <strong>{{ (session.dureeReelle / 60)|round }} minutes</strong>
+                                    <small style="color:#94a3b8;">({{ session.dureeReelle }} secondes)</small>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Progression</th>
+                            <td>
+                                <div class="progress-large" style="margin-top: 8px;">
+                                    <div class="progress-fill-large {% if session.progress == 100 %}success{% else %}primary{% endif %}" 
+                                         style="width: {{ session.progress }}%">
+                                        {{ session.progress }}%
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Statut</th>
-                        <td>
-                            {% if session.terminee %}
-                                <span class="badge bg-success">Terminée</span>
-                            {% else %}
-                                <span class="badge bg-warning">En cours</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Résultat</th>
-                        <td>{{ session.resultat|default('-') }}</td>
-                    </tr>
-                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Statut</th>
+                            <td>
+                                {% if session.terminee %}
+                                    <span class="badge-success">✅ Terminée</span>
+                                {% else %}
+                                    <span class="badge-warning">⏳ En cours</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Résultat</th>
+                            <td>{{ session.resultat|default('—') }}</td>
+                        </tr>
+                    </table>
+                </div>
             </div>
+            
+            <!-- COMMENTAIRES -->
+            {% if session.commentaires %}
+            <div class="info-card">
+                <div class="card-header-secondary">
+                    <h5>💬 Commentaires de l'utilisateur</h5>
+                </div>
+                <div class="card-body">
+                    <div class="comment-box">
+                        {{ session.commentaires|nl2br }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- ÉTAPES RÉALISÉES -->
+            {% if session.steps %}
+            <div class="info-card">
+                <div class="card-header-dark">
+                    <h5>✓ Étapes réalisées</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="steps-list">
+                        {% for step in session.steps %}
+                            <li>{{ step }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
         </div>
-        
-        {% if session.commentaires %}
-        <div class="card">
-            <div class="card-header bg-secondary text-white">
-                <h5 class="mb-0">Commentaires de l'utilisateur</h5>
-            </div>
-            <div class="card-body">
-                <p class="mb-0">{{ session.commentaires|nl2br }}</p>
-            </div>
-        </div>
-        {% endif %}
-        
-        {% if session.steps %}
-        <div class="card mt-4">
-            <div class="card-header bg-dark text-white">
-                <h5 class="mb-0">Étapes réalisées</h5>
-            </div>
-            <div class="card-body">
-                <ul class="list-group">
-                    {% for step in session.steps %}
-                        <li class="list-group-item">{{ step }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}
