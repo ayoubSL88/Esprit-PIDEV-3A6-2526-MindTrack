@@ -4,16 +4,19 @@ namespace App\Controller\Front\GestionExercices;
 
 use App\Entity\Exercice;
 use App\Form\ExerciceType;
+use App\Entity\Utilisateur;
 use App\Service\AIExerciceSuggester;
 use App\Repository\ExerciceRepository;
 use App\Repository\SessionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Knp\Component\Pager\PaginatorInterface;  // ✅ AJOUT IMPORTANT !
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/app/exercices')]
+//#[IsGranted('ROLE_USER')]
 final class ExerciceController extends AbstractController
 {
     #[Route('/', name: 'front_gestion_exercices_home')]
@@ -47,7 +50,7 @@ final class ExerciceController extends AbstractController
     }
 
     #[Route('/list', name: 'front_gestion_exercices_index', methods: ['GET'])]
-    public function index(Request $request, EntityManagerInterface $entityManager): Response
+    public function index(Request $request, ExerciceRepository $exerciceRepository, PaginatorInterface $paginator): Response
     {
         // Récupérer les paramètres de filtrage
         $search = $request->query->get('search', '');
@@ -56,8 +59,8 @@ final class ExerciceController extends AbstractController
         $order = $request->query->get('order', 'ASC');
         
         // Créer le QueryBuilder
-        $qb = $entityManager->getRepository(Exercice::class)->createQueryBuilder('e');
-        
+        $qb = $exerciceRepository->createQueryBuilder('e');
+
         // Filtre par recherche (nom ou type)
         if ($search) {
             $qb->andWhere("e.nom LIKE :search OR e.type LIKE :search")
@@ -73,8 +76,12 @@ final class ExerciceController extends AbstractController
         // Trier par nom et par ordre
         $qb->orderBy("e.{$sort}", $order);
         
-        // Exécuter la requête
-        $exercices = $qb->getQuery()->getResult();
+        // Pagination (12 par page)
+        $exercices = $paginator->paginate(
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            12
+        );
         
         return $this->render('front/gestion_exercices/index.html.twig', [
             'exercices' => $exercices,

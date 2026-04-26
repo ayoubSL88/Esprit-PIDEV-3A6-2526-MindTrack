@@ -1,0 +1,58 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+    {% include 'front/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
+
+    <div class="container" style="max-width: 1000px; margin: 0 auto; padding: 20px;">
+        <section class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:16px;">
+            <div>
+                <h1>{{ page_title }}</h1>
+                <p style="color:#64748b;margin-top:8px;">Renseigne le jalon, sa date cible et son etat d'avancement.</p>
+            </div>
+            <a class="btn btn-secondary" href="{{ path('front_jalonprogression_index') }}">Retour a la liste</a>
+        </section>
+
+        <div class="form-card">
+            {{ form_start(form, {attr: {class: 'form-grid'}}) }}
+                {{ form_errors(form) }}
+                <div>
+                    {{ form_label(form.idObj) }}
+                    {{ form_widget(form.idObj) }}
+                    <div class="field-error">{{ form_errors(form.idObj) }}</div>
+                </div>
+                <div>
+                    {{ form_label(form.titre) }}
+                    {{ form_widget(form.titre) }}
+                    <div class="field-error">{{ form_errors(form.titre) }}</div>
+                </div>
+                <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                    <div>
+                        {{ form_label(form.dateCible) }}
+                        {{ form_widget(form.dateCible) }}
+                        <div class="field-error">{{ form_errors(form.dateCible) }}</div>
+                    </div>
+                    <div>
+                        {{ form_label(form.dateAtteinte) }}
+                        {{ form_widget(form.dateAtteinte) }}
+                        <div class="field-error">{{ form_errors(form.dateAtteinte) }}</div>
+                    </div>
+                </div>
+                <div class="checkbox-row">
+                    {{ form_widget(form.atteint) }}
+                    {{ form_label(form.atteint) }}
+                </div>
+                <div class="field-error">{{ form_errors(form.atteint) }}</div>
+                <div>
+                    {{ form_label(form.pourcentageProgression) }}
+                    {{ form_widget(form.pourcentageProgression) }}
+                    <div class="field-error">{{ form_errors(form.pourcentageProgression) }}</div>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

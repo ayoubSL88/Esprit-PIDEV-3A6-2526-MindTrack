@@ -1,0 +1,48 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+    {% include 'front/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
+
+    <div style="max-width: 1000px; margin: 0 auto; padding: 20px;">
+        <section class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:16px;">
+            <div>
+                <h1>{{ page_title }}</h1>
+                <p>Configure l'objectif lie, le mode d'organisation et la capacite quotidienne.</p>
+            </div>
+            <a class="btn-secondary" href="{{ path('front_planificateurintelligent_index') }}">Retour a la liste</a>
+        </section>
+
+        <section class="form-card">
+            {{ form_start(form, {attr: {class: 'form-grid'}}) }}
+                {{ form_errors(form) }}
+                <div>
+                    {{ form_label(form.idObj) }}
+                    {{ form_widget(form.idObj) }}
+                    <div class="field-error">{{ form_errors(form.idObj) }}</div>
+                </div>
+                <div>
+                    {{ form_label(form.modeOrganisation) }}
+                    {{ form_widget(form.modeOrganisation) }}
+                    <div class="field-error">{{ form_errors(form.modeOrganisation) }}</div>
+                </div>
+                <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                    <div>
+                        {{ form_label(form.capaciteQuotidienne) }}
+                        {{ form_widget(form.capaciteQuotidienne) }}
+                        <div class="field-error">{{ form_errors(form.capaciteQuotidienne) }}</div>
+                    </div>
+                    <div>
+                        {{ form_label(form.derniereGeneration) }}
+                        {{ form_widget(form.derniereGeneration) }}
+                        <div class="field-error">{{ form_errors(form.derniereGeneration) }}</div>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn-primary" type="submit">{{ submit_label }}</button>
+                </div>
+            {{ form_end(form) }}
+        </section>
+    </div>
+{% endblock %}

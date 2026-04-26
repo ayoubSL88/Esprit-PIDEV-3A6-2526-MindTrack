@@ -1,0 +1,873 @@
+# Two-Factor Authentication (TOTP) - Complete Implementation Guide
+
+## 📋 Overview
+
+TOTP (Time-based One-Time Password) is a security standard (RFC 6238) used by Google Authenticator, Microsoft Authenticator, Authy, and other authenticator apps. MindTrack uses TOTP for enhanced security.
+
+---
+
+## 🔧 How TOTP Works
+
+1. **Secret Generation**: A unique 32-byte secret is generated and encoded in Base32
+2. **QR Code**: The secret is displayed as a QR code for users to scan
+3. **Authenticator App**: User scans QR code with their authenticator app
+4. **Code Generation**: App generates 6-digit codes that change every 30 seconds
+5. **Verification**: Server verifies the 6-digit code against the secret
+6. **Algorithm**: HMAC-SHA1 based on current time window
+
+---
+
+## 🛠️ Java Implementation (Current - JavaFX)
+
+### **TotpUtil.java**
+```java
+package utils;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.ByteBuffer;
+import java.util.Base64;
+
+/**
+ * TOTP (Time-based One-Time Password) Utility
+ * RFC 6238 compliant
+ */
+public class TotpUtil {
+
+    private static final String ALGORITHM = "HmacSHA1";
+    private static final int CODE_LENGTH = 6;
+    private static final int TIME_STEP = 30; // seconds
+    private static final int WINDOW = 1; // Accept codes from +/- 1 time window
+
+    /**
+     * Generate a new TOTP secret (32 bytes = 256 bits)
+     * Returns Base32 encoded string
+     */
+    public static String generateSecret() {
+        byte[] buffer = new byte[32];
+        new java.security.SecureRandom().nextBytes(buffer);
+        return Base64.getEncoder().encodeToString(buffer)
+                .replaceAll("=", "")  // Remove padding
+                .substring(0, 32);     // Limit to 32 characters
+    }
+
+    /**
+     * Verify a TOTP code against a secret
+     * Accepts codes within +/- 1 time window (60 seconds total)
+     */
+    public static boolean verifyCode(String secret, String code) {
+        if (code == null || code.length() != CODE_LENGTH) {
+            return false;
+        }
+
+        long timeIndex = System.currentTimeMillis() / 1000 / TIME_STEP;
+
+        // Check current window and adjacent windows
+        for (int i = -WINDOW; i <= WINDOW; i++) {
+            String expectedCode = generateCodeForTime(secret, timeIndex + i);
+            if (expectedCode.equals(code)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Generate TOTP code for a specific time index
+     */
+    private static String generateCodeForTime(String secret, long timeIndex) {
+        try {
+            // Decode secret from Base32
+            byte[] decodedSecret = decodeBase32(secret);
+
+            // Create HMAC
+            byte[] message = ByteBuffer.allocate(8).putLong(timeIndex).array();
+            Mac mac = Mac.getInstance(ALGORITHM);
+            mac.init(new SecretKeySpec(decodedSecret, 0, decodedSecret.length, ALGORITHM));
+            byte[] hash = mac.doFinal(message);
+
+            // Extract dynamic binary code
+            int offset = hash[hash.length - 1] & 0xf;
+            int code = ((hash[offset] & 0x7f) << 24)
+                    | ((hash[offset + 1] & 0xff) << 16)
+                    | ((hash[offset + 2] & 0xff) << 8)
+                    | (hash[offset + 3] & 0xff);
+
+            code = code % 1000000;
+
+            return String.format("%06d", code);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * Generate OTP Auth URL for QR code generation
+     * Format: otpauth://totp/issuer:email?secret=XXX&issuer=issuer
+     */
+    public static String generateOtpAuthUrl(String email, String secret, String issuer) {
+        return String.format(
+                "otpauth://totp/%s:%%s?secret=%%s&issuer=%s",
+                issuer, issuer
+        ).replace("%%s", "%s");
+    }
+
+    /**
+     * Decode Base32 string to byte array
+     */
+    private static byte[] decodeBase32(String encoded) {
+        String base32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+        encoded = encoded.replace("=", "");
+
+        int bits = 0;
+        int value = 0;
+        int index = 0;
+        byte[] output = new byte[(encoded.length() * 5) / 8];
+
+        for (char c : encoded.toCharArray()) {
+            int digit = base32.indexOf(c);
+            if (digit < 0) throw new IllegalArgumentException("Invalid Base32 character: " + c);
+
+            value = (value << 5) | digit;
+            bits += 5;
+
+            if (bits >= 8) {
+                bits -= 8;
+                output[index++] = (byte) ((value >> bits) & 0xff);
+            }
+        }
+
+        return output;
+    }
+
+    /**
+     * Get current TOTP code (for testing/server-side verification)
+     */
+    public static String getCurrentCode(String secret) {
+        long timeIndex = System.currentTimeMillis() / 1000 / TIME_STEP;
+        return generateCodeForTime(secret, timeIndex);
+    }
+
+    /**
+     * Get remaining seconds until code changes
+     */
+    public static int getSecondsRemaining() {
+        return (int) (TIME_STEP - ((System.currentTimeMillis() / 1000) % TIME_STEP));
+    }
+}
+```
+
+### **Update UtilisateurService.java**
+Add method to update TOTP secret:
+
+```java
+// In UtilisateurService.java
+
+public void updateTotpSecret(int userId, String totpSecret, boolean enabled) throws SQLException {
+    String sql = "UPDATE utilisateur SET totp_secret = ?, totp_enabled = ? WHERE idU = ?";
+    PreparedStatement ps = connection.prepareStatement(sql);
+    ps.setString(1, totpSecret);
+    ps.setBoolean(2, enabled);
+    ps.setInt(3, userId);
+    ps.executeUpdate();
+}
+
+public String getTotpSecret(int userId) throws SQLException {
+    String sql = "SELECT totp_secret FROM utilisateur WHERE idU = ?";
+    PreparedStatement ps = connection.prepareStatement(sql);
+    ps.setInt(1, userId);
+    ResultSet rs = ps.executeQuery();
+    if (rs.next()) {
+        return rs.getString("totp_secret");
+    }
+    return null;
+}
+
+public boolean isTotpEnabled(int userId) throws SQLException {
+    String sql = "SELECT totp_enabled FROM utilisateur WHERE idU = ?";
+    PreparedStatement ps = connection.prepareStatement(sql);
+    ps.setInt(1, userId);
+    ResultSet rs = ps.executeQuery();
+    if (rs.next()) {
+        return rs.getBoolean("totp_enabled");
+    }
+    return false;
+}
+```
+
+### **LoginController.java - Add TOTP Verification**
+
+```java
+// In LoginController.java - Add after successful password verification
+
+private boolean verifyTOTP(Utilisateur user) {
+    if (!user.isTotpEnabled()) {
+        return true; // 2FA not enabled
+    }
+
+    // Show TOTP input dialog
+    TextInputDialog dialog = new TextInputDialog();
+    dialog.setTitle("Two-Factor Authentication");
+    dialog.setHeaderText("Enter your 6-digit authenticator code");
+    dialog.setContentText("Code:");
+
+    Optional<String> result = dialog.showAndWait();
+
+    if (result.isPresent()) {
+        String code = result.get().replaceAll("\\s", "");
+        return TotpUtil.verifyCode(user.getTotpSecret(), code);
+    }
+
+    return false;
+}
+
+// In handleTraditionalLogin() method:
+private void handleTraditionalLogin() {
+    String email = emailField.getText();
+    String password = passwordField.getText();
+
+    try {
+        Utilisateur user = userService.findByEmail(email);
+
+        if (user == null) {
+            messageLabel.setText("User not found");
+            return;
+        }
+
+        if (!PasswordHasher.verify(password, user.getMdpsU())) {
+            messageLabel.setText("Invalid password");
+            return;
+        }
+
+        // Verify 2FA if enabled
+        if (!verifyTOTP(user)) {
+            messageLabel.setText("Invalid authenticator code");
+            return;
+        }
+
+        UserSession.setCurrentUser(user);
+        // Navigate to dashboard
+
+    } catch (SQLException e) {
+        messageLabel.setText("Error: " + e.getMessage());
+    }
+}
+```
+
+### **ProfileController.java - 2FA Setup Page**
+
+```java
+// In ProfileController.java - Add TOTP setup methods
+
+private Label totpStatusLabel;
+private Button setupTotpButton;
+private Button disableTotpButton;
+
+@FXML
+private void initializeTOTP() {
+    Utilisateur user = UserSession.getCurrentUser();
+
+    if (user.isTotpEnabled()) {
+        totpStatusLabel.setText("2FA: ENABLED");
+        totpStatusLabel.setStyle("-fx-text-fill: green;");
+        setupTotpButton.setDisable(true);
+        disableTotpButton.setDisable(false);
+    } else {
+        totpStatusLabel.setText("2FA: DISABLED");
+        totpStatusLabel.setStyle("-fx-text-fill: red;");
+        setupTotpButton.setDisable(false);
+        disableTotpButton.setDisable(true);
+    }
+}
+
+@FXML
+private void handleSetupTOTP() {
+    Utilisateur user = UserSession.getCurrentUser();
+    String secret = TotpUtil.generateSecret();
+    String qrCodeUrl = TotpUtil.generateOtpAuthUrl(
+            user.getEmailU(),
+            secret,
+            "MindTrack"
+    );
+
+    // Show setup dialog with QR code
+    showTotpSetupDialog(secret, qrCodeUrl);
+}
+
+private void showTotpSetupDialog(String secret, String qrCodeUrl) {
+    Dialog<Boolean> dialog = new Dialog<>();
+    dialog.setTitle("Setup Two-Factor Authentication");
+    dialog.setHeaderText("Scan this QR code with your authenticator app");
+
+    VBox content = new VBox(10);
+
+    // Display QR code (use a library like QRGen)
+    Label secretLabel = new Label("Secret Key: " + secret);
+    secretLabel.setWrapText(true);
+
+    TextField codeInput = new TextField();
+    codeInput.setPromptText("Enter 6-digit code");
+    codeInput.setPrefWidth(200);
+
+    content.getChildren().addAll(secretLabel, new Label("Enter code to verify:"), codeInput);
+
+    dialog.getDialogPane().setContent(content);
+    dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+    Optional<Boolean> result = dialog.showAndWait();
+
+    if (result.isPresent() && result.get()) {
+        String code = codeInput.getText();
+
+        if (TotpUtil.verifyCode(secret, code)) {
+            try {
+                userService.updateTotpSecret(
+                    UserSession.getCurrentUser().getIdU(),
+                    secret,
+                    true
+                );
+
+                UserSession.getCurrentUser().setTotpSecret(secret);
+                UserSession.getCurrentUser().setTotpEnabled(true);
+
+                initializeTOTP();
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Success");
+                alert.setContentText("2FA has been enabled successfully!");
+                alert.showAndWait();
+
+            } catch (SQLException e) {
+                showError("Database error: " + e.getMessage());
+            }
+        } else {
+            showError("Invalid code. Please try again.");
+        }
+    }
+}
+
+@FXML
+private void handleDisableTOTP() {
+    Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+    confirmation.setTitle("Disable 2FA");
+    confirmation.setContentText("Are you sure? This will disable two-factor authentication.");
+
+    Optional<ButtonType> result = confirmation.showAndWait();
+
+    if (result.isPresent() && result.get() == ButtonType.OK) {
+        try {
+            userService.updateTotpSecret(
+                UserSession.getCurrentUser().getIdU(),
+                null,
+                false
+            );
+
+            UserSession.getCurrentUser().setTotpSecret(null);
+            UserSession.getCurrentUser().setTotpEnabled(false);
+
+            initializeTOTP();
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Success");
+            alert.setContentText("2FA has been disabled.");
+            alert.showAndWait();
+
+        } catch (SQLException e) {
+            showError("Database error: " + e.getMessage());
+        }
+    }
+}
+```
+
+---
+
+## 🚀 Symfony Implementation (For Web Version)
+
+### **Installation**
+```bash
+composer require scheb/2fa-bundle scheb/2fa-google-authenticator
+php bin/console make:bundle --namespace=App
+```
+
+### **config/packages/scheb_2fa.yaml**
+```yaml
+scheb_2fa:
+    enabled: true
+
+    totp:
+        enabled: true
+        issuer: "MindTrack"
+        window: 1
+
+    backup_codes:
+        enabled: false
+
+    security:
+        # Require 2FA for these routes
+        forced_for_roles: []
+```
+
+### **src/Service/TotpService.php**
+```php
+<?php
+namespace App\Service;
+
+use ParagonIE\ConstantTime\Base32;
+use function hash_hmac;
+
+class TotpService
+{
+    private const ALGORITHM = 'sha1';
+    private const CODE_LENGTH = 6;
+    private const TIME_STEP = 30; // seconds
+    private const WINDOW = 1; // Accept codes from +/- 1 time window
+
+    /**
+     * Generate a new TOTP secret (32 bytes)
+     * Returns Base32 encoded string
+     */
+    public function generateSecret(): string
+    {
+        $bytes = random_bytes(32);
+        return Base32::encodeUpperUnpadded($bytes);
+    }
+
+    /**
+     * Verify a TOTP code against a secret
+     * Accepts codes within +/- 1 time window (60 seconds total)
+     */
+    public function verifyCode(string $secret, string $code): bool
+    {
+        if (strlen($code) !== self::CODE_LENGTH || !ctype_digit($code)) {
+            return false;
+        }
+
+        $timeIndex = intdiv(time(), self::TIME_STEP);
+
+        // Check current window and adjacent windows
+        for ($i = -self::WINDOW; $i <= self::WINDOW; $i++) {
+            $expectedCode = $this->generateCodeForTime($secret, $timeIndex + $i);
+            if (hash_equals($expectedCode, $code)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Generate TOTP code for a specific time index
+     */
+    private function generateCodeForTime(string $secret, int $timeIndex): string
+    {
+        try {
+            // Decode secret from Base32
+            $decodedSecret = Base32::decodeUpperUnpadded($secret);
+
+            // Create HMAC
+            $message = pack('N*', 0, $timeIndex); // 8 bytes big-endian
+            $hash = hash_hmac(self::ALGORITHM, $message, $decodedSecret, true);
+
+            // Extract dynamic binary code
+            $offset = ord($hash[strlen($hash) - 1]) & 0xf;
+            $code = (
+                ((ord($hash[$offset]) & 0x7f) << 24) |
+                ((ord($hash[$offset + 1]) & 0xff) << 16) |
+                ((ord($hash[$offset + 2]) & 0xff) << 8) |
+                (ord($hash[$offset + 3]) & 0xff)
+            ) % 1000000;
+
+            return str_pad((string)$code, self::CODE_LENGTH, '0', STR_PAD_LEFT);
+        } catch (\Exception $e) {
+            return '';
+        }
+    }
+
+    /**
+     * Generate OTP Auth URL for QR code generation
+     */
+    public function generateOtpAuthUrl(string $email, string $secret, string $issuer = 'MindTrack'): string
+    {
+        return sprintf(
+            'otpauth://totp/%s:%s?secret=%s&issuer=%s',
+            $issuer,
+            urlencode($email),
+            $secret,
+            urlencode($issuer)
+        );
+    }
+
+    /**
+     * Get current TOTP code (for testing/server-side verification)
+     */
+    public function getCurrentCode(string $secret): string
+    {
+        $timeIndex = intdiv(time(), self::TIME_STEP);
+        return $this->generateCodeForTime($secret, $timeIndex);
+    }
+
+    /**
+     * Get remaining seconds until code changes
+     */
+    public function getSecondsRemaining(): int
+    {
+        return self::TIME_STEP - (time() % self::TIME_STEP);
+    }
+}
+```
+
+### **src/Controller/TwoFactorController.php**
+```php
+<?php
+namespace App\Controller;
+
+use App\Entity\Utilisateur;
+use App\Repository\UtilisateurRepository;
+use App\Service\TotpService;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[IsGranted('ROLE_USER')]
+#[Route('/profile/2fa')]
+class TwoFactorController extends AbstractController
+{
+    public function __construct(
+        private TotpService $totpService,
+        private UtilisateurRepository $userRepository
+    ) {
+    }
+
+    #[Route('', name: 'app_2fa_index')]
+    public function index(): Response
+    {
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
+        return $this->render('two_factor/index.html.twig', [
+            'totp_enabled' => $user->getTotpEnabled(),
+        ]);
+    }
+
+    #[Route('/setup', name: 'app_2fa_setup')]
+    public function setup(): Response
+    {
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
+        if ($user->getTotpEnabled()) {
+            return $this->redirectToRoute('app_2fa_index');
+        }
+
+        $secret = $this->totpService->generateSecret();
+        $qrCodeUrl = $this->totpService->generateOtpAuthUrl(
+            $user->getEmailU(),
+            $secret
+        );
+
+        // Generate QR code image
+        $qrCode = QrCode::create($qrCodeUrl);
+        $writer = new PngWriter();
+        $qrCodeImage = $writer->write($qrCode)->getDataUri();
+
+        return $this->render('two_factor/setup.html.twig', [
+            'secret' => $secret,
+            'qr_code_image' => $qrCodeImage,
+            'email' => $user->getEmailU(),
+        ]);
+    }
+
+    #[Route('/verify', name: 'app_2fa_verify', methods: ['POST'])]
+    public function verify(Request $request): Response
+    {
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
+        $secret = $request->request->get('secret');
+        $code = $request->request->get('code');
+
+        if (!$this->totpService->verifyCode($secret, $code)) {
+            $this->addFlash('error', 'Invalid authenticator code');
+            return $this->redirectToRoute('app_2fa_setup');
+        }
+
+        // Save secret and enable 2FA
+        $user->setTotpSecret($secret);
+        $user->setTotpEnabled(true);
+        $this->userRepository->save($user, true);
+
+        $this->addFlash('success', '2FA has been enabled successfully!');
+        return $this->redirectToRoute('app_2fa_index');
+    }
+
+    #[Route('/disable', name: 'app_2fa_disable', methods: ['POST'])]
+    public function disable(Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('disable-2fa', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid CSRF token');
+            return $this->redirectToRoute('app_2fa_index');
+        }
+
+        /** @var Utilisateur $user */
+        $user = $this->getUser();
+
+        $user->setTotpSecret(null);
+        $user->setTotpEnabled(false);
+        $this->userRepository->save($user, true);
+
+        $this->addFlash('success', '2FA has been disabled');
+        return $this->redirectToRoute('app_2fa_index');
+    }
+}
+```
+
+### **templates/two_factor/index.html.twig**
+```twig
+{% extends 'base.html.twig' %}
+
+{% block title %}Two-Factor Authentication{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Two-Factor Authentication</h1>
+
+    <div class="card">
+        <div class="card-body">
+            {% if totp_enabled %}
+                <div class="alert alert-success">
+                    ✓ Two-Factor Authentication is <strong>ENABLED</strong>
+                </div>
+
+                <p>Your account is protected with TOTP authentication. You need to enter a 6-digit code from your authenticator app to log in.</p>
+
+                <form method="post" action="{{ path('app_2fa_disable') }}" onsubmit="return confirm('Are you sure? This will disable 2FA.');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('disable-2fa') }}">
+                    <button type="submit" class="btn btn-danger">Disable 2FA</button>
+                </form>
+            {% else %}
+                <div class="alert alert-warning">
+                    ⚠ Two-Factor Authentication is <strong>DISABLED</strong>
+                </div>
+
+                <p>Enable 2FA to add an extra layer of security to your account. You'll need an authenticator app like:</p>
+                <ul>
+                    <li>Google Authenticator</li>
+                    <li>Microsoft Authenticator</li>
+                    <li>Authy</li>
+                    <li>FreeOTP</li>
+                </ul>
+
+                <a href="{{ path('app_2fa_setup') }}" class="btn btn-primary">Enable 2FA</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+```
+
+### **templates/two_factor/setup.html.twig**
+```twig
+{% extends 'base.html.twig' %}
+
+{% block title %}Setup 2FA{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h1>Setup Two-Factor Authentication</h1>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5>Step 1: Scan QR Code</h5>
+                    <p>Open your authenticator app and scan this QR code:</p>
+
+                    <div class="text-center mb-3">
+                        <img src="{{ qr_code_image }}" alt="QR Code" style="width: 250px; height: 250px;">
+                    </div>
+
+                    <h5>Step 2: Enter Secret (if QR code doesn't work)</h5>
+                    <p>If you can't scan the QR code, enter this secret manually:</p>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" value="{{ secret }}" readonly id="secretKey">
+                        <button class="btn btn-outline-secondary" onclick="copyToClipboard()">Copy</button>
+                    </div>
+
+                    <h5>Step 3: Verify Code</h5>
+                    <p>Enter the 6-digit code from your authenticator app:</p>
+
+                    <form method="post" action="{{ path('app_2fa_verify') }}">
+                        <input type="hidden" name="secret" value="{{ secret }}">
+
+                        <div class="mb-3">
+                            <input type="text"
+                                   name="code"
+                                   class="form-control form-control-lg text-center"
+                                   placeholder="000000"
+                                   maxlength="6"
+                                   pattern="\d{6}"
+                                   required
+                                   autofocus>
+                            <small class="form-text text-muted">
+                                Code changes every 30 seconds
+                            </small>
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg btn-block">Verify & Enable 2FA</button>
+                    </form>
+
+                    <hr>
+
+                    <p><strong>Email:</strong> {{ email }}</p>
+                    <p><strong>App:</strong> MindTrack</p>
+
+                    <div class="alert alert-info mt-3">
+                        <strong>Note:</strong> Save your secret key in a safe place. If you lose access to your authenticator app, you'll need this key to regain access.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard() {
+    const secretKey = document.getElementById('secretKey');
+    secretKey.select();
+    document.execCommand('copy');
+    alert('Secret copied to clipboard!');
+}
+</script>
+{% endblock %}
+```
+
+### **Update Utilisateur Entity for Symfony**
+```php
+// src/Entity/Utilisateur.php
+
+#[ORM\Column(type: 'string', length: 255, nullable: true)]
+private ?string $totpSecret = null;
+
+#[ORM\Column(type: 'boolean', options: ['default' => false])]
+private bool $totpEnabled = false;
+
+public function getTotpSecret(): ?string
+{
+    return $this->totpSecret;
+}
+
+public function setTotpSecret(?string $totpSecret): self
+{
+    $this->totpSecret = $totpSecret;
+    return $this;
+}
+
+public function getTotpEnabled(): bool
+{
+    return $this->totpEnabled;
+}
+
+public function setTotpEnabled(bool $totpEnabled): self
+{
+    $this->totpEnabled = $totpEnabled;
+    return $this;
+}
+```
+
+---
+
+## 📱 Testing TOTP
+
+### Manual Testing
+```bash
+# Generate a test secret
+php -r "echo bin2hex(random_bytes(32)) . PHP_EOL;"
+
+# Get current TOTP code (Java)
+java -cp . TotpUtil.getCurrentCode('SECRET_HERE')
+
+# Get current TOTP code (Symfony/PHP)
+php -r "require 'vendor/autoload.php'; $service = new \App\Service\TotpService(); echo $service->getCurrentCode('SECRET_HERE');"
+```
+
+### Using Google Authenticator
+1. Open Google Authenticator on phone
+2. Click "+" to add new account
+3. Scan QR code from setup screen
+4. Enter 6-digit code from app
+5. Done!
+
+---
+
+## 🔐 Security Best Practices
+
+✅ **DO:**
+- Use strong secret generation (32 bytes minimum)
+- Accept codes within +/- 30 second window
+- Hash secrets before storing (optional but recommended)
+- Log 2FA setup/disable events
+- Require password re-confirmation for disabling 2FA
+- Show backup codes (implement separately)
+- Use HTTPS only in production
+
+❌ **DON'T:**
+- Store secrets in plain text (encrypt them)
+- Accept codes outside time window
+- Use weak random generation
+- Allow unlimited code verification attempts
+- Share secrets via email/logs
+- Use MD5/SHA1 without HMAC
+
+---
+
+## 🛠️ Database Schema
+
+```sql
+-- Already in place (check if columns exist)
+ALTER TABLE utilisateur ADD COLUMN totp_secret VARCHAR(255) NULL;
+ALTER TABLE utilisateur ADD COLUMN totp_enabled BOOLEAN DEFAULT FALSE;
+```
+
+---
+
+## 📚 Reference
+
+**RFC 6238**: Time-based One-Time Password Algorithm
+- https://tools.ietf.org/html/rfc6238
+
+**RFC 4648**: Base32 Encoding
+- https://tools.ietf.org/html/rfc4648
+
+**Authenticator Apps:**
+- Google Authenticator
+- Microsoft Authenticator
+- Authy
+- FreeOTP
+
+---
+
+## ✅ Implementation Checklist
+
+**Java/JavaFX:**
+- [ ] Copy TotpUtil.java to utils package
+- [ ] Update Utilisateur entity with TOTP fields
+- [ ] Add TOTP methods to UtilisateurService
+- [ ] Add 2FA verification to LoginController
+- [ ] Create TOTP setup UI in ProfileController
+- [ ] Test with authenticator app
+
+**Symfony:**
+- [ ] Install scheb/2fa-bundle
+- [ ] Create TotpService
+- [ ] Create TwoFactorController
+- [ ] Create Twig templates
+- [ ] Update Utilisateur entity
+- [ ] Run database migrations
+- [ ] Test with authenticator app
+
+

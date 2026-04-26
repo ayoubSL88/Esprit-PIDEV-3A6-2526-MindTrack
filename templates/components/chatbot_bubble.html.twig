@@ -1,0 +1,406 @@
+{# templates/components/chatbot_bubble.html.twig #}
+
+<div id="mindbot-chat" data-chat-url="{{ path('front_gestion_suivi_habitudes_chatbot_respond') }}">
+    <button
+        id="chat-toggle"
+        type="button"
+        aria-label="Ouvrir le chat MindBot"
+        style="
+            position: fixed; right: 1.5rem; bottom: 1.5rem; z-index: 1000;
+            width: 56px; height: 56px; border: none; cursor: pointer;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #5a4ee8, #a855f7);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 24px rgba(90, 78, 232, 0.45);
+            transition: transform .2s, box-shadow .2s;
+        "
+        onmouseenter="this.style.transform='scale(1.08)';this.style.boxShadow='0 6px 32px rgba(90,78,232,.6)'"
+        onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 4px 24px rgba(90,78,232,.45)'"
+    >
+        <svg id="chat-open-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z"/>
+        </svg>
+        <svg id="chat-close-icon" class="mindbot-hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+    </button>
+
+    <section
+        id="chat-panel"
+        aria-label="MindBot"
+        style="
+            position: fixed; right: 1.5rem; bottom: 6.25rem; z-index: 999;
+            width: min(380px, calc(100vw - 2rem));
+            height: 540px;
+            display: none; flex-direction: column; overflow: hidden;
+            background: #16152a;
+            border: 1px solid rgba(124, 111, 255, .25);
+            border-radius: 20px;
+            box-shadow: 0 24px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(124,111,255,.08);
+        "
+    >
+        <header style="
+            padding: 14px 16px;
+            background: #1a1930;
+            border-bottom: 1px solid rgba(124, 111, 255, .15);
+            display: flex; align-items: center; gap: 10px;
+            flex-shrink: 0;
+        ">
+            <div style="
+                width: 38px; height: 38px; border-radius: 50%;
+                background: linear-gradient(135deg, #7c6fff, #a855f7);
+                display: flex; align-items: center; justify-content: center;
+                flex-shrink: 0; position: relative;
+            ">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                </svg>
+                <div id="mindbot-status-dot" style="
+                    position: absolute; bottom: 1px; right: 1px;
+                    width: 9px; height: 9px; border-radius: 50%;
+                    background: #6b7280;
+                    border: 1.5px solid #1a1930;
+                    transition: background .3s;
+                "></div>
+            </div>
+
+            <div style="flex: 1; min-width: 0;">
+                <p style="font-size: 14px; font-weight: 500; color: #e8e4ff; margin: 0;">MindBot</p>
+                <p id="mindbot-status-text" style="font-size: 11px; color: rgba(255,255,255,.35); margin: 2px 0 0;">
+                    Propulse par Ollama
+                </p>
+            </div>
+
+            <button
+                id="chat-clear"
+                type="button"
+                title="Effacer la conversation"
+                style="
+                    width: 30px; height: 30px; border: none; background: transparent;
+                    border-radius: 8px; cursor: pointer;
+                    display: flex; align-items: center; justify-content: center;
+                    color: rgba(255,255,255,.35); transition: background .15s, color .15s;
+                "
+                onmouseenter="this.style.background='rgba(232,66,66,.12)';this.style.color='#f87171'"
+                onmouseleave="this.style.background='transparent';this.style.color='rgba(255,255,255,.35)'"
+            >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                    <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                </svg>
+            </button>
+        </header>
+
+        <div
+            id="chat-messages"
+            style="
+                flex: 1 1 auto; overflow-y: auto; min-height: 0;
+                padding: 16px; display: flex; flex-direction: column; gap: 14px;
+                scrollbar-width: thin; scrollbar-color: rgba(124,111,255,.2) transparent;
+            "
+        ></div>
+
+        <div style="padding: 12px; background: #1a1930; border-top: 1px solid rgba(124,111,255,.15); flex-shrink: 0;">
+            <div
+                id="chat-input-wrap"
+                style="
+                    display: flex; align-items: flex-end; gap: 8px;
+                    background: #13122a;
+                    border: 1px solid rgba(124, 111, 255, .2);
+                    border-radius: 14px; padding: 8px 8px 8px 14px;
+                    transition: border-color .2s, box-shadow .2s;
+                "
+            >
+                <textarea
+                    id="chat-input"
+                    rows="1"
+                    placeholder="Pose ta question..."
+                    style="
+                        flex: 1; resize: none; background: transparent; border: none; outline: none;
+                        font-size: 13px; color: #ccc9f0; font-family: inherit;
+                        line-height: 1.55; min-height: 26px; max-height: 100px;
+                        overflow-y: auto; padding: 0; caret-color: #7c6fff;
+                    "
+                ></textarea>
+                <button
+                    id="chat-send"
+                    type="button"
+                    aria-label="Envoyer"
+                    style="
+                        width: 34px; height: 34px; border: none; cursor: pointer; flex-shrink: 0;
+                        background: linear-gradient(135deg, #5a4ee8, #7c6fff);
+                        border-radius: 10px;
+                        display: flex; align-items: center; justify-content: center;
+                        transition: opacity .15s, transform .1s;
+                    "
+                    onmouseenter="this.style.opacity='.85'"
+                    onmouseleave="this.style.opacity='1'"
+                >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" aria-hidden="true">
+                        <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    </svg>
+                </button>
+            </div>
+            <p style="font-size: 10px; color: rgba(255,255,255,.12); text-align: center; margin-top: 7px;">
+                MindBot peut faire des erreurs. Verifiez les informations importantes.
+            </p>
+        </div>
+    </section>
+</div>
+
+<style>
+.mindbot-hidden { display: none !important; }
+
+@keyframes mindbot-bounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-5px); }
+}
+
+@keyframes mindbot-fadeup {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.mindbot-msg-row { animation: mindbot-fadeup .22s ease both; }
+
+#chat-messages::-webkit-scrollbar { width: 4px; }
+#chat-messages::-webkit-scrollbar-track { background: transparent; }
+#chat-messages::-webkit-scrollbar-thumb { background: rgba(124,111,255,.2); border-radius: 4px; }
+
+#mindbot-typing-dot-1 { animation: mindbot-bounce 1.2s infinite; }
+#mindbot-typing-dot-2 { animation: mindbot-bounce 1.2s .2s infinite; }
+#mindbot-typing-dot-3 { animation: mindbot-bounce 1.2s .4s infinite; }
+
+#chat-input:focus { outline: none; }
+
+#chat-input-wrap:focus-within {
+    border-color: rgba(124,111,255,.5) !important;
+    box-shadow: 0 0 0 3px rgba(124,111,255,.12);
+}
+
+#chat-send:disabled { opacity: .4; cursor: not-allowed; }
+</style>
+
+<script>
+(() => {
+    const root = document.getElementById('mindbot-chat');
+    if (!root || root.dataset.initialized === 'true') return;
+    root.dataset.initialized = 'true';
+
+    const el = {
+        toggle: document.getElementById('chat-toggle'),
+        panel: document.getElementById('chat-panel'),
+        openIcon: document.getElementById('chat-open-icon'),
+        closeIcon: document.getElementById('chat-close-icon'),
+        clear: document.getElementById('chat-clear'),
+        messages: document.getElementById('chat-messages'),
+        input: document.getElementById('chat-input'),
+        send: document.getElementById('chat-send'),
+        statusDot: document.getElementById('mindbot-status-dot'),
+        statusText: document.getElementById('mindbot-status-text'),
+    };
+
+    const cfg = {
+        apiUrl: root.dataset.chatUrl,
+        welcome: "Bonjour ! Je suis MindBot. Comment puis-je t'aider dans ton suivi d'habitudes aujourd'hui ?",
+        errMsg: "Impossible de contacter MindBot pour le moment.",
+    };
+
+    let isOpen = false;
+    let isSending = false;
+
+    const scrollBottom = () => {
+        el.messages.scrollTop = el.messages.scrollHeight;
+    };
+
+    const botAvatarHtml = `
+        <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#7c6fff,#a855f7);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+        </div>`;
+
+    const dateBadge = () => {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'display:flex;align-items:center;gap:10px;margin:4px 0;';
+        const now = new Date();
+        const label = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+        wrap.innerHTML = `
+            <div style="flex:1;height:1px;background:rgba(255,255,255,.06)"></div>
+            <span style="font-size:10px;color:rgba(255,255,255,.22);">${label}</span>
+            <div style="flex:1;height:1px;background:rgba(255,255,255,.06)"></div>`;
+        return wrap;
+    };
+
+    const timeNow = () => new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+    const escapeHtml = str => str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    const addMessage = (role, text, tone = 'default') => {
+        const row = document.createElement('div');
+        row.className = 'mindbot-msg-row';
+
+        if (role === 'user') {
+            row.style.cssText = 'display:flex;justify-content:flex-end;';
+            row.innerHTML = `
+                <div>
+                    <div style="background:linear-gradient(135deg,#5a4ee8,#7c6fff);border-radius:16px 16px 4px 16px;padding:10px 14px;max-width:240px;">
+                        <p style="font-size:13px;color:#fff;line-height:1.55;margin:0;white-space:pre-wrap;word-break:break-word;">${escapeHtml(text)}</p>
+                    </div>
+                    <p style="font-size:10px;color:rgba(255,255,255,.2);margin-top:4px;text-align:right;padding-right:4px;">${timeNow()}</p>
+                </div>`;
+            el.messages.appendChild(row);
+            scrollBottom();
+            return;
+        }
+
+        const bubbleStyle = tone === 'warning'
+            ? 'background:#3a1f28;border:1px solid rgba(248,113,113,.28);'
+            : 'background:#1f1d3a;border:1px solid rgba(124,111,255,.2);';
+
+        row.style.cssText = 'display:flex;align-items:flex-end;gap:8px;';
+        row.innerHTML = `
+            ${botAvatarHtml}
+            <div>
+                <div style="${bubbleStyle}border-radius:16px 16px 16px 4px;padding:10px 14px;max-width:260px;">
+                    <p class="mindbot-bubble-copy" style="font-size:13px;color:#ccc9f0;line-height:1.55;margin:0;white-space:pre-wrap;word-break:break-word;"></p>
+                </div>
+                <p style="font-size:10px;color:rgba(255,255,255,.2);margin-top:4px;padding-left:4px;">${timeNow()}</p>
+            </div>`;
+        row.querySelector('.mindbot-bubble-copy').textContent = text;
+        el.messages.appendChild(row);
+        scrollBottom();
+    };
+
+    const showTyping = () => {
+        const row = document.createElement('div');
+        row.id = 'mindbot-typing';
+        row.className = 'mindbot-msg-row';
+        row.style.cssText = 'display:flex;align-items:flex-end;gap:8px;';
+        row.innerHTML = `
+            ${botAvatarHtml}
+            <div style="background:#1f1d3a;border:1px solid rgba(124,111,255,.2);border-radius:16px 16px 16px 4px;padding:12px 16px;display:flex;align-items:center;gap:5px;">
+                <div id="mindbot-typing-dot-1" style="width:6px;height:6px;border-radius:50%;background:#7c6fff;"></div>
+                <div id="mindbot-typing-dot-2" style="width:6px;height:6px;border-radius:50%;background:#7c6fff;"></div>
+                <div id="mindbot-typing-dot-3" style="width:6px;height:6px;border-radius:50%;background:#7c6fff;"></div>
+            </div>`;
+        el.messages.appendChild(row);
+        scrollBottom();
+    };
+
+    const removeTyping = () => {
+        document.getElementById('mindbot-typing')?.remove();
+    };
+
+    const setStatus = online => {
+        el.statusDot.style.background = online ? '#22c55e' : '#6b7280';
+        el.statusText.innerHTML = online
+            ? '<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#22c55e;margin-right:4px;"></span>En ligne - Ollama'
+            : 'Propulse par Ollama';
+    };
+
+    const autoResize = () => {
+        el.input.style.height = '26px';
+        el.input.style.height = `${Math.min(el.input.scrollHeight, 100)}px`;
+    };
+
+    const setOpen = open => {
+        isOpen = open;
+        el.panel.style.display = open ? 'flex' : 'none';
+        el.openIcon.classList.toggle('mindbot-hidden', open);
+        el.closeIcon.classList.toggle('mindbot-hidden', !open);
+        if (open) {
+            setTimeout(() => { el.input.focus(); }, 40);
+        }
+    };
+
+    const sendMessage = async () => {
+        if (isSending) return;
+
+        const text = el.input.value.trim();
+        if (!text) return;
+
+        addMessage('user', text);
+        el.input.value = '';
+        autoResize();
+        isSending = true;
+        el.send.disabled = true;
+        setStatus(true);
+        showTyping();
+
+        try {
+            const res = await fetch(cfg.apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({ message: text }),
+            });
+
+            const data = await res.json();
+            removeTyping();
+
+            addMessage('bot', data.reply || cfg.errMsg, res.ok ? 'default' : 'warning');
+
+            (data.highlights || []).forEach(item => {
+                addMessage('bot', `- ${item}`, res.ok ? 'default' : 'warning');
+            });
+        } catch (error) {
+            removeTyping();
+            addMessage('bot', cfg.errMsg, 'warning');
+            console.error('[MindBot]', error);
+        } finally {
+            isSending = false;
+            el.send.disabled = false;
+            setStatus(false);
+        }
+    };
+
+    const clearChat = () => {
+        el.messages.innerHTML = '';
+        el.messages.appendChild(dateBadge());
+        addMessage('bot', cfg.welcome);
+
+        const chips = document.createElement('div');
+        chips.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;padding-left:34px;';
+
+        ['Mes habitudes', 'Ma progression', 'Rappels actifs'].forEach(label => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = label;
+            btn.style.cssText = 'font-size:11px;color:#9d8fff;border:1px solid rgba(124,111,255,.3);background:rgba(124,111,255,.08);border-radius:20px;padding:4px 10px;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s;';
+            btn.onmouseenter = () => {
+                btn.style.background = 'rgba(139,120,255,.18)';
+                btn.style.borderColor = 'rgba(139,120,255,.5)';
+            };
+            btn.onmouseleave = () => {
+                btn.style.background = 'rgba(124,111,255,.08)';
+                btn.style.borderColor = 'rgba(124,111,255,.3)';
+            };
+            btn.onclick = () => {
+                el.input.value = label;
+                el.input.focus();
+                sendMessage();
+            };
+            chips.appendChild(btn);
+        });
+
+        el.messages.appendChild(chips);
+        scrollBottom();
+    };
+
+    el.toggle.addEventListener('click', () => setOpen(!isOpen));
+    el.clear.addEventListener('click', clearChat);
+    el.send.addEventListener('click', sendMessage);
+    el.input.addEventListener('input', autoResize);
+    el.input.addEventListener('keydown', event => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+
+    clearChat();
+})();
+</script>

@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Two-Factor Authentication{% endblock %}
+
+{% block body %}
+    <main class="page-shell">
+        <div class="app-shell max-w-xl">
+            <section class="page-card">
+                <div class="page-stack">
+                    {{ component('PageHeader', {
+                        eyebrow: 'Security',
+                        title: 'Two-factor verification',
+                        copy: 'Enter the 6-digit code from your authenticator app to finish signing in.'
+                    }) }}
+
+                    {{ component('FlashStack') }}
+
+                    <form method="post" action="{{ path('app_login_2fa_verify') }}" class="form-stack" novalidate>
+                        <div class="field">
+                            <label class="field-label" for="totp_code">Authenticator code</label>
+                            <input class="field-input" id="totp_code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" required autofocus>
+                            <p class="text-sm text-muted">Code refreshes every {{ seconds_remaining }} seconds.</p>
+                        </div>
+
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('login_2fa_verify') }}">
+
+                        <div class="button-row">
+                            <button type="submit" class="btn-primary">Verify code</button>
+                            <a href="{{ path('app_login_2fa_cancel') }}" class="btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </main>
+{% endblock %}

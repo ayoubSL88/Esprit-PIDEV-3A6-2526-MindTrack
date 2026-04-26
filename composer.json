@@ -11,6 +11,10 @@
         "doctrine/doctrine-migrations-bundle": "^3.7",
         "doctrine/orm": "^3.6",
         "dompdf/dompdf": "^3.1",
+        "google-gemini-php/client": "^2.7",
+        "knplabs/knp-paginator-bundle": "^6.10",
+        "nyholm/psr7": "^1.8",
+        "openai-php/client": "^0.19.2",
         "phpoffice/phpspreadsheet": "^5.6",
         "stof/doctrine-extensions-bundle": "^1.15",
         "symfony/console": "6.4.*",
@@ -19,6 +23,7 @@
         "symfony/flex": "^2",
         "symfony/form": "6.4.*",
         "symfony/framework-bundle": "6.4.*",
+        "symfony/http-client": "6.4.*",
         "symfony/mercure-bundle": "^0.4.2",
         "symfony/runtime": "6.4.*",
         "symfony/security-bundle": "6.4.*",
@@ -27,7 +32,8 @@
         "symfony/webapp-meta": "^1.0",
         "symfony/yaml": "6.4.*",
         "twig/extra-bundle": "^3.24",
-        "twig/twig": "^3.24"
+        "twig/twig": "^3.24",
+        "vich/uploader-bundle": "*"
     },
     "config": {
         "allow-plugins": {

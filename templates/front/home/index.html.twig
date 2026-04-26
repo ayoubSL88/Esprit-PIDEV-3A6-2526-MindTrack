@@ -3,30 +3,56 @@
 {% block page_title %}Accueil{% endblock %}
 
 {% block content %}
-    <h1>MindTrack - Navigation de test</h1>
-    <p>Utilisez cette page comme point d'entree pour visiter chaque ecran un par un.</p>
+    <div class="page-stack">
+        <section class="hero-grid">
+            <div class="hero-card">
+                <div class="hero-badge-row">
+                    <span class="cta-highlight">Daily clarity</span>
+                    <span class="hero-note">Soft structure, clear focus</span>
+                </div>
+                <p class="hero-kicker">MindTrack</p>
+                <h1 class="hero-title">Build a steadier routine around mood, habits, exercise, and personal goals.</h1>
+                <p class="hero-copy">This screen now acts as the visual reference for the rest of the front office: the lilac interaction color leads, Periwinkle Dream supports the background system, and the warm accents stay reserved for the moments that need attention.</p>
+                <div class="button-row mt-6">
+                    <a class="btn-primary" href="{{ path('front_gestion_objectifs_personnelles_index') }}">Open my objectifs</a>
+                    <a class="btn-accent" href="{{ path('front_gestion_humeur_index') }}">Check my humeur</a>
+                    <a class="btn-secondary" href="{{ path('front_gestion_user_index') }}">View profile</a>
+                </div>
+            </div>
 
-    <section>
-        <h2>Frontoffice</h2>
-        <ul>
-            <li><a href="{{ path('front_home') }}">Accueil</a></li>
-            <li><a href="{{ path('front_gestion_objectifs_personnelles_index') }}">Gestion objectifs personnelles</a></li>
-            <li><a href="{{ path('front_gestion_suivi_habitudes_index') }}">Gestion suivi habitudes</a></li>
-            <li><a href="{{ path('front_gestion_exercices_home') }}">Gestion exercices</a></li>
-            <li><a href="{{ path('front_gestion_humeur_index') }}">Gestion humeur</a></li>
-            <li><a href="{{ path('front_gestion_user_index') }}">Gestion user</a></li>
-        </ul>
-    </section>
+            <div class="hero-card">
+                {{ component('FeatureCard', {
+                    eyebrow: 'Current scope',
+                    title: 'Front areas ready for expansion',
+                    copy: 'Each section can now inherit the same shell, spacing, and palette decisions without rebuilding the screen structure.',
+                    items: [
+                        'Objectifs personnelles',
+                        'Suivi habitudes',
+                        'Exercices',
+                        'Humeur'
+                    ]
+                }) }}
+            </div>
+        </section>
 
-    <section>
-        <h2>Backoffice</h2>
-        <ul>
-            <li><a href="{{ path('admin_dashboard') }}">Dashboard admin</a></li>
-            <li><a href="{{ path('admin_gestion_objectifs_personnelles_index') }}">Gestion objectifs personnelles</a></li>
-            <li><a href="{{ path('admin_gestion_suivi_habitudes_index') }}">Gestion suivi habitudes</a></li>
-            <li><a href="{{ path('admin_gestion_exercices_index') }}">Gestion exercices</a></li>
-            <li><a href="{{ path('admin_gestion_humeur_index') }}">Gestion humeur</a></li>
-            <li><a href="{{ path('admin_gestion_user_index') }}">Gestion user</a></li>
-        </ul>
-    </section>
+        <section class="journey-grid">
+            <article class="journey-card">
+                <span class="journey-index">01</span>
+                <h2 class="journey-title">Track what matters</h2>
+                <p class="journey-copy">Start from the emotional overview or the habits area and keep the information model tied to one calm, readable surface language.</p>
+            </article>
+
+            <article class="journey-card">
+                <span class="journey-index">02</span>
+                <h2 class="journey-title">Act with intention</h2>
+                <p class="journey-copy">Golden Honey stays reserved for high-attention actions, while Lilac Sky carries the normal interactive rhythm across the product.</p>
+            </article>
+
+            <article class="journey-card">
+                <span class="journey-index">03</span>
+                <h2 class="journey-title">Scale without drift</h2>
+                <p class="journey-copy">As the other gestion pages arrive, they can reuse these patterns instead of inventing new wrappers, spacing, and call-to-action treatments.</p>
+            </article>
+        </section>
+    </div>
 {% endblock %}

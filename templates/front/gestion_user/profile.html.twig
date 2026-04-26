@@ -1,0 +1,463 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+    <div class="page-stack">
+        <header class="page-header">
+            <h1 class="page-title">My Profile</h1>
+            <p class="page-copy">Review your account information by section. Use Edit profile to unlock the form.</p>
+        </header>
+
+        <div class="flash-stack">
+            {% for message in app.flashes('success') %}
+                <div class="flash flash-success">{{ message }}</div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="flash flash-error">{{ message }}</div>
+            {% endfor %}
+        </div>
+
+        <section class="panel-section form-stack">
+            <header class="page-header">
+                <h2 class="panel-title">Trust Score</h2>
+                <p class="panel-copy">Your score tracks profile completeness, verified email signal, 2FA coverage, and recent security hygiene (last {{ integrity.window_days }} days).</p>
+            </header>
+
+            <div class="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
+                <article class="rounded-3xl border border-border bg-panel p-5 shadow-soft">
+                    <p class="feature-label">Integrity</p>
+                    <p class="mt-3 text-2xl font-semibold text-ink">{{ integrity.score }}/100</p>
+                    <p class="mt-2 text-sm text-muted">{{ integrity.band|capitalize }} confidence</p>
+                    <div class="mt-4 h-2 overflow-hidden rounded-full bg-white/70">
+                        <div class="h-full rounded-full bg-gradient-to-r from-brand to-emphasis" style="width: {{ integrity.score }}%"></div>
+                    </div>
+                </article>
+
+                <article class="rounded-3xl border border-border bg-white/90 p-5 shadow-soft">
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-2xl border border-border bg-panel p-4">
+                            <p class="feature-label">Profile Completeness</p>
+                            <p class="mt-2 text-lg font-semibold text-ink">{{ integrity.profile_completeness.points }}/{{ integrity.profile_completeness.max }}</p>
+                            <p class="text-sm text-muted">{{ integrity.profile_completeness.percent }}% complete</p>
+                        </div>
+
+                        <div class="rounded-2xl border border-border bg-panel p-4">
+                            <p class="feature-label">Verified Email</p>
+                            <p class="mt-2 text-lg font-semibold text-ink">{{ integrity.verified_email.points }}/{{ integrity.verified_email.max }}</p>
+                            <p class="text-sm text-muted">{{ integrity.verified_email.verified ? 'Verification signal found' : 'Verification signal missing' }}</p>
+                        </div>
+
+                        <div class="rounded-2xl border border-border bg-panel p-4">
+                            <p class="feature-label">Two-Factor</p>
+                            <p class="mt-2 text-lg font-semibold text-ink">{{ integrity.two_factor.points }}/{{ integrity.two_factor.max }}</p>
+                            <p class="text-sm text-muted">{{ integrity.two_factor.enabled ? '2FA enabled' : '2FA disabled' }}</p>
+                        </div>
+
+                        <div class="rounded-2xl border border-border bg-panel p-4">
+                            <p class="feature-label">Security Hygiene</p>
+                            <p class="mt-2 text-lg font-semibold text-ink">{{ integrity.security_hygiene.points }}/{{ integrity.security_hygiene.max }}</p>
+                            <p class="text-sm text-muted">{{ integrity.security_hygiene.suspicious_events == 0 ? 'No suspicious events in last ' ~ integrity.window_days ~ ' days' : integrity.security_hygiene.suspicious_events ~ ' risk signal(s) detected' }}</p>
+                            <p class="mt-2 text-xs font-semibold uppercase tracking-[0.14em] {{ integrity.security_hygiene.risk_level == 'high' ? 'text-danger' : (integrity.security_hygiene.risk_level == 'medium' ? 'text-amber-700' : 'text-success') }}">
+                                {{ integrity.security_hygiene.risk_level|capitalize }} risk
+                            </p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                <article class="rounded-3xl border border-border bg-white/90 p-5 shadow-soft">
+                    <p class="feature-label">Suggested Actions</p>
+                    <div class="grid gap-3 mt-3">
+                        {% for action in integrity.actions %}
+                            <div class="rounded-2xl border border-border bg-panel p-4">
+                                <p class="text-xs font-semibold uppercase tracking-[0.14em] {{ action.priority == 'high' ? 'text-danger' : (action.priority == 'medium' ? 'text-brand' : 'text-muted') }}">
+                                    {{ action.priority }} priority
+                                </p>
+                                <p class="text-sm font-semibold text-ink">{{ action.label }}</p>
+                                <div class="button-row mt-3">
+                                    {% if action.code == 'enable_2fa' %}
+                                        <a class="btn-primary" href="{{ path('front_gestion_user_totp_setup') }}">Enable 2FA</a>
+                                    {% elseif action.code == 'enable_face_id' %}
+                                        <button type="button" class="btn-secondary" id="focus-face-id-action">Open Face ID section</button>
+                                    {% elseif action.code == 'complete_profile' %}
+                                        <button type="button" class="btn-secondary" id="focus-edit-profile-action">Complete profile</button>
+                                    {% elseif action.code == 'verify_email_signal' %}
+                                        <a class="btn-secondary" href="{{ path('app_forgot_password') }}">Run email verification flow</a>
+                                    {% elseif action.code == 'change_password' %}
+                                        <button type="button" class="btn-secondary" id="focus-password-action">Review password section</button>
+                                    {% else %}
+                                        <span class="badge">Stable</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <article class="rounded-3xl border border-border bg-white/90 p-5 shadow-soft">
+                    <p class="feature-label">Risk Signals</p>
+                    <p class="panel-copy mt-3">{{ integrity.verified_email.note }}</p>
+                    <p class="mt-2 text-xs text-muted">Score last calculated at {{ integrity.calculated_at|date('Y-m-d H:i') }}</p>
+
+                    {% if integrity.suspicious_events is empty %}
+                        <p class="rounded-2xl border border-success-border bg-success-soft px-4 py-3 text-sm text-success mt-4">
+                            No suspicious account events were detected in the last {{ integrity.window_days }} days.
+                        </p>
+                    {% else %}
+                        <div class="grid gap-3 mt-4">
+                            {% for event in integrity.suspicious_events %}
+                                <p class="rounded-2xl border border-danger-border bg-danger-soft px-4 py-3 text-sm text-danger">{{ event }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </article>
+            </div>
+        </section>
+
+        <section class="hero-grid">
+            <article class="panel-section">
+                <p class="feature-label">Account Overview</p>
+                <h2 class="panel-title mt-4">{{ currentUser.prenomU }} {{ currentUser.nomU }}</h2>
+                <p class="panel-copy">{{ currentUser.emailU }}</p>
+
+                <div class="button-row mt-6">
+                    <button type="button" class="btn-primary" id="edit-profile-button">Edit profile</button>
+                    <a href="{{ path('app_logout') }}" class="btn-secondary">Logout</a>
+                </div>
+            </article>
+
+            <article class="panel-section">
+                <p class="feature-label">Access</p>
+                <h2 class="panel-title mt-4">Session Summary</h2>
+                <ul class="feature-list">
+                    <li>Role: {{ currentUser.roleU }}</li>
+                    <li>Status: Active session</li>
+                    <li>Email: {{ currentUser.emailU }}</li>
+                </ul>
+            </article>
+        </section>
+
+        <section class="feature-grid">
+            <article class="feature-card">
+                <p class="feature-label">Identity</p>
+                <h3 class="feature-title">First Name</h3>
+                <p class="feature-copy">{{ currentUser.prenomU }}</p>
+            </article>
+
+            <article class="feature-card">
+                <p class="feature-label">Identity</p>
+                <h3 class="feature-title">Last Name</h3>
+                <p class="feature-copy">{{ currentUser.nomU }}</p>
+            </article>
+
+            <article class="feature-card">
+                <p class="feature-label">Contact</p>
+                <h3 class="feature-title">Email</h3>
+                <p class="feature-copy">{{ currentUser.emailU }}</p>
+            </article>
+
+            <article class="feature-card">
+                <p class="feature-label">Profile</p>
+                <h3 class="feature-title">Age</h3>
+                <p class="feature-copy">{{ currentUser.ageU }}</p>
+            </article>
+
+            <article class="feature-card">
+                <p class="feature-label">Security</p>
+                <h3 class="feature-title">Face ID</h3>
+                <p class="feature-copy">{{ currentUser.face_enabled ? 'Active on this account.' : 'Not active yet. You can enroll it below.' }}</p>
+            </article>
+
+            <article class="feature-card">
+                <p class="feature-label">Security</p>
+                <h3 class="feature-title">Two-Factor Auth</h3>
+                <p class="feature-copy">{{ currentUser.totp_enabled ? 'Enabled with your authenticator app.' : 'Disabled. Add TOTP protection below.' }}</p>
+            </article>
+        </section>
+
+        <form method="post" id="profile-edit-form" class="panel-section form-stack {{ openEdit ? '' : 'hidden' }}" novalidate>
+            <header class="page-header">
+                <h2 class="panel-title">Edit Profile</h2>
+                <p class="panel-copy">Update your details, then save.</p>
+            </header>
+
+            <div class="form-grid">
+                <div class="field">
+                    <label class="field-label" for="prenom">First name</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.prenom is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="prenom" name="prenom" type="text" value="{{ form.prenom|default(currentUser.prenomU) }}">
+                    {% if fieldErrors.prenom is defined %}
+                        <p class="field-error">{{ fieldErrors.prenom }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="nom">Last name</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.nom is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="nom" name="nom" type="text" value="{{ form.nom|default(currentUser.nomU) }}">
+                    {% if fieldErrors.nom is defined %}
+                        <p class="field-error">{{ fieldErrors.nom }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="email">Email</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.email is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="email" name="email" type="text" inputmode="email" value="{{ form.email|default(currentUser.emailU) }}">
+                    {% if fieldErrors.email is defined %}
+                        <p class="field-error">{{ fieldErrors.email }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="age">Age</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.age is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="age" name="age" type="text" inputmode="numeric" value="{{ form.age|default(currentUser.ageU) }}">
+                    {% if fieldErrors.age is defined %}
+                        <p class="field-error">{{ fieldErrors.age }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('front_profile_edit_' ~ currentUser.idU) }}">
+
+            <div class="button-row">
+                <button type="submit" class="btn-primary">Save changes</button>
+                <button type="button" class="btn-secondary" id="cancel-edit-button">Cancel</button>
+            </div>
+        </form>
+
+        <section class="panel-section form-stack">
+            <header class="page-header">
+                <h2 class="panel-title">Face ID Login</h2>
+                <p class="panel-copy">Set up Face ID here if you skipped it during sign up. One capture will enroll this account for biometric sign in.</p>
+            </header>
+
+            <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                <div id="profile-face-preview-shell" class="hidden overflow-hidden rounded-3xl border border-border bg-panel shadow-soft">
+                    <video id="profile-face-video" class="aspect-[4/3] h-full w-full object-cover" autoplay playsinline muted></video>
+                </div>
+                <div class="grid gap-3">
+                    <button type="button" id="profile-face-action" class="btn-primary min-w-28 justify-center">{{ currentUser.face_enabled ? 'Update Face ID' : 'Activate Face ID' }}</button>
+                    <p id="profile-face-status" class="text-sm text-muted" aria-live="polite">
+                        {{ currentUser.face_enabled ? 'Face ID is active. Capture again if you want to refresh it.' : 'Press the button to open the webcam and capture your face.' }}
+                    </p>
+                </div>
+            </div>
+
+            <form method="post" id="profile-face-form" action="{{ path('front_gestion_user_face_id_enable') }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('front_profile_face_id_' ~ currentUser.idU) }}">
+                <input type="hidden" name="face_capture" id="profile-face-capture-input">
+            </form>
+        </section>
+
+        <section class="panel-section form-stack">
+            <header class="page-header">
+                <h2 class="panel-title">Authenticator App 2FA</h2>
+                <p class="panel-copy">Use a TOTP app to require a 6-digit verification code after password, Google login, or Face ID.</p>
+            </header>
+
+            <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                <div>
+                    <p class="feature-label">Status</p>
+                    <p class="panel-copy mt-3">{{ currentUser.totp_enabled ? 'Two-factor authentication is active on this account.' : 'Two-factor authentication is not active yet.' }}</p>
+                </div>
+                <div class="button-row">
+                    <a href="{{ path('front_gestion_user_totp_setup') }}" class="btn-primary">{{ currentUser.totp_enabled ? 'Reset 2FA' : 'Enable 2FA' }}</a>
+                    {% if currentUser.totp_enabled %}
+                        <form method="post" action="{{ path('front_gestion_user_totp_disable') }}" onsubmit="return confirm('Disable two-factor authentication for this account?');">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('front_profile_totp_disable_' ~ currentUser.idU) }}">
+                            <button type="submit" class="btn-secondary">Disable 2FA</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <section class="panel-section form-stack">
+            <header class="page-header">
+                <h2 class="panel-title">Change Password</h2>
+                <p class="panel-copy">Use your current password to confirm the change, then set a new one that meets the account password rules.</p>
+            </header>
+
+            <form method="post" action="{{ path('front_gestion_user_change_password') }}" class="form-stack" novalidate>
+                <div class="form-grid">
+                    <div class="field">
+                        <label class="field-label" for="current_password">Current password</label>
+                        <input class="field-input" id="current_password" name="current_password" type="password" autocomplete="current-password" required>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="new_password">New password</label>
+                        <input class="field-input" id="new_password" name="new_password" type="password" autocomplete="new-password" required>
+                    </div>
+                </div>
+
+                <div class="field max-w-3xl">
+                    <label class="field-label" for="confirm_password">Confirm new password</label>
+                    <input class="field-input" id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required>
+                    <p class="text-sm text-muted">Minimum 7 characters with uppercase, lowercase, and a number.</p>
+                </div>
+
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('front_profile_password_' ~ currentUser.idU) }}">
+
+                <div class="button-row">
+                    <button type="submit" class="btn-primary">Update password</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel-section">
+            <p class="feature-label">Danger Zone</p>
+            <h2 class="panel-title mt-4">Delete Account</h2>
+            <p class="panel-copy">This action is permanent and cannot be undone.</p>
+
+            <form method="post" action="{{ path('front_gestion_user_delete_account') }}" onsubmit="return confirm('Delete your account? This action cannot be undone.');" class="button-row mt-4">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('front_delete_account_' ~ currentUser.idU) }}">
+                <button type="submit" class="btn-danger">Delete my account</button>
+            </form>
+        </section>
+    </div>
+
+    <script>
+        (function () {
+            const editButton = document.getElementById('edit-profile-button');
+            const cancelButton = document.getElementById('cancel-edit-button');
+            const editForm = document.getElementById('profile-edit-form');
+            const faceActionButton = document.getElementById('profile-face-action');
+            const faceStatus = document.getElementById('profile-face-status');
+            const facePreviewShell = document.getElementById('profile-face-preview-shell');
+            const faceVideo = document.getElementById('profile-face-video');
+            const faceCaptureInput = document.getElementById('profile-face-capture-input');
+            const faceForm = document.getElementById('profile-face-form');
+            const focusFaceIdButton = document.getElementById('focus-face-id-action');
+            const focusEditProfileButton = document.getElementById('focus-edit-profile-action');
+            const focusPasswordButton = document.getElementById('focus-password-action');
+
+            if (!editButton || !cancelButton || !editForm || !faceActionButton || !faceStatus || !facePreviewShell || !faceVideo || !faceCaptureInput || !faceForm) {
+                return;
+            }
+
+            let faceStream = null;
+            let faceCapturing = false;
+
+            const setFaceStatus = function (message, isError = false) {
+                faceStatus.textContent = message;
+                faceStatus.className = isError ? 'text-sm text-danger' : 'text-sm text-muted';
+            };
+
+            const stopFaceStream = function () {
+                if (!faceStream) {
+                    facePreviewShell.classList.add('hidden');
+                    return;
+                }
+
+                faceStream.getTracks().forEach(function (track) {
+                    track.stop();
+                });
+                faceStream = null;
+                faceVideo.srcObject = null;
+                facePreviewShell.classList.add('hidden');
+            };
+
+            editButton.addEventListener('click', function () {
+                editForm.classList.remove('hidden');
+                editForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+
+            if (focusEditProfileButton) {
+                focusEditProfileButton.addEventListener('click', function () {
+                    editForm.classList.remove('hidden');
+                    editForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            }
+
+            cancelButton.addEventListener('click', function () {
+                editForm.classList.add('hidden');
+            });
+
+            if (focusFaceIdButton) {
+                focusFaceIdButton.addEventListener('click', function () {
+                    faceActionButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+            }
+
+            if (focusPasswordButton) {
+                focusPasswordButton.addEventListener('click', function () {
+                    const passwordInput = document.getElementById('current_password');
+                    if (!passwordInput) {
+                        return;
+                    }
+
+                    passwordInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    passwordInput.focus();
+                });
+            }
+
+            if (!editForm.classList.contains('hidden')) {
+                editForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            faceActionButton.addEventListener('click', async function () {
+                if (!navigator.mediaDevices?.getUserMedia) {
+                    setFaceStatus('This browser does not support camera capture.', true);
+                    return;
+                }
+
+                if (faceCapturing) {
+                    return;
+                }
+
+                faceCapturing = true;
+                faceActionButton.disabled = true;
+                faceActionButton.textContent = 'Opening camera...';
+                stopFaceStream();
+
+                try {
+                    faceStream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'user',
+                            width: { ideal: 1280 },
+                            height: { ideal: 960 }
+                        },
+                        audio: false
+                    });
+
+                    facePreviewShell.classList.remove('hidden');
+                    faceVideo.srcObject = faceStream;
+                    await faceVideo.play();
+                    setFaceStatus('Camera open. Hold still for a moment...');
+                    faceActionButton.textContent = 'Capturing...';
+
+                    await new Promise(function (resolve) {
+                        window.setTimeout(resolve, 900);
+                    });
+
+                    if (faceVideo.videoWidth === 0 || faceVideo.videoHeight === 0) {
+                        throw new Error('Camera feed is not ready yet.');
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = faceVideo.videoWidth;
+                    canvas.height = faceVideo.videoHeight;
+                    const context = canvas.getContext('2d');
+                    context.drawImage(faceVideo, 0, 0, canvas.width, canvas.height);
+                    faceCaptureInput.value = canvas.toDataURL('image/jpeg', 0.92);
+
+                    stopFaceStream();
+                    setFaceStatus('Face captured. Saving Face ID...');
+                    faceActionButton.textContent = 'Saving...';
+                    faceForm.submit();
+                } catch (error) {
+                    const message = error instanceof Error ? error.message : 'Unable to access the camera. Check browser permissions and try again.';
+                    stopFaceStream();
+                    setFaceStatus(message, true);
+                    faceActionButton.disabled = false;
+                    faceActionButton.textContent = '{{ currentUser.face_enabled ? 'Update Face ID' : 'Activate Face ID' }}';
+                    faceCapturing = false;
+                }
+            });
+
+            window.addEventListener('beforeunload', stopFaceStream);
+        })();
+    </script>
+{% endblock %}

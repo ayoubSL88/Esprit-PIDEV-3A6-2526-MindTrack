@@ -1,0 +1,209 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* STYLE FRONT - FORMULAIRE MODERNE EN CARTE */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+        
+        .page-header p {
+            color: #64748b;
+            margin-top: 8px;
+        }
+        
+        .form-card {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            max-width: 800px;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+        
+        .form-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .form-grid > div {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-grid label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+        
+        .form-grid input, .form-grid select, .form-grid textarea {
+            padding: 12px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: #f8fafc;
+        }
+        
+        .form-grid input:focus, .form-grid select:focus, .form-grid textarea:focus {
+            border-color: #6366f1;
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+        
+        /* Slider personnalisé pour la priorité */
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #6366f1;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        .priority-value {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-top: 8px;
+            display: inline-block;
+        }
+        
+        .field-error {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 4px;
+        }
+        
+        .actions {
+            margin-top: 16px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border: none;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99,102,241,0.3);
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            color: #475569;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+        
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+        
+        @media (max-width: 640px) {
+            .form-card {
+                padding: 20px;
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% include 'front/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
+
+    <div style="max-width: 1000px; margin: 0 auto; padding: 20px;">
+        <section class="page-header">
+            <div>
+                <h1>{{ page_title }}</h1>
+                <p>🎯 Définis une étape claire et son niveau de priorité.</p>
+            </div>
+            <a class="btn-secondary" href="{{ path('front_planaction_index') }}">← Retour à la liste</a>
+        </section>
+
+        <section class="form-card">
+            {{ form_start(form, {attr: {class: 'form-grid'}}) }}
+                {{ form_errors(form) }}
+                <div>
+                    {{ form_label(form.idObj) }}
+                    {{ form_widget(form.idObj) }}
+                    <div class="field-error">{{ form_errors(form.idObj) }}</div>
+                </div>
+                <div>
+                    {{ form_label(form.etape) }}
+                    {{ form_widget(form.etape, {attr: {rows: 3, placeholder: "Décris l'étape à réaliser..."}}) }}
+                    <div class="field-error">{{ form_errors(form.etape) }}</div>
+                </div>
+                <div>
+                    {{ form_label(form.priorite) }}
+                    {{ form_widget(form.priorite, {attr: {type: 'range', min: 1, max: 10, step: 1, oninput: "this.nextElementSibling.value = this.value"}}) }}
+                    <output class="priority-value">5</output>/10
+                    <div class="field-error">{{ form_errors(form.priorite) }}</div>
+                </div>
+                <div class="actions">
+                    <button class="btn-primary" type="submit">{{ submit_label }}</button>
+                </div>
+            {{ form_end(form) }}
+        </section>
+    </div>
+
+    <script>
+        // Synchronisation du slider avec la valeur par défaut
+        document.addEventListener('DOMContentLoaded', function() {
+            const slider = document.querySelector('input[type="range"]');
+            if (slider) {
+                const output = slider.nextElementSibling;
+                output.value = slider.value;
+                slider.oninput = function() { output.value = this.value; };
+            }
+        });
+    </script>
+{% endblock %}

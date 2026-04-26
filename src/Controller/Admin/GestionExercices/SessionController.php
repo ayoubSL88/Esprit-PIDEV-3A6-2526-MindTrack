@@ -8,17 +8,35 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\Request;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/admin/sessions')]
 //#[IsGranted('ROLE_ADMIN')]
 final class SessionController extends AbstractController
 {
     #[Route('/', name: 'admin_sessions_index')]
-    public function index(SessionRepository $sessionRepository): Response
-    {
-        //$sessions = $sessionRepository->findAllSessionsForAdmin();
-        $sessions = [];
+    public function index(Request $request, SessionRepository $sessionRepository, PaginatorInterface $paginator): Response
+    {   
+
+        // Récupérer les paramètres de filtrage
+        $search = $request->query->get('search', '');
+        $statut = $request->query->get('statut', '');
+        $dateDebut = $request->query->get('date_debut', '');
         
+        // Appliquer les filtres
+        $sessions = $sessionRepository->findSessionsForAdminWithFilters($search, $statut, $dateDebut);
+        
+        // ✅ Utiliser la méthode avec QueryBuilder pour la pagination
+        $queryBuilder = $sessionRepository->findSessionsForAdminWithFiltersQuery($search, $statut, $dateDebut);
+        
+        // ✅ Appliquer la pagination sur le QueryBuilder
+        $sessions = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            20 // Sessions par page
+        );
+
         return $this->render('admin/gestion_exercices/sessions_index.html.twig', [
             'sessions' => $sessions
         ]);

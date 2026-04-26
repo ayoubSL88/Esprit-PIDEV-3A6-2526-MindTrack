@@ -18,8 +18,8 @@ final class ProgressionController extends AbstractController
     #[Route('/', name: 'front_progression_index')]
     public function index(SessionRepository $sessionRepository, AdviceApiService $adviceApi): Response
     {
-        //$user = $this->getUser();
-        $sessions = $sessionRepository->findBy(['terminee' => true]);
+        $user = $this->getUser();
+        $sessions = $sessionRepository->findBy(['user' => $user, 'terminee' => true]);
         
         // Calcul des stats
         $totalSessions = count($sessions);
@@ -98,6 +98,7 @@ final class ProgressionController extends AbstractController
         
         $options = new Options();
         $options->set('defaultFont', 'Arial');
+        $options->set('isHtml5ParserEnabled', true);
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
@@ -105,7 +106,7 @@ final class ProgressionController extends AbstractController
         
         return new Response($dompdf->output(), 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="progression_' . date('Y-m-d') . '.pdf"'
+            'Content-Disposition' => 'attachment; filename="progression_' . date('Y-m-d') . '.pdf"' 
         ]);
     }
 

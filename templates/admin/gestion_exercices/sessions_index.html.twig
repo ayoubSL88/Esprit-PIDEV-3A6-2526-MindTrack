@@ -119,6 +119,18 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="d-flex justify-content-center">
+                    {{ knp_pagination_render(sessions) }}
+                </div>
+                <div class="text-center text-muted mt-2">
+                    <small>Page {{ sessions.currentPageNumber }} / {{ sessions.pageCount }}</small>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 

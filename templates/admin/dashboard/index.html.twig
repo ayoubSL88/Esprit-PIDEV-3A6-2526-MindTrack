@@ -3,137 +3,37 @@
 {% block page_title %}Dashboard Administrateur{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Tableau de bord</h1>
-    <div class="text-muted">{{ 'now'|date('d/m/Y H:i') }}</div>
-</div>
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Backoffice',
+            title: 'Admin Dashboard',
+            copy: 'Shared entry point for the full backoffice. This template is now standardized so the remaining admin sections can inherit the same spacing, palette, and structural patterns.'
+        }) }}
 
-<div class="row">
-    <div class="col-md-3">
-        <div class="card bg-primary text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title">Exercices</h6>
-                        <h2 class="mb-0">{{ exercices_count|default(0) }}</h2>
-                    </div>
-                    <i class="bi bi-file-text fs-1"></i>
-                </div>
-                <a href="{{ path('admin_gestion_exercices_index') }}" class="text-white text-decoration-none">
-                    Gérer <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-success text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title">Sessions</h6>
-                        <h2 class="mb-0">{{ sessions_count|default(0) }}</h2>
-                    </div>
-                    <i class="bi bi-clock-history fs-1"></i>
-                </div>
-                <a href="{{ path('admin_sessions_index') }}" class="text-white text-decoration-none">
-                    Voir <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-info text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title">Utilisateurs</h6>
-                        <h2 class="mb-0">{{ users_count|default(0) }}</h2>
-                    </div>
-                    <i class="bi bi-people fs-1"></i>
-                </div>
-                <a href="{{ path('admin_gestion_user_index') }}" class="text-white text-decoration-none">
-                    Gérer <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-warning text-dark">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title">Progression moyenne</h6>
-                        <h2 class="mb-0">{{ avg_progress|default(0) }}%</h2>
-                    </div>
-                    <i class="bi bi-graph-up fs-1"></i>
-                </div>
-                <small>Tous utilisateurs confondus</small>
-            </div>
-        </div>
-    </div>
-</div>
+        <section class="feature-grid">
+            {{ component('FeatureCard', {
+                eyebrow: 'Users',
+                title: 'Manage accounts',
+                copy: 'Create, edit, filter, delete, and change roles from a single consistent admin screen.'
+            }) }}
 
-<div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Dernières sessions</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Utilisateur</th>
-                                <th>Exercice</th>
-                                <th>Date</th>
-                                <th>Progression</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for session in recent_sessions|default([]) %}
-                            <tr>
-                                <td>Utilisateur #{{ session.idSession }}</td>
-                                <td>{{ session.exercice.nom }}</td>
-                                <td>{{ session.dateDebut|date('d/m H:i') }}</td>
-                                <td>
-                                    <div class="progress" style="height: 15px; width: 80px;">
-                                        <div class="progress-bar" style="width: {{ session.progress }}%">
-                                            {{ session.progress }}%
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="4" class="text-center">Aucune session récente</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+            {{ component('FeatureCard', {
+                eyebrow: 'Objectifs',
+                title: 'Plan future modules',
+                copy: 'Keep this area ready for personal goal workflows without touching the shell again.'
+            }) }}
+
+            {{ component('FeatureCard', {
+                eyebrow: 'Habitudes',
+                title: 'Extend safely',
+                copy: 'New gestion pages can plug into the same page card and component classes.'
+            }) }}
+
+            {{ component('FeatureCard', {
+                eyebrow: 'Exercices',
+                title: 'Track sessions',
+                copy: 'Manage exercise content and monitor training sessions from the admin module.'
+            }) }}
+        </section>
     </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Actions rapides</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ path('admin_gestion_exercices_new') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Nouvel exercice
-                    </a>
-                    <a href="{{ path('admin_gestion_exercices_index') }}" class="btn btn-outline-primary">
-                        <i class="bi bi-list-check"></i> Gérer les exercices
-                    </a>
-                    <a href="{{ path('admin_sessions_index') }}" class="btn btn-outline-success">
-                        <i class="bi bi-clock-history"></i> Voir toutes les sessions
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}

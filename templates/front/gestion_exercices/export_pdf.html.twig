@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport de progression - {{ user.nomU }} {{ user.prenomU }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        .stats {
+            margin-bottom: 30px;
+        }
+        .stats table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .stats td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        .stats th {
+            background-color: #f2f2f2;
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        .sessions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .sessions-table th {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .sessions-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Rapport de progression</h1>
+        <p>Généré le {{ date|date('d/m/Y H:i:s') }}</p>
+        <h3>{{ user.nomU }} {{ user.prenomU }} - {{ user.emailU }}</h3>
+    </div>
+    
+    <div class="stats">
+        <h3>Statistiques globales</h3>
+        <table>
+            <tr>
+                <th>Sessions terminées</th>
+                <td>{{ total_sessions }}</td>
+            </tr>
+            <tr>
+                <th>Temps total</th>
+                <td>{{ total_temps }} minutes</td>
+            </tr>
+            <tr>
+                <th>Progression moyenne</th>
+                <td>{{ moyenne_progress }}%</td>
+            </tr>
+        </table>
+    </div>
+    
+    <h3>Détail des sessions</h3>
+    <table class="sessions-table">
+        <thead>
+            <tr>
+                <th>Exercice</th>
+                <th>Date</th>
+                <th>Durée</th>
+                <th>Progression</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in sessions %}
+            <tr>
+                <td>{{ session.exercice.nom }}</td>
+                <td>{{ session.dateFin|date('d/m/Y') }}</td>
+                <td>{{ (session.dureeReelle / 60)|round }} min</td>
+                <td>{{ session.progress }}%</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4">Aucune session terminée</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        <p>Document généré automatiquement - Application de coaching fitness</p>
+    </div>
+</body>
+</html>

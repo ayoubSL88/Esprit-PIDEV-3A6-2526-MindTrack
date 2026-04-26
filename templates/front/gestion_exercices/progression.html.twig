@@ -96,6 +96,7 @@
         <a href="{{ path('front_gestion_exercices_home') }}" class="btn btn-outline-primary mt-2 mt-sm-0">
             <i class="bi bi-arrow-left"></i> Retour à l'espace d'exercices
         </a>
+
     </div>
 
     <!-- Conseil bien-être du jour -->
@@ -113,6 +114,13 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- Bouton d'export PDF -->
+    <div class="text-end mb-4">
+        <a href="{{ path('front_progression_export_pdf') }}" class="btn btn-danger" target="_blank">
+            <i class="bi bi-file-pdf"></i> Exporter ma progression en PDF
+        </a>
+    </div>
 
     <!-- Progression globale -->
     <div class="card shadow-sm mb-4">

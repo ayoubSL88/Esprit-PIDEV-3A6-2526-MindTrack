@@ -1,0 +1,9 @@
+<div class="flash-stack">
+    {% include 'shared/_flash_messages.html.twig' %}
+
+    {% if errorMessage is defined and errorMessage %}
+        <div class="flash flash-error">
+            {{ errorMessage }}
+        </div>
+    {% endif %}
+</div>

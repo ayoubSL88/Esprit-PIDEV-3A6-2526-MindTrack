@@ -1,0 +1,81 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}Create User{% endblock %}
+
+{% block content %}
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Administration',
+            title: 'Create User',
+            copy: 'Add a new account using the same form tokens and spacing rules used across the app shell.'
+        }) }}
+
+        {{ component('FlashStack') }}
+
+        <form method="post" class="form-stack max-w-3xl" novalidate>
+            <div class="form-grid">
+                <div class="field">
+                    <label class="field-label" for="prenom">First name</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.prenom is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="prenom" name="prenom" type="text" value="{{ form.prenom|default('') }}">
+                    {% if fieldErrors.prenom is defined %}
+                        <p class="field-error">{{ fieldErrors.prenom }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="nom">Last name</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.nom is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="nom" name="nom" type="text" value="{{ form.nom|default('') }}">
+                    {% if fieldErrors.nom is defined %}
+                        <p class="field-error">{{ fieldErrors.nom }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="field">
+                    <label class="field-label" for="email">Email</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.email is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="email" name="email" type="text" inputmode="email" value="{{ form.email|default('') }}">
+                    {% if fieldErrors.email is defined %}
+                        <p class="field-error">{{ fieldErrors.email }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="age">Age</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.age is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="age" name="age" type="text" inputmode="numeric" value="{{ form.age|default('') }}">
+                    {% if fieldErrors.age is defined %}
+                        <p class="field-error">{{ fieldErrors.age }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="field">
+                    <label class="field-label" for="role">Role</label>
+                    <select class="field-select {{ formSubmitted and fieldErrors.role is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="role" name="role">
+                        <option value="USER" {{ form.role == 'USER' ? 'selected' : '' }}>USER</option>
+                        <option value="ADMIN" {{ form.role == 'ADMIN' ? 'selected' : '' }}>ADMIN</option>
+                    </select>
+                    {% if fieldErrors.role is defined %}
+                        <p class="field-error">{{ fieldErrors.role }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="password">Password</label>
+                    <input class="field-input {{ formSubmitted and fieldErrors.password is defined ? 'field-input-invalid' : (formSubmitted ? 'field-input-valid' : '') }}" id="password" name="password" type="password">
+                    {% if fieldErrors.password is defined %}
+                        <p class="field-error">{{ fieldErrors.password }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('create_user') }}">
+
+            <div class="button-row">
+                <button class="btn-primary" type="submit">Create user</button>
+                <a class="btn-secondary" href="{{ path('admin_gestion_user_index') }}">Back</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

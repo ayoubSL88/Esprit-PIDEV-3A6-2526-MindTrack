@@ -1,0 +1,66 @@
+{% set captchaVerified = captcha_verified|default(false) %}
+
+<div class="grid gap-4" data-captcha-widget data-captcha-context="{{ context }}" data-captcha-verified="{{ captchaVerified ? '1' : '0' }}">
+    <p class="rounded-2xl border border-success-border bg-success-soft px-4 py-3 text-sm text-success {% if not captchaVerified %}hidden{% endif %}" data-captcha-success-message>
+        CAPTCHA valid.
+    </p>
+
+<section class="grid gap-4 rounded-3xl border border-border bg-white/85 p-5 shadow-soft {% if captchaVerified %}hidden{% endif %}" data-captcha-shell>
+    <div class="space-y-1">
+        <p class="text-sm font-semibold text-ink">Security check</p>
+        <p class="text-sm text-muted">Verify the code below before submitting the form.</p>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center" data-captcha-fields {% if captchaVerified %}hidden{% endif %}>
+        <img
+            src="{{ path('app_captcha_image', {context: context}) }}?v={{ random() }}"
+            alt="CAPTCHA challenge"
+            id="{{ context }}-captcha-image"
+            class="h-20 w-full rounded-2xl border border-border bg-slate-50 object-cover"
+            data-captcha-image
+        >
+        <div class="grid gap-3">
+            <button
+                type="button"
+                class="btn-secondary justify-center"
+                data-captcha-refresh
+                data-captcha-refresh-url="{{ path('app_captcha_refresh', {context: context}) }}"
+                data-captcha-image-url="{{ path('app_captcha_image', {context: context}) }}"
+                data-captcha-target="{{ context }}-captcha-image"
+            >
+                Refresh CAPTCHA
+            </button>
+            <button
+                type="button"
+                class="btn-primary justify-center"
+                data-captcha-verify
+                data-captcha-verify-url="{{ path('app_captcha_verify', {context: context}) }}"
+            >
+                Verify CAPTCHA
+            </button>
+        </div>
+    </div>
+
+    <div class="field" data-captcha-input-wrap {% if captchaVerified %}hidden{% endif %}>
+        <label class="field-label" for="{{ context }}_captcha">CAPTCHA</label>
+        <input
+            class="field-input {{ fieldErrors.captcha is defined ? 'field-input-invalid' : '' }}"
+            type="text"
+            id="{{ context }}_captcha"
+            name="captcha"
+            value="{{ form.captcha|default('') }}"
+            autocomplete="off"
+            autocapitalize="none"
+            spellcheck="false"
+            maxlength="6"
+            data-captcha-input
+        >
+        <input type="hidden" name="captcha_verified" value="{{ captchaVerified ? '1' : '0' }}" data-captcha-verified-input>
+        <input type="hidden" value="{{ csrf_token('captcha_verify_' ~ context) }}" data-captcha-csrf>
+        {% if fieldErrors.captcha is defined %}
+            <p class="field-error">{{ fieldErrors.captcha }}</p>
+        {% endif %}
+    </div>
+
+</section>
+</div>

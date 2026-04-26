@@ -1,0 +1,41 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}Humeur Details{% endblock %}
+
+{% block content %}
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Mood',
+            title: 'Mood entry',
+            copy: 'Review the details of this humeur record.'
+        }) }}
+
+        <div class="button-row">
+            <a class="btn-secondary" href="{{ path('front_gestion_humeur_index') }}">Back to list</a>
+            <a class="btn-primary" href="{{ path('front_gestion_humeur_edit', {idH: humeur.idH}) }}">Edit</a>
+        </div>
+
+        <div class="panel-section grid gap-4 sm:grid-cols-3">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Date</p>
+                <p class="mt-2 text-sm font-semibold text-ink">{{ humeur.date|date('Y-m-d') }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Type humeur</p>
+                <p class="mt-2 text-sm font-semibold text-ink">{{ humeur.typeHumeur }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Intensite</p>
+                <p class="mt-2 text-sm font-semibold text-ink">{{ humeur.intensite }}/10</p>
+            </div>
+        </div>
+
+        <div class="button-row">
+            {% include 'admin/gestion_humeur/humeur/_delete_form.html.twig' with {
+                delete_path: path('front_gestion_humeur_delete', {idH: humeur.idH}),
+                csrf_token: csrf_token('delete_humeur_' ~ humeur.idH),
+                button_label: 'Delete entry'
+            } only %}
+        </div>
+    </div>
+{% endblock %}

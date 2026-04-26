@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/app/historique')]
+//#[IsGranted('ROLE_USER')]
 final class HistoriqueController extends AbstractController
 {
     #[Route('/', name: 'front_historique_index')]

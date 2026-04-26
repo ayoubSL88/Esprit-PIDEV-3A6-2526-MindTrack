@@ -2,7 +2,57 @@
 
 {% block page_title %}Gestion Objectifs Personnelles{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-header { margin-bottom: 32px; border-bottom: 2px solid #e9ecef; padding-bottom: 20px; }
+        .admin-header h1 { font-size: 1.6rem; font-weight: 600; color: #1e293b; margin: 0 0 8px 0; display: flex; align-items: center; gap: 10px; }
+        .admin-header p { color: #6c757d; font-size: 0.85rem; margin: 0; }
+        .stats-banner { display: flex; gap: 20px; margin-bottom: 32px; flex-wrap: wrap; }
+        .stat-card { background: white; border-radius: 12px; padding: 16px 24px; flex: 1; min-width: 150px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e9ecef; }
+        .stat-number { font-size: 1.8rem; font-weight: 700; color: #0d6efd; }
+        .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d; margin-top: 4px; }
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .admin-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e9ecef; }
+        .admin-card-header { padding: 16px 20px; background: #f8f9fa; border-bottom: 1px solid #e9ecef; display: flex; align-items: center; gap: 12px; }
+        .admin-card-body { padding: 16px 20px; }
+        .admin-card-footer { padding: 12px 20px; background: #f8f9fa; border-top: 1px solid #e9ecef; }
+        .btn-admin-module { display: inline-block; background: #0d6efd; color: white; padding: 6px 16px; border-radius: 6px; text-decoration: none; font-size: 0.75rem; font-weight: 500; }
+    </style>
+{% endblock %}
+
 {% block content %}
-    <h1>Gestion Objectifs Personnelles</h1>
-    <p>Entities: Jalonprogression, Objectif, Planificateurintelligent, Planaction.</p>
+    <div style="padding: 20px;">
+        <section class="admin-header">
+            <h1><span>Gestion des objectifs personnelles</span></h1>
+            <p>L'admin peut consulter les donnees des 4 entites et supprimer les enregistrements.</p>
+        </section>
+
+        <div class="stats-banner">
+            <div class="stat-card">
+                <div class="stat-number">{{ modules|length }}</div>
+                <div class="stat-label">Modules disponibles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">4</div>
+                <div class="stat-label">Entites gerees</div>
+            </div>
+        </div>
+
+        <section class="admin-grid">
+            {% for module in modules %}
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h3>{{ module.title }}</h3>
+                    </div>
+                    <div class="admin-card-body">
+                        <p>{{ module.description }}</p>
+                    </div>
+                    <div class="admin-card-footer">
+                        <a class="btn-admin-module" href="{{ path(module.route) }}">Gerer</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </section>
+    </div>
 {% endblock %}

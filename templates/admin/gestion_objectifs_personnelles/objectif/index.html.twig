@@ -1,0 +1,301 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}Objectifs{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* STYLE ADMIN - TABLEAU PROFESSIONNEL */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .page-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+            color: #1e293b;
+        }
+        
+        .page-header p {
+            color: #64748b;
+            margin-top: 4px;
+            font-size: 0.85rem;
+        }
+        
+        .filter-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+        }
+        
+        .filter-bar > div {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .filter-bar label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+            margin-bottom: 6px;
+        }
+        
+        .filter-bar input, .filter-bar select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .filter-bar input:focus, .filter-bar select:focus {
+            border-color: #0d6efd;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(13,110,253,0.1);
+        }
+        
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            overflow-x: auto;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        
+        thead th {
+            background: #f8f9fa;
+            padding: 14px 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+            color: #495057;
+        }
+        
+        tbody td {
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-warning {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .badge-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        
+        .btn-danger {
+            background: #dc2626;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 6px;
+            color: white;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-primary {
+            background: #0d6efd;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background: #0b5ed7;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .muted {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% include 'admin/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
+
+    <div style="padding: 20px;">
+        <section class="page-header">
+    <div>
+        <h1>📋 Liste admin des objectifs</h1>
+        <p>L'admin peut consulter, rechercher, trier, filtrer et supprimer les objectifs.</p>
+
+        <!-- ✅ BOUTONS EXPORT -->
+        <div style="margin-top: 12px; display:flex; gap:10px;">
+            <a href="{{ path('admin_objectif_export_csv') }}" class="btn-secondary" style="background:#198754;">
+                📊 Export CSV
+            </a>
+
+            <a href="{{ path('admin_objectif_export_pdf') }}" class="btn-secondary" style="background:#dc3545;">
+                📄 Export PDF
+            </a>
+        </div>
+    </div>
+
+    <a class="btn-secondary" href="{{ path('admin_gestion_objectifs_personnelles_index') }}">
+        ← Retour au module
+    </a>
+</section>
+
+        <form method="get" class="filter-bar">
+            <div>
+                <label for="admin_objectif_q">🔍 Mot-clé</label>
+                <input id="admin_objectif_q" type="text" name="q" value="{{ filters.q }}" placeholder="Titre, description, statut">
+            </div>
+            <div>
+                <label for="admin_objectif_sort">📊 Tri</label>
+                <select id="admin_objectif_sort" name="sort">
+                    {% for label, value in sort_choices %}
+                        <option value="{{ value }}" {{ filters.sort == value ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="admin_objectif_status">🏷️ Statut</label>
+                <select id="admin_objectif_status" name="status">
+                    <option value="">Tous</option>
+                    {% for label, value in status_choices %}
+                        <option value="{{ value }}" {{ filters.status == value ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="actions">
+                <button class="btn-primary" type="submit">Filtrer</button>
+                <a class="btn-secondary" href="{{ path('admin_objectif_index') }}">Réinitialiser</a>
+            </div>
+        </form>
+
+        <section class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Titre</th>
+                        <th>Description</th>
+                        <th>Début</th>
+                        <th>Fin</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for objectif in objectifs %}
+                        <tr>
+                            <td>{{ objectif.idObj }}</td>
+                            <td><strong>{{ objectif.titre }}</strong></td>
+                            <td>{{ objectif.descriprion|slice(0, 60) }}{% if objectif.descriprion|length > 60 %}...{% endif %}</td>
+                            <td>{{ objectif.dateDebut|date('d/m/Y') }}</td>
+                            <td>{{ objectif.dateFin|date('d/m/Y') }}</td>
+                            <td>
+                                {% set statusClass = '' %}
+                                {% if objectif.statut == 'termine' or objectif.statut == 'terminé' %}
+                                    {% set statusClass = 'badge-success' %}
+                                {% elseif objectif.statut == 'en_cours' or objectif.statut == 'en cours' %}
+                                    {% set statusClass = 'badge-warning' %}
+                                {% elseif objectif.statut == 'planifie' or objectif.statut == 'planifié' %}
+                                    {% set statusClass = 'badge-info' %}
+                                {% else %}
+                                    {% set statusClass = 'badge-secondary' %}
+                                {% endif %}
+                                <span class="badge {{ statusClass }}">{{ objectif.statut|replace({'_': ' '})|title }}</span>
+                            </td>
+                            <td>
+                                <form method="post" action="{{ path('admin_objectif_delete', {idObj: objectif.idObj}) }}" onsubmit="return confirm('Supprimer cet objectif ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_objectif_' ~ objectif.idObj) }}">
+                                    <button class="btn-danger" type="submit">🗑️ Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="muted">Aucun objectif trouvé.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </div>
+{% endblock %}  

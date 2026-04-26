@@ -1,0 +1,321 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Sign in{% endblock %}
+
+{% block body %}
+    <main class="page-shell">
+        <div class="app-shell max-w-2xl">
+            <section class="page-card">
+                <div class="page-stack">
+                    {{ component('PageHeader', {
+                        eyebrow: 'Access',
+                        title: 'Sign in',
+                        copy: 'Use your MindTrack account to enter the front area or the admin area, depending on your role.'
+                    }) }}
+
+                    {{ component('FlashStack', {
+                        errorMessage: error ? error.messageKey|trans(error.messageData, 'security') : null
+                    }) }}
+
+                    <form method="post" action="{{ path('app_login_password') }}" class="form-stack">
+                        <div class="field">
+                            <label class="field-label" for="username">Email</label>
+                            <input class="field-input" type="email" id="username" name="_username" value="{{ last_username }}" autocomplete="email" required autofocus>
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label" for="password">Password</label>
+                            <input class="field-input" type="password" id="password" name="_password" autocomplete="current-password" required>
+                        </div>
+
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                        {% include 'security/_captcha_field.html.twig' with {
+                            context: 'login',
+                            form: {},
+                            fieldErrors: {},
+                            captcha_verified: captcha_verified|default(false)
+                        } %}
+
+                        <div class="button-row">
+                            <button class="btn-primary" type="submit">Sign in</button>
+                            <a class="btn-secondary" href="{{ path('app_register') }}">Create account</a>
+                        </div>
+
+                        <a class="text-sm font-semibold text-muted underline-offset-4 hover:text-ink hover:underline" href="{{ path('app_forgot_password') }}">Forgot your password?</a>
+                    </form>
+
+                    <a href="{{ path('app_connect_google') }}" class="inline-flex w-full items-center justify-center rounded-3xl border border-border bg-white/90 px-6 py-4 text-sm font-semibold text-ink shadow-soft transition hover:bg-panel focus:outline-none focus:ring-2 focus:ring-brand/30">
+                        Continue with Google
+                    </a>
+
+                    <a href="{{ path('app_connect_github') }}" class="inline-flex w-full items-center justify-center rounded-3xl border border-border bg-white/90 px-6 py-4 text-sm font-semibold text-ink shadow-soft transition hover:bg-panel focus:outline-none focus:ring-2 focus:ring-brand/30">
+                        Continue with GitHub
+                    </a>
+
+                    <section class="grid gap-4">
+                        <button type="button" id="login-face-action" class="inline-flex w-full items-center justify-center rounded-3xl border border-border bg-white/90 px-6 py-5 text-base font-semibold text-ink shadow-soft transition hover:bg-panel focus:outline-none focus:ring-2 focus:ring-brand/30">
+                            Face ID
+                        </button>
+                        <div id="login-face-preview-shell" class="hidden overflow-hidden rounded-3xl border border-border bg-panel shadow-soft">
+                            <video id="login-face-video" class="aspect-[4/3] h-full w-full object-cover" autoplay playsinline muted></video>
+                        </div>
+                        <p id="login-face-status" class="hidden text-center text-sm text-muted" aria-live="polite"></p>
+                        <input type="hidden" id="login-face-csrf" value="{{ csrf_token('face_login') }}">
+                    </section>
+                </div>
+            </section>
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        (() => {
+            const init = () => {
+            document.querySelectorAll('[data-captcha-widget]').forEach((widget) => {
+                const shell = widget.querySelector('[data-captcha-shell]');
+                const successMessage = widget.querySelector('[data-captcha-success-message]');
+                const refreshButton = widget.querySelector('[data-captcha-refresh]');
+                const verifyButton = widget.querySelector('[data-captcha-verify]');
+                const image = widget.querySelector('[data-captcha-image]');
+                const fields = widget.querySelector('[data-captcha-fields]');
+                const inputWrap = widget.querySelector('[data-captcha-input-wrap]');
+                const input = widget.querySelector('[data-captcha-input]');
+                const verifiedInput = widget.querySelector('[data-captcha-verified-input]');
+                const csrfField = widget.querySelector('[data-captcha-csrf]');
+
+                if (!shell || !successMessage || !refreshButton || !verifyButton || !image || !fields || !inputWrap || !input || !verifiedInput || !csrfField) {
+                    return;
+                }
+
+                const setSuccessState = (message) => {
+                    shell.classList.add('hidden');
+                    successMessage.classList.remove('hidden');
+                    successMessage.textContent = message;
+                    verifiedInput.value = '1';
+                };
+
+                const setDefaultState = (message) => {
+                    shell.classList.remove('hidden');
+                    successMessage.classList.add('hidden');
+                    successMessage.textContent = message;
+                    verifiedInput.value = '0';
+                };
+
+                if (widget.getAttribute('data-captcha-verified') === '1') {
+                    setSuccessState('CAPTCHA valid.');
+                } else {
+                    setDefaultState('Verify the code below before submitting the form.');
+                }
+
+                refreshButton.addEventListener('click', async () => {
+                    const refreshUrl = refreshButton.getAttribute('data-captcha-refresh-url');
+                    const imageUrl = refreshButton.getAttribute('data-captcha-image-url');
+                    const targetId = refreshButton.getAttribute('data-captcha-target');
+                    const targetImage = targetId ? document.getElementById(targetId) : image;
+
+                    if (!refreshUrl || !imageUrl || !targetImage) {
+                        return;
+                    }
+
+                    refreshButton.disabled = true;
+
+                    try {
+                        const response = await fetch(refreshUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Refresh failed.');
+                        }
+
+                        const data = await response.json();
+                        targetImage.src = data.imageUrl;
+                        input.value = '';
+                        setDefaultState('Verify the code below before submitting the form.');
+                    } catch (_) {
+                        targetImage.src = `${imageUrl}?v=${Date.now()}`;
+                    } finally {
+                        refreshButton.disabled = false;
+                    }
+                });
+
+                verifyButton.addEventListener('click', async () => {
+                    const verifyUrl = verifyButton.getAttribute('data-captcha-verify-url');
+                    const value = input.value.trim();
+
+                    if (!verifyUrl) {
+                        return;
+                    }
+
+                    if (value === '') {
+                        setDefaultState('Enter the CAPTCHA code first.');
+                        return;
+                    }
+
+                    verifyButton.disabled = true;
+                    refreshButton.disabled = true;
+
+                    try {
+                        const response = await fetch(verifyUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                            },
+                            body: new URLSearchParams({
+                                captcha: value,
+                                _csrf_token: csrfField.value
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok || !data.valid) {
+                            if (data.imageUrl) {
+                                image.src = data.imageUrl;
+                            }
+
+                            input.value = '';
+                            setDefaultState(data.message || 'Invalid CAPTCHA. Please try again.');
+                            return;
+                        }
+
+                        setSuccessState(data.message || 'CAPTCHA valid.');
+                    } catch (error) {
+                        setDefaultState(error instanceof Error ? error.message : 'CAPTCHA verification failed.');
+                    } finally {
+                        verifyButton.disabled = false;
+                        refreshButton.disabled = false;
+                    }
+                });
+            });
+
+            const video = document.getElementById('login-face-video');
+            const previewShell = document.getElementById('login-face-preview-shell');
+            const actionButton = document.getElementById('login-face-action');
+            const statusBox = document.getElementById('login-face-status');
+            const csrfField = document.getElementById('login-face-csrf');
+
+            if (!video || !previewShell || !actionButton || !statusBox || !csrfField) {
+                return;
+            }
+
+            let stream = null;
+            let isCapturing = false;
+
+            const setStatus = (message, isError = false) => {
+                statusBox.textContent = message;
+                statusBox.className = isError
+                    ? 'block text-center text-sm text-danger'
+                    : 'block text-center text-sm text-muted';
+            };
+
+            const stopStream = () => {
+                if (!stream) {
+                    previewShell.classList.add('hidden');
+                    return;
+                }
+
+                stream.getTracks().forEach((track) => track.stop());
+                stream = null;
+                video.srcObject = null;
+                previewShell.classList.add('hidden');
+            };
+
+            const captureFrame = () => {
+                if (!stream || video.videoWidth === 0 || video.videoHeight === 0) {
+                    throw new Error('Camera feed is not ready yet.');
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                return canvas.toDataURL('image/jpeg', 0.92);
+            };
+
+            actionButton.addEventListener('click', async () => {
+                if (!navigator.mediaDevices?.getUserMedia) {
+                    setStatus('This browser does not support camera capture.', true);
+                    return;
+                }
+
+                if (isCapturing) {
+                    return;
+                }
+
+                isCapturing = true;
+                actionButton.disabled = true;
+                actionButton.textContent = 'Opening camera...';
+                stopStream();
+
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'user',
+                            width: { ideal: 1280 },
+                            height: { ideal: 960 }
+                        },
+                        audio: false
+                    });
+
+                    previewShell.classList.remove('hidden');
+                    video.srcObject = stream;
+                    await video.play();
+                    setStatus('Camera open. Hold still for a moment...');
+                    actionButton.textContent = 'Capturing...';
+
+                    await new Promise((resolve) => window.setTimeout(resolve, 900));
+
+                    const faceCapture = captureFrame();
+                    stopStream();
+                    setStatus('Verifying your face...');
+                    actionButton.textContent = 'Verifying...';
+
+                    const response = await fetch('{{ path('app_login_face') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            image: faceCapture,
+                            csrf_token: csrfField.value
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Face ID sign in failed.');
+                    }
+
+                    setStatus(data.requires_two_factor ? 'Face verified. Redirecting to 2FA...' : 'Face verified. Redirecting now.');
+                    window.location.assign(data.redirect);
+                } catch (error) {
+                    const message = error instanceof Error ? error.message : 'Face ID sign in failed.';
+                    setStatus(message, true);
+                } finally {
+                    stopStream();
+                    isCapturing = false;
+                    actionButton.disabled = false;
+                    actionButton.textContent = 'Use Face ID';
+                }
+            });
+
+            window.addEventListener('beforeunload', stopStream);
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init, { once: true });
+            } else {
+                init();
+            }
+        })();
+    </script>
+{% endblock %}

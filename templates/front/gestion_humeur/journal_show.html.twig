@@ -1,0 +1,37 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}Journal Details{% endblock %}
+
+{% block content %}
+    <div class="page-stack">
+        {{ component('PageHeader', {
+            eyebrow: 'Mood',
+            title: 'Journal entry',
+            copy: 'Review your journal entry in detail.'
+        }) }}
+
+        <div class="button-row">
+            <a class="btn-secondary" href="{{ path('front_gestion_humeur_journal_index') }}">Back to list</a>
+            <a class="btn-primary" href="{{ path('front_gestion_humeur_journal_edit', {idJ: journal.idJ}) }}">Edit</a>
+        </div>
+
+        <div class="panel-section grid gap-4 sm:grid-cols-2">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Date creation</p>
+                <p class="mt-2 text-sm font-semibold text-ink">{{ journal.dateCreation|date('Y-m-d H:i') }}</p>
+            </div>
+            <div class="sm:col-span-2">
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Note personnelle</p>
+                <p class="mt-2 text-sm text-ink">{{ journal.notePersonnelle }}</p>
+            </div>
+        </div>
+
+        <div class="button-row">
+            {% include 'admin/gestion_humeur/journalemotionnel/_delete_form.html.twig' with {
+                delete_path: path('front_gestion_humeur_journal_delete', {idJ: journal.idJ}),
+                csrf_token: csrf_token('delete_journal_' ~ journal.idJ),
+                button_label: 'Delete journal'
+            } only %}
+        </div>
+    </div>
+{% endblock %}

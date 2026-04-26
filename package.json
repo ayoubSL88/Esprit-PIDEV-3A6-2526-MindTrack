@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./assets/styles/app.css -o ./public/build/app.css --minify",
+    "watch:css": "tailwindcss -i ./assets/styles/app.css -o ./public/build/app.css --watch"
+  },
+  "devDependencies": {
+    "@hotwired/stimulus": "^3.0.0",
+    "@symfony/stimulus-bridge": "^3.2.0 || ^4.0.0",
+    "@symfony/ux-chartjs": "file:vendor/symfony/ux-chartjs/assets",
+    "autoprefixer": "^10.4.27",
+    "chart.js": "^3.4.1 || ^4.0",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^3.4.17"
+  }
+}

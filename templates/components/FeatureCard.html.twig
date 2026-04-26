@@ -1,0 +1,14 @@
+<article class="feature-card">
+    <p class="feature-label">{{ eyebrow }}</p>
+    <h2 class="feature-title">{{ title }}</h2>
+    {% if copy is defined and copy %}
+        <p class="feature-copy">{{ copy }}</p>
+    {% endif %}
+    {% if items is defined and items %}
+        <ul class="feature-list">
+            {% for item in items %}
+                <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</article>

@@ -1,0 +1,359 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}Plans d'action{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* STYLE FRONT - CARTES MODERNES POUR PLANS D'ACTION */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+        
+        .page-header p {
+            color: #64748b;
+            margin-top: 8px;
+        }
+        
+        .filter-bar {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 32px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            border: 1px solid #f1f5f9;
+        }
+        
+        .filter-bar > div {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .filter-bar label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        
+        .filter-bar input, .filter-bar select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+        
+        .filter-bar input:focus, .filter-bar select:focus {
+            border-color: #6366f1;
+            outline: none;
+            background: white;
+        }
+        
+        /* GRILLE DE CARTES */
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        .plan-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        
+        .plan-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15);
+        }
+        
+        .plan-header {
+            padding: 20px 20px 12px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .plan-objectif {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6366f1;
+            margin-bottom: 8px;
+        }
+        
+        .plan-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+            line-height: 1.4;
+        }
+        
+        .plan-body {
+            padding: 16px 20px;
+        }
+        
+        .priority-section {
+            margin-bottom: 16px;
+        }
+        
+        .priority-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .progress-bar-bg {
+            background: #e2e8f0;
+            height: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-fill.haute { background: linear-gradient(90deg, #ef4444, #dc2626); }
+        .progress-fill.moyenne { background: linear-gradient(90deg, #f59e0b, #d97706); }
+        .progress-fill.basse { background: linear-gradient(90deg, #10b981, #059669); }
+        
+        .priority-value {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        
+        .badge-priority {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .badge-haute {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .badge-moyenne {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        
+        .badge-basse {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .plan-actions {
+            padding: 16px 20px 20px;
+            display: flex;
+            gap: 12px;
+            border-top: 1px solid #f1f5f9;
+            background: #fafcff;
+        }
+        
+        .btn-front {
+            padding: 8px 16px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-edit {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .btn-edit:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+        
+        .btn-delete {
+            background: #fef2f2;
+            color: #dc2626;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-delete:hover {
+            background: #fee2e2;
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary-front {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary-front:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99,102,241,0.3);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            background: #f8fafc;
+            border-radius: 24px;
+            color: #94a3b8;
+        }
+        
+        .inline-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        @media (max-width: 640px) {
+            .plans-grid {
+                grid-template-columns: 1fr;
+            }
+            .filter-bar {
+                flex-direction: column;
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% include 'front/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
+
+    <div style="max-width: 1280px; margin: 0 auto; padding: 20px;">
+        <section class="page-header">
+            <div>
+                <h1>📋 Liste des plans d'action</h1>
+                <p>🔍 Recherche d'étapes, tri par priorité ou statut, et filtrage du niveau de priorité.</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <a class="btn-front btn-edit" href="{{ path('front_gestion_objectifs_personnelles_index') }}">← Retour au module</a>
+                <a class="btn-primary-front" href="{{ path('front_planaction_create') }}">+ Ajouter un plan</a>
+            </div>
+        </section>
+
+        <form method="get" class="filter-bar">
+            <div>
+                <label for="plan_q">🔍 Mot-clé</label>
+                <input id="plan_q" type="text" name="q" value="{{ filters.q }}" placeholder="Étape ou objectif">
+            </div>
+            <div>
+                <label for="plan_sort">📊 Tri</label>
+                <select id="plan_sort" name="sort">
+                    {% for label, value in sort_choices %}
+                        <option value="{{ value }}" {{ filters.sort == value ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="plan_status">🏷️ Statut</label>
+                <select id="plan_status" name="status">
+                    <option value="">Tous</option>
+                    {% for label, value in status_choices %}
+                        <option value="{{ value }}" {{ filters.status == value ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="actions" style="display: flex; gap: 8px;">
+                <button class="btn-primary-front" type="submit" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; padding: 10px 20px; border-radius: 40px; color: white; cursor: pointer;">Filtrer</button>
+                <a class="btn-front btn-edit" href="{{ path('front_planaction_index') }}" style="padding: 10px 20px;">Réinitialiser</a>
+            </div>
+        </form>
+
+        <div class="plans-grid">
+            {% for plan in plans %}
+                <div class="plan-card">
+                    <div class="plan-header">
+                        <div class="plan-objectif">🎯 {{ plan.idObj.titre }}</div>
+                        <p class="plan-title">{{ plan.etape|slice(0, 80) }}{% if plan.etape|length > 80 %}...{% endif %}</p>
+                    </div>
+                    <div class="plan-body">
+                        <div class="priority-section">
+                            <div class="priority-label">
+                                <span>📊 Priorité</span>
+                                <span class="priority-value">{{ plan.priorite }}/10</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-fill 
+                                    {% if plan.priorite >= 8 %}haute
+                                    {% elseif plan.priorite >= 4 %}moyenne
+                                    {% else %}basse{% endif %}" 
+                                    style="width: {{ plan.priorite * 10 }}%">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            {% if plan.priorite >= 8 %}
+                                <span class="badge-priority badge-haute">🔴 Haute priorité</span>
+                            {% elseif plan.priorite >= 4 %}
+                                <span class="badge-priority badge-moyenne">🟠 Priorité moyenne</span>
+                            {% else %}
+                                <span class="badge-priority badge-basse">🟢 Basse priorité</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="plan-actions">
+                        <div class="inline-actions">
+                            <a class="btn-front btn-edit" href="{{ path('front_planaction_edit', {idPlan: plan.idPlan}) }}">✏️ Modifier</a>
+                            <form method="post" action="{{ path('front_planaction_delete', {idPlan: plan.idPlan}) }}" onsubmit="return confirm('Supprimer ce plan d’action ?');" style="margin: 0;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_plan_' ~ plan.idPlan) }}">
+                                <button class="btn-front btn-delete" type="submit">🗑️ Supprimer</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>📭 Aucun plan d'action trouvé.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

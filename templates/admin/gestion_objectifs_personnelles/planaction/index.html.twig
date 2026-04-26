@@ -1,0 +1,296 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}Plans d'action{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* STYLE ADMIN - TABLEAU PROFESSIONNEL */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .page-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+            color: #1e293b;
+        }
+        
+        .page-header p {
+            color: #64748b;
+            margin-top: 4px;
+            font-size: 0.85rem;
+        }
+        
+        .filter-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+        }
+        
+        .filter-bar > div {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .filter-bar label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+            margin-bottom: 6px;
+        }
+        
+        .filter-bar input, .filter-bar select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .filter-bar input:focus, .filter-bar select:focus {
+            border-color: #0d6efd;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(13,110,253,0.1);
+        }
+        
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            overflow-x: auto;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        
+        thead th {
+            background: #f8f9fa;
+            padding: 14px 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+            color: #495057;
+        }
+        
+        tbody td {
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        .badge-haute {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .badge-moyenne {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        
+        .badge-basse {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .priority-number {
+            font-weight: 700;
+            display: inline-block;
+            width: 30px;
+        }
+        
+        .btn-danger {
+            background: #dc2626;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 6px;
+            color: white;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-primary {
+            background: #0d6efd;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background: #0b5ed7;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .muted {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% include 'admin/gestion_objectifs_personnelles/_flash_messages.html.twig' %}
+
+    <div style="padding: 20px;">
+        <section class="page-header">
+            <div>
+                <h1>📋 Liste admin des plans d'action</h1>
+                <p>L'admin peut voir toutes les étapes et supprimer les enregistrements.</p>
+            </div>
+            <div style="margin-bottom: 15px; display:flex; gap:10px;">
+    <a href="{{ path('admin_planaction_export_csv') }}" class="btn btn-success">
+        📊 Export CSV
+    </a>
+
+    <a href="{{ path('admin_planaction_export_pdf') }}" class="btn btn-danger">
+        📄 Export PDF
+    </a>
+</div>
+            <a class="btn-secondary" href="{{ path('admin_gestion_objectifs_personnelles_index') }}">← Retour au module</a>
+        </section>
+
+        <form method="get" class="filter-bar">
+            <div>
+                <label for="admin_plan_q">🔍 Mot-clé</label>
+                <input id="admin_plan_q" type="text" name="q" value="{{ filters.q }}" placeholder="Étape ou objectif">
+            </div>
+            <div>
+                <label for="admin_plan_sort">📊 Tri</label>
+                <select id="admin_plan_sort" name="sort">
+                    {% for label, value in sort_choices %}
+                        <option value="{{ value }}" {{ filters.sort == value ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="admin_plan_status">🏷️ Statut</label>
+                <select id="admin_plan_status" name="status">
+                    <option value="">Tous</option>
+                    {% for label, value in status_choices %}
+                        <option value="{{ value }}" {{ filters.status == value ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="actions">
+                <button class="btn-primary" type="submit">Filtrer</button>
+                <a class="btn-secondary" href="{{ path('admin_planaction_index') }}">Réinitialiser</a>
+            </div>
+        </form>
+
+        <section class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Objectif</th>
+                        <th>Étape</th>
+                        <th>Priorité</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plan in plans %}
+                        <tr>
+                            <td>{{ plan.idPlan }}</td>
+                            <td><strong>{{ plan.idObj.titre }}</strong></td>
+                            <td>{{ plan.etape|slice(0, 60) }}{% if plan.etape|length > 60 %}...{% endif %}</td>
+                            <td>
+                                <span class="priority-number">{{ plan.priorite }}</span>
+                                <div class="progress" style="height: 4px; width: 60px; display: inline-block; margin-left: 8px;">
+                                    <div class="progress-bar" style="width: {{ plan.priorite * 10 }}%; background: {% if plan.priorite >= 8 %}#dc2626{% elseif plan.priorite >= 4 %}#f59e0b{% else %}#10b981{% endif %};"></div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if plan.priorite >= 8 %}
+                                    <span class="badge badge-haute">🔴 Haute priorité</span>
+                                {% elseif plan.priorite >= 4 %}
+                                    <span class="badge badge-moyenne">🟠 Priorité moyenne</span>
+                                {% else %}
+                                    <span class="badge badge-basse">🟢 Basse priorité</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{{ path('admin_planaction_delete', {idPlan: plan.idPlan}) }}" onsubmit="return confirm('Supprimer ce plan d’action ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_plan_' ~ plan.idPlan) }}">
+                                    <button class="btn-danger" type="submit">🗑️ Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="muted">Aucun plan d'action trouvé.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </div>
+{% endblock %}

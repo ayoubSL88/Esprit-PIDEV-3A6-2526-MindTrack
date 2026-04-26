@@ -11,16 +11,20 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/app/session')]
+//#[IsGranted('ROLE_USER')]
 final class SessionController extends AbstractController
 {
     #[Route('/start/{idEx}', name: 'front_session_start')]
     public function start(Exercice $exercice, EntityManagerInterface $em): Response
-    {
-        // Créer une nouvelle session
+    {   
+        $user = $this->getUser();
+
         $session = new Session();
         $session->setExercice($exercice);
+        $session->setUser($user);
         $session->setDateDebut(new \DateTime());
         $session->setTerminee(false);
         $session->setProgress(0);
@@ -63,7 +67,13 @@ final class SessionController extends AbstractController
     }
     
     #[Route('/finish/{idSession}', name: 'front_session_finish', methods: ['POST'])]
-    public function finish(Session $session, Request $request, EntityManagerInterface $em): JsonResponse
+    public function finish(
+        Session $session, 
+        Request $request, 
+        EntityManagerInterface $em, 
+        ProgressionRepository $progressionRepo,
+        SessionRepository $sessionRepo  // ✅ Ajout du repository ici
+    ): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         
@@ -87,6 +97,26 @@ final class SessionController extends AbstractController
         // Mettre à jour la progression à 100% si terminé
         $session->setProgress(100);
         
+        $em->flush();
+
+        // Mettre à jour ou créer la progression
+        $user = $this->getUser();
+        $progression = $progressionRepo->findOrCreateForUser($user);
+        
+        // Incrémenter les stats
+        $progression->setTotalSessions($progression->getTotalSessions() + 1);
+        $progression->setSessionsTerminees($progression->getSessionsTerminees() + 1);
+        $progression->setTempsTotal($progression->getTempsTotal() + ($session->getDureeReelle() ?? 0));
+        
+        // Récupérer les progressions des sessions
+        $userSessions = $sessionRepo->findBy(['user' => $user, 'terminee' => true]);
+        $totalProgress = array_sum(array_map(fn($s) => $s->getProgress() ?? 0, $userSessions));
+        $moyenne = count($userSessions) > 0 ? $totalProgress / count($userSessions) : 0;
+        $progression->setMoyenneScore($moyenne);
+        
+        $progression->setDerniereActivite(new \DateTime());
+        
+        $em->persist($progression);
         $em->flush();
         
         return $this->json(['success' => true, 'redirect' => $this->generateUrl('front_historique_index')]);
