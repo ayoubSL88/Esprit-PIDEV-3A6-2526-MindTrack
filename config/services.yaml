@@ -15,6 +15,8 @@ parameters:
     app.weather.longitude: 10.18
     app.weather.location_label: 'Tunis'
     app.profile_pictures_dir: '%kernel.project_dir%/public/uploads/profile-pictures'
+    app.journal_screenshot_upload_dir: 'uploads/journals/screenshots'
+    app.journal_audio_upload_dir: 'uploads/journals/audio'
 
 services:
     # default configuration for services in *this* file
@@ -79,6 +81,20 @@ services:
         arguments:
             $apiUrl: '%app.ollama.url%'
             $model: '%app.ollama.model%'
+
+    App\Service\GestionHumeur\JournalAttachmentManager:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $screenshotUploadDir: '%app.journal_screenshot_upload_dir%'
+            $audioUploadDir: '%app.journal_audio_upload_dir%'
+
+    Stfalcon\Bundle\TinymceBundle\Twig\Extension\StfalconTinymceExtension:
+        arguments:
+            $parameterBag: '@parameter_bag'
+            $twig: '@twig'
+            $packages: '@assets.packages'
+            $requestStack: '@request_stack'
+        tags: ['twig.extension']
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

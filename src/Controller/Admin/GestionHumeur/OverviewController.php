@@ -4,6 +4,8 @@ namespace App\Controller\Admin\GestionHumeur;
 
 use App\Entity\Humeur;
 use App\Entity\Journalemotionnel;
+use App\Service\GestionHumeur\HumeurAnalyticsService;
+use App\Service\GestionHumeur\JournalAttachmentManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,12 +16,13 @@ use Symfony\Component\Routing\Attribute\Route;
 final class OverviewController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager): Response
+    public function index(EntityManagerInterface $entityManager, HumeurAnalyticsService $humeurAnalyticsService): Response
     {
         $humeurs = $entityManager->getRepository(Humeur::class)->findBy([], ['date' => 'DESC', 'idH' => 'DESC']);
 
         return $this->render('admin/gestion_humeur/index.html.twig', [
             'humeurs' => $humeurs,
+            'moodAnalysis' => $humeurAnalyticsService->analyze($humeurs),
         ]);
     }
 
@@ -37,7 +40,7 @@ final class OverviewController extends AbstractController
         if ($this->isCsrfTokenValid('delete_humeur_'.$humeur->getIdH(), (string) $request->request->get('_token'))) {
             $entityManager->remove($humeur);
             $entityManager->flush();
-            $this->addFlash('success', 'Humeur deleted successfully.');
+            $this->addFlash('success', 'Mood entry deleted successfully.');
         } else {
             $this->addFlash('error', 'Invalid delete token.');
         }
@@ -65,9 +68,15 @@ final class OverviewController extends AbstractController
     }
 
     #[Route('/journal/{idJ}', name: 'journal_delete', methods: ['POST'], requirements: ['idJ' => '\d+'])]
-    public function journalDelete(Request $request, Journalemotionnel $journal, EntityManagerInterface $entityManager): Response
+    public function journalDelete(
+        Request $request,
+        Journalemotionnel $journal,
+        EntityManagerInterface $entityManager,
+        JournalAttachmentManager $journalAttachmentManager,
+    ): Response
     {
         if ($this->isCsrfTokenValid('delete_journal_'.$journal->getIdJ(), (string) $request->request->get('_token'))) {
+            $journalAttachmentManager->removeJournalAttachments($journal);
             $entityManager->remove($journal);
             $entityManager->flush();
             $this->addFlash('success', 'Journal entry deleted successfully.');

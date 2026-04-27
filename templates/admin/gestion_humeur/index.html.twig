@@ -1,12 +1,12 @@
 {% extends 'layouts/admin_base.html.twig' %}
 
-{% block page_title %}Gestion Humeur{% endblock %}
+{% block page_title %}Mood Management{% endblock %}
 
 {% block content %}
     <div class="page-stack">
         {{ component('PageHeader', {
             eyebrow: 'Administration',
-            title: 'Gestion Humeur',
+            title: 'Mood Management',
             copy: 'View and delete mood entries from the admin area.'
         }) }}
 
@@ -17,8 +17,12 @@
         {{ component('FlashStack') }}
 
         {% if humeurs is empty %}
-            <p class="text-sm text-muted">No humeur entries found yet.</p>
+            <p class="text-sm text-muted">No mood entries found yet.</p>
         {% else %}
+            {% include 'gestion_humeur/_analysis_panel.html.twig' with {
+                analysis: moodAnalysis
+            } only %}
+
             <div class="panel-section space-y-4">
                 <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-end">
                     <div class="field">
@@ -27,11 +31,11 @@
                             id="admin-humeur-search"
                             class="field-input"
                             type="search"
-                            placeholder="Search by ID or humeur type..."
+                            placeholder="Search by ID or mood type..."
                             data-search-target="admin-humeur-table"
                             data-empty-target="admin-humeur-empty"
                         >
-                        <p class="text-xs text-muted">Search dynamically by humeur ID or humeur type.</p>
+                        <p class="text-xs text-muted">Search dynamically by mood ID or mood type.</p>
                     </div>
                     <div class="field">
                         <label class="field-label" for="admin-humeur-sort">Sort by date</label>
@@ -64,17 +68,17 @@
                             <tr>
                                 <th class="table-th">ID</th>
                                 <th class="table-th">Date</th>
-                                <th class="table-th">Type humeur</th>
-                                <th class="table-th">Intensite</th>
+                                <th class="table-th">Mood type</th>
+                                <th class="table-th">Intensity</th>
                                 <th class="table-th">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="admin-humeur-table">
                             {% for humeur in humeurs %}
-                                <tr data-search-value="{{ humeur.idH }} {{ humeur.typeHumeur|lower }}" data-date-value="{{ humeur.date|date('Y-m-d') }}" data-intensity-value="{{ humeur.intensite }}">
+                                <tr data-search-value="{{ humeur.idH }} {{ humeur.moodLabel|lower }}" data-date-value="{{ humeur.date|date('Y-m-d') }}" data-intensity-value="{{ humeur.intensite }}">
                                     <td class="table-td">{{ humeur.idH }}</td>
                                     <td class="table-td">{{ humeur.date|date('Y-m-d') }}</td>
-                                    <td class="table-td">{{ humeur.typeHumeur }}</td>
+                                    <td class="table-td">{{ humeur.moodLabel }}</td>
                                     <td class="table-td">{{ humeur.intensite }}/10</td>
                                     <td class="table-td">
                                         <div class="button-row">
@@ -93,7 +97,7 @@
                 </div>
             </div>
 
-            <p id="admin-humeur-empty" class="mt-4 text-sm text-muted hidden">No humeur matches your search.</p>
+            <p id="admin-humeur-empty" class="mt-4 text-sm text-muted hidden">No mood entry matches your search.</p>
         {% endif %}
     </div>
 

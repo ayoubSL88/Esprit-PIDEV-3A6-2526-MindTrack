@@ -15,24 +15,30 @@
         "endroid/qr-code-bundle": "^5.0",
         "knplabs/knp-paginator-bundle": "^6.10",
         "phpoffice/phpspreadsheet": "^5.6",
+        "stfalcon/tinymce-bundle": "3.3",
         "stof/doctrine-extensions-bundle": "^1.15",
         "symfony/asset": "6.4.*",
+        "symfony/asset-mapper": "6.4.*",
         "symfony/console": "6.4.*",
         "symfony/dotenv": "6.4.*",
         "symfony/finder": "6.4.*",
         "symfony/flex": "^2",
         "symfony/form": "6.4.*",
         "symfony/framework-bundle": "6.4.*",
+        "symfony/html-sanitizer": "6.4.*",
         "symfony/http-client": "6.4.*",
         "symfony/mailer": "6.4.*",
         "symfony/mercure-bundle": "^0.4.2",
+        "symfony/mime": "6.4.*",
         "symfony/runtime": "6.4.*",
         "symfony/security-bundle": "6.4.*",
         "symfony/stimulus-bundle": "^2.35",
         "symfony/translation": "6.4.*",
         "symfony/ux-chartjs": "^2.35",
+        "symfony/ux-dropzone": "^2.28",
         "symfony/ux-twig-component": "^2.34",
         "symfony/validator": "6.4.*",
+        "symfony/webapp-meta": "^1.0",
         "symfony/yaml": "6.4.*",
         "twig/extra-bundle": "^3.24",
         "twig/twig": "^3.24",
@@ -69,7 +75,8 @@
     "scripts": {
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
-            "assets:install %PUBLIC_DIR%": "symfony-cmd"
+            "assets:install %PUBLIC_DIR%": "symfony-cmd",
+            "importmap:install": "symfony-cmd"
         },
         "post-install-cmd": [
             "@auto-scripts"

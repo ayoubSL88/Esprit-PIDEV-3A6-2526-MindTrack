@@ -1,12 +1,12 @@
 {% extends 'layouts/admin_base.html.twig' %}
 
-{% block page_title %}Edit Humeur{% endblock %}
+{% block page_title %}Edit Mood{% endblock %}
 
 {% block content %}
     <div class="page-stack">
         {{ component('PageHeader', {
             eyebrow: 'Administration',
-            title: 'Edit humeur #' ~ humeur.idH,
+            title: 'Edit mood #' ~ humeur.idH,
             copy: 'Update the selected mood entry.'
         }) }}
 

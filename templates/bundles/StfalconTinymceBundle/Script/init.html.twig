@@ -1,0 +1,22 @@
+{%- if include_jquery -%}
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+{%- endif -%}
+
+{%- set tinymce_base = app.request.basePath ~ '/' ~ (base_url|default('')) ~ 'bundles/stfalcontinymce/' -%}
+{%- set tinymce_base = tinymce_base|replace({'//': '/'}) -%}
+
+{%- if tinymce_jquery -%}
+    <script type="text/javascript" src="{{ tinymce_base }}vendor/tinymce/jquery.tinymce.min.js"></script>
+    <script type="text/javascript" src="{{ tinymce_base }}js/init.jquery.js"></script>
+{%- else -%}
+    <script type="text/javascript" src="{{ tinymce_base }}vendor/tinymce/tinymce.min.js"></script>
+    <script type="text/javascript" src="{{ tinymce_base }}js/ready.min.js"></script>
+    <script type="text/javascript" src="{{ tinymce_base }}js/init.standard.js"></script>
+{%- endif -%}
+
+<script type="text/javascript">
+    //<![CDATA[
+    stfalcon_tinymce_config = {{ tinymce_config|raw }};
+    initTinyMCE();
+    //]]>
+</script>

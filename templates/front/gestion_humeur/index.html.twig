@@ -1,17 +1,18 @@
 {% extends 'layouts/front_base.html.twig' %}
 
-{% block page_title %}Mon Humeur{% endblock %}
+{% block page_title %}My Mood{% endblock %}
 
 {% block content %}
     <div class="page-stack">
         {{ component('PageHeader', {
             eyebrow: 'Mood',
-            title: 'My humeur journal',
+            title: 'My mood journal',
             copy: 'Track and review your mood entries in one place.'
         }) }}
 
         <div class="button-row">
             <a class="btn-secondary" href="{{ path('front_gestion_humeur_journal_index') }}">Open journal</a>
+            <a class="btn-secondary" href="{{ path('front_gestion_humeur_detect') }}">Detect with camera</a>
             <a class="btn-primary" href="{{ path('front_gestion_humeur_new') }}">Add entry</a>
         </div>
 
@@ -20,6 +21,10 @@
         {% if humeurs is empty %}
             <p class="text-sm text-muted">No mood entries found yet.</p>
         {% else %}
+            {% include 'gestion_humeur/_analysis_panel.html.twig' with {
+                analysis: moodAnalysis
+            } only %}
+
             <div class="panel-section space-y-4">
                 <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-end">
                     <div class="field">
@@ -28,7 +33,7 @@
                             id="humeur-search"
                             class="field-input"
                             type="search"
-                            placeholder="Search by humeur type..."
+                            placeholder="Search by mood type..."
                             data-search-target="front-humeur-table"
                             data-empty-target="front-humeur-empty"
                         >
@@ -64,21 +69,26 @@
                         <thead class="table-head">
                             <tr>
                                 <th class="table-th">Date</th>
-                                <th class="table-th">Type humeur</th>
-                                <th class="table-th">Intensite</th>
+                                <th class="table-th">Mood type</th>
+                                <th class="table-th">Intensity</th>
                                 <th class="table-th">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="front-humeur-table">
                             {% for humeur in humeurs %}
-                                <tr data-search-value="{{ humeur.typeHumeur|lower }}" data-date-value="{{ humeur.date|date('Y-m-d') }}" data-intensity-value="{{ humeur.intensite }}">
+                                {% set canEdit = humeur.idH in editableMoodIds %}
+                                <tr data-search-value="{{ humeur.moodLabel|lower }}" data-date-value="{{ humeur.date|date('Y-m-d') }}" data-intensity-value="{{ humeur.intensite }}">
                                     <td class="table-td">{{ humeur.date|date('Y-m-d') }}</td>
-                                    <td class="table-td">{{ humeur.typeHumeur }}</td>
+                                    <td class="table-td">{{ humeur.moodLabel }}</td>
                                     <td class="table-td">{{ humeur.intensite }}/10</td>
                                     <td class="table-td">
                                         <div class="button-row">
                                             <a class="btn-secondary px-4 py-2" href="{{ path('front_gestion_humeur_show', {idH: humeur.idH}) }}">View</a>
-                                            <a class="btn-secondary px-4 py-2" href="{{ path('front_gestion_humeur_edit', {idH: humeur.idH}) }}">Edit</a>
+                                            {% if canEdit %}
+                                                <a class="btn-secondary px-4 py-2" href="{{ path('front_gestion_humeur_edit', {idH: humeur.idH}) }}">Edit</a>
+                                            {% else %}
+                                                <span class="px-3 py-1 text-xs font-semibold text-muted">Locked after 1 day</span>
+                                            {% endif %}
                                             {% include 'admin/gestion_humeur/humeur/_delete_form.html.twig' with {
                                                 delete_path: path('front_gestion_humeur_delete', {idH: humeur.idH}),
                                                 csrf_token: csrf_token('delete_humeur_' ~ humeur.idH),
@@ -93,7 +103,7 @@
                 </div>
             </div>
 
-            <p id="front-humeur-empty" class="mt-4 text-sm text-muted hidden">No humeur matches your search.</p>
+            <p id="front-humeur-empty" class="mt-4 text-sm text-muted hidden">No mood entry matches your search.</p>
         {% endif %}
     </div>
 

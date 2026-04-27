@@ -1,0 +1,28 @@
+framework:
+    html_sanitizer:
+        sanitizers:
+            journal_note:
+                allow_safe_elements: true
+                allow_elements:
+                    p: '*'
+                    br: '*'
+                    h2: '*'
+                    h3: '*'
+                    blockquote: '*'
+                    ul: '*'
+                    ol: '*'
+                    li: '*'
+                    strong: '*'
+                    em: '*'
+                    u: '*'
+                    a: ['href', 'title', 'target', 'rel']
+                    table: '*'
+                    thead: '*'
+                    tbody: '*'
+                    tr: '*'
+                    td: ['colspan', 'rowspan']
+                    th: ['colspan', 'rowspan', 'scope']
+                allow_relative_links: true
+                force_https_urls: false
+                allowed_link_schemes: ['http', 'https', 'mailto', 'tel']
+                max_input_length: 20000

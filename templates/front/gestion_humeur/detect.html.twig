@@ -1,0 +1,273 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}Camera Mood Detection{% endblock %}
+
+{% block content %}
+    <div
+        class="page-stack"
+        data-detect-root
+        data-detect-endpoint="{{ path('front_gestion_humeur_detect_check') }}"
+        data-detect-token="{{ csrf_token('detect_mood') }}"
+    >
+        {{ component('PageHeader', {
+            eyebrow: 'Mood',
+            title: 'Camera mood detection',
+            copy: 'Open your camera, check your current mood, and save the detected result as a new mood entry.'
+        }) }}
+
+        {{ component('FlashStack') }}
+
+        <div class="button-row">
+            <a class="btn-secondary" href="{{ path('front_gestion_humeur_index') }}">Back to mood list</a>
+            <a class="btn-secondary" href="{{ path('front_gestion_humeur_new') }}">Add manually instead</a>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+            <section class="panel-section space-y-4">
+                <div class="space-y-2">
+                    <p class="panel-title">Live camera</p>
+                    <p class="panel-copy">Good lighting and a centered face usually lead to a better result.</p>
+                </div>
+
+                <div class="overflow-hidden rounded-[1.75rem] border border-border bg-ink/5 p-3 shadow-soft">
+                    <video id="mood-camera-video" class="aspect-[4/3] w-full rounded-[1.25rem] bg-black object-cover" autoplay playsinline muted></video>
+                    <canvas id="mood-camera-canvas" class="hidden"></canvas>
+                </div>
+
+                <div class="button-row">
+                    <button id="mood-camera-start" class="btn-secondary" type="button">Start camera</button>
+                    <button id="mood-camera-check" class="btn-primary" type="button" disabled>Check mood</button>
+                    <button id="mood-camera-stop" class="btn-secondary" type="button" disabled>Stop camera</button>
+                </div>
+
+                <p id="mood-camera-status" class="text-sm text-muted">
+                    Requesting camera access...
+                </p>
+            </section>
+
+            <div class="space-y-4">
+                <section class="panel-section space-y-3">
+                    <div>
+                        <p class="panel-title">How it works</p>
+                        <p class="panel-copy">The browser opens your PC camera, captures a short burst of frames, and sends them to a Python OpenCV detector inside the mood module for a more stable result.</p>
+                    </div>
+                    <div class="space-y-2 text-sm text-muted">
+                        <p>1. Allow camera access.</p>
+                        <p>2. Keep your face centered in the frame.</p>
+                        <p>3. Click <strong class="text-ink">Check mood</strong>.</p>
+                        <p>4. A few quick frames are analyzed, then the detected mood and intensity are saved automatically.</p>
+                    </div>
+                </section>
+
+                <section id="mood-detection-result" class="panel-section space-y-4 hidden">
+                    <div>
+                        <p class="panel-title">Latest detection</p>
+                        <p id="mood-detection-message" class="panel-copy">Your mood was detected and saved.</p>
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <article class="rounded-2xl border border-border bg-white/80 p-4 shadow-soft">
+                            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Mood type</p>
+                            <p id="mood-detection-label" class="mt-2 text-lg font-semibold text-ink">Not analyzed yet</p>
+                        </article>
+                        <article class="rounded-2xl border border-border bg-white/80 p-4 shadow-soft">
+                            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Intensity</p>
+                            <p id="mood-detection-intensity" class="mt-2 text-lg font-semibold text-ink">-</p>
+                        </article>
+                    </div>
+
+                    <article class="rounded-2xl border border-border bg-white/80 p-4 shadow-soft">
+                        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Detector summary</p>
+                        <p id="mood-detection-summary" class="mt-2 text-sm text-muted">Waiting for analysis.</p>
+                        <p id="mood-detection-confidence" class="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted"></p>
+                        <p id="mood-detection-frames" class="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted"></p>
+                    </article>
+
+                    <div class="button-row">
+                        <a id="mood-detection-link" class="btn-secondary hidden" href="#">Open saved entry</a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            const root = document.querySelector('[data-detect-root]');
+            if (!root) {
+                return;
+            }
+
+            const endpoint = root.dataset.detectEndpoint;
+            const token = root.dataset.detectToken;
+            const video = document.getElementById('mood-camera-video');
+            const canvas = document.getElementById('mood-camera-canvas');
+            const startButton = document.getElementById('mood-camera-start');
+            const checkButton = document.getElementById('mood-camera-check');
+            const stopButton = document.getElementById('mood-camera-stop');
+            const status = document.getElementById('mood-camera-status');
+            const resultCard = document.getElementById('mood-detection-result');
+            const resultMessage = document.getElementById('mood-detection-message');
+            const resultLabel = document.getElementById('mood-detection-label');
+            const resultIntensity = document.getElementById('mood-detection-intensity');
+            const resultSummary = document.getElementById('mood-detection-summary');
+            const resultConfidence = document.getElementById('mood-detection-confidence');
+            const resultFrames = document.getElementById('mood-detection-frames');
+            const resultLink = document.getElementById('mood-detection-link');
+
+            if (!video || !canvas || !startButton || !checkButton || !stopButton || !status || !resultCard || !resultMessage || !resultLabel || !resultIntensity || !resultSummary || !resultConfidence || !resultFrames || !resultLink) {
+                return;
+            }
+
+            let stream = null;
+            const burstFrameCount = 7;
+            const burstDelayMs = 180;
+
+            const setStatus = (message, tone = 'muted') => {
+                status.textContent = message;
+                status.className = tone === 'error'
+                    ? 'text-sm text-emphasis'
+                    : (tone === 'success' ? 'text-sm text-success' : 'text-sm text-muted');
+            };
+
+            const setButtonsForStream = (active) => {
+                checkButton.disabled = !active;
+                stopButton.disabled = !active;
+            };
+
+            const stopCamera = () => {
+                if (stream) {
+                    stream.getTracks().forEach((track) => track.stop());
+                    stream = null;
+                }
+
+                video.srcObject = null;
+                setButtonsForStream(false);
+            };
+
+            const startCamera = async () => {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    setStatus('Your browser does not support camera access for this page.', 'error');
+                    return;
+                }
+
+                if (stream) {
+                    setStatus('Camera already running. Center your face and click Check mood.');
+                    return;
+                }
+
+                startButton.disabled = true;
+                setStatus('Requesting camera access...');
+
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: 'user',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 },
+                            frameRate: { ideal: 24, max: 30 }
+                        },
+                        audio: false
+                    });
+
+                    video.srcObject = stream;
+                    await video.play();
+                    setButtonsForStream(true);
+                    setStatus('Camera ready. Keep your face centered and click Check mood.', 'success');
+                } catch (error) {
+                    setStatus('Camera access was denied or is not available on this device.', 'error');
+                } finally {
+                    startButton.disabled = false;
+                }
+            };
+
+            const showResult = (data) => {
+                resultCard.classList.remove('hidden');
+                resultMessage.textContent = data.message || 'Mood detected and saved successfully.';
+                resultLabel.textContent = data.mood.label;
+                resultIntensity.textContent = `${data.mood.intensity}/10`;
+                resultSummary.textContent = data.mood.summary;
+                resultConfidence.textContent = `Detector confidence: ${Math.round((data.mood.confidence || 0) * 100)}%`;
+                resultFrames.textContent = data.mood.framesAnalyzed
+                    ? `Usable frames analyzed: ${data.mood.framesAnalyzed}`
+                    : '';
+
+                if (data.entry && data.entry.showUrl) {
+                    resultLink.href = data.entry.showUrl;
+                    resultLink.classList.remove('hidden');
+                }
+            };
+
+            const pause = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+            const captureBurstFrames = async () => {
+                const context = canvas.getContext('2d');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                const frames = [];
+                for (let index = 0; index < burstFrameCount; index += 1) {
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    frames.push(canvas.toDataURL('image/jpeg', 0.95));
+
+                    if (index < burstFrameCount - 1) {
+                        await pause(burstDelayMs);
+                    }
+                }
+
+                return frames;
+            };
+
+            const analyzeCurrentFrame = async () => {
+                if (!stream || video.videoWidth === 0 || video.videoHeight === 0) {
+                    setStatus('Start the camera before checking your mood.', 'error');
+                    return;
+                }
+
+                checkButton.disabled = true;
+                startButton.disabled = true;
+                setStatus('Capturing a short burst of frames for a more stable analysis...');
+
+                try {
+                    const frames = await captureBurstFrames();
+
+                    setStatus('Analyzing the captured frames...');
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            images: frames,
+                            _token: token
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.message || 'The detector could not analyze the current frame.');
+                    }
+
+                    showResult(data);
+                    setStatus('Mood detected and saved. You can check again at any time.', 'success');
+                } catch (error) {
+                    setStatus(error.message || 'The detector could not analyze the current frame.', 'error');
+                } finally {
+                    checkButton.disabled = !stream;
+                    startButton.disabled = false;
+                }
+            };
+
+            startButton.addEventListener('click', startCamera);
+            checkButton.addEventListener('click', analyzeCurrentFrame);
+            stopButton.addEventListener('click', () => {
+                stopCamera();
+                setStatus('Camera stopped. Start it again when you want to detect your mood.');
+            });
+
+            window.addEventListener('beforeunload', stopCamera);
+            startCamera();
+        })();
+    </script>
+{% endblock %}

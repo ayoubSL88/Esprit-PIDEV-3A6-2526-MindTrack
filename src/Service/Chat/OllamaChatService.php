@@ -7,12 +7,14 @@ namespace App\Service\Chat;
 use App\Entity\Habitude;
 use App\Entity\Rappel_habitude;
 use App\Entity\Suivihabitude;
+use Psr\Log\LoggerInterface;
 
 final class OllamaChatService
 {
     public function __construct(
-        private readonly string $apiUrl,
-        private readonly string $model,
+        private readonly ?string $apiUrl,
+        private readonly ?string $model,
+        private readonly ?LoggerInterface $logger = null,
     ) {
     }
 
@@ -32,8 +34,17 @@ final class OllamaChatService
         string $fallbackReply,
         array $fallbackHighlights = [],
     ): ?array {
+        if ($this->isDisabled()) {
+            return null;
+        }
+
+        $model = $this->resolveModel();
+        if ($model === null) {
+            return null;
+        }
+
         $payload = [
-            'model' => $this->model,
+            'model' => $model,
             'stream' => false,
             'messages' => [
                 [
@@ -50,7 +61,7 @@ final class OllamaChatService
             ],
         ];
 
-        $response = $this->request($payload);
+        $response = $this->requestWithModelFallback($payload);
         if ($response === null) {
             return null;
         }
@@ -69,8 +80,17 @@ final class OllamaChatService
 
     public function generateGenericReply(string $message): ?string
     {
+        if ($this->isDisabled()) {
+            return null;
+        }
+
+        $model = $this->resolveModel();
+        if ($model === null) {
+            return null;
+        }
+
         $payload = [
-            'model' => $this->model,
+            'model' => $model,
             'stream' => false,
             'messages' => [
                 [
@@ -87,10 +107,28 @@ final class OllamaChatService
             ],
         ];
 
-        $response = $this->request($payload);
+        $response = $this->requestWithModelFallback($payload);
         $reply = trim((string) ($response['message']['content'] ?? ''));
 
         return $reply !== '' ? $reply : null;
+    }
+
+    private function requestWithModelFallback(array $payload): ?array
+    {
+        $response = $this->request($payload);
+        if ($response !== null) {
+            return $response;
+        }
+
+        // If the configured model isn't present locally, retry once with the first installed model.
+        $fallbackModel = $this->discoverModelFromTags();
+        if ($fallbackModel === null || ($payload['model'] ?? null) === $fallbackModel) {
+            return null;
+        }
+
+        $payload['model'] = $fallbackModel;
+
+        return $this->request($payload);
     }
 
     private function buildSystemPrompt(): string
@@ -179,6 +217,10 @@ PROMPT;
 
     private function request(array $payload): ?array
     {
+        if ($this->isDisabled()) {
+            return null;
+        }
+
         $content = json_encode($payload, JSON_UNESCAPED_UNICODE);
         if ($content === false) {
             return null;
@@ -189,18 +231,30 @@ PROMPT;
                 'method' => 'POST',
                 'header' => "Content-Type: application/json\r\nAccept: application/json\r\n",
                 'content' => $content,
-                'timeout' => 45,
+                'timeout' => 8,
                 'ignore_errors' => true,
             ],
         ]);
 
-        $rawResponse = @file_get_contents($this->apiUrl, false, $context);
+        $url = $this->resolveChatUrl();
+        $rawResponse = $url !== null ? @file_get_contents($url, false, $context) : false;
         if ($rawResponse === false) {
+            $this->logger?->warning('Ollama request failed (no response).', [
+                'url' => $url,
+                'model' => (string) ($payload['model'] ?? ''),
+                'error' => error_get_last()['message'] ?? null,
+            ]);
             return null;
         }
 
         $statusCode = $this->extractStatusCode($http_response_header ?? []);
         if ($statusCode < 200 || $statusCode >= 300) {
+            $this->logger?->warning('Ollama request failed (non-2xx).', [
+                'url' => $url,
+                'status' => $statusCode,
+                'model' => (string) ($payload['model'] ?? ''),
+                'body_preview' => mb_substr((string) $rawResponse, 0, 200),
+            ]);
             return null;
         }
 
@@ -221,6 +275,76 @@ PROMPT;
         }
 
         return 0;
+    }
+
+    private function isDisabled(): bool
+    {
+        return $this->resolveChatUrl() === null;
+    }
+
+    private function resolveChatUrl(): ?string
+    {
+        $raw = $this->apiUrl !== null ? trim($this->apiUrl) : '';
+        if ($raw === '') {
+            return null;
+        }
+
+        // Accept full URL (`http://127.0.0.1:11434/api/chat`) or base URL (`http://127.0.0.1:11434`).
+        if (str_contains($raw, '/api/')) {
+            return $raw;
+        }
+
+        return rtrim($raw, '/') . '/api/chat';
+    }
+
+    private function resolveModel(): ?string
+    {
+        $model = $this->model !== null ? trim($this->model) : '';
+        if ($model !== '') {
+            return $model;
+        }
+
+        return $this->discoverModelFromTags();
+    }
+
+    private function discoverModelFromTags(): ?string
+    {
+        $chatUrl = $this->resolveChatUrl();
+        if ($chatUrl === null) {
+            return null;
+        }
+
+        $apiPos = strpos($chatUrl, '/api/');
+        $baseUrl = $apiPos !== false ? substr($chatUrl, 0, $apiPos) : rtrim($chatUrl, '/');
+        $tagsUrl = rtrim($baseUrl, '/') . '/api/tags';
+
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'header' => "Accept: application/json\r\n",
+                'timeout' => 2,
+                'ignore_errors' => true,
+            ],
+        ]);
+
+        $rawResponse = @file_get_contents($tagsUrl, false, $context);
+        if ($rawResponse === false) {
+            return null;
+        }
+
+        $decoded = json_decode($rawResponse, true);
+        if (!is_array($decoded)) {
+            return null;
+        }
+
+        $models = $decoded['models'] ?? null;
+        if (!is_array($models) || $models === []) {
+            return null;
+        }
+
+        $first = $models[0]['name'] ?? null;
+
+        return is_string($first) && trim($first) !== '' ? trim($first) : null;
     }
 
     /**

@@ -334,12 +334,26 @@
         try {
             const res = await fetch(cfg.apiUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
                 body: JSON.stringify({ message: text }),
             });
 
-            const data = await res.json();
+            // Be defensive: if we get HTML (login redirect page) or empty body, don't crash.
+            const contentType = res.headers.get('content-type') || '';
+            const rawBody = await res.text();
+            const data = contentType.includes('application/json') && rawBody.trim() !== ''
+                ? JSON.parse(rawBody)
+                : {};
             removeTyping();
+
+            if (res.status === 401) {
+                addMessage('bot', 'Connecte-toi pour obtenir des conseils relies a tes habitudes.', 'warning');
+                return;
+            }
 
             addMessage('bot', data.reply || cfg.errMsg, res.ok ? 'default' : 'warning');
 

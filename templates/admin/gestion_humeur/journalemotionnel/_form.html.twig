@@ -1,9 +1,11 @@
 {% set formSubmitted = form.vars.submitted %}
+{% set journal = form.vars.data %}
 
 {{ form_start(form, { attr: { class: 'form-stack max-w-3xl', novalidate: 'novalidate' } }) }}
     {% if formSubmitted and not form.vars.valid %}
         <div class="flash flash-error">
             Please fix the errors below before saving your journal.
+            {{ form_errors(form) }}
         </div>
     {% endif %}
 
@@ -11,7 +13,7 @@
         {{ form_label(form.notePersonnelle, null, { label_attr: { class: 'field-label' } }) }}
         {{ form_widget(form.notePersonnelle, {
             attr: {
-                class: 'field-input ' ~ (formSubmitted ? (form.notePersonnelle.vars.valid ? 'field-input-valid' : 'field-input-invalid') : '')
+                class: ((form.notePersonnelle.vars.attr.class|default('')) ~ ' field-input ' ~ (formSubmitted ? (form.notePersonnelle.vars.valid ? 'field-input-valid' : 'field-input-invalid') : ''))|trim
             }
         }) }}
         <div class="text-xs text-muted">
@@ -19,6 +21,59 @@
         </div>
         {% if formSubmitted and form.notePersonnelle.vars.errors|length %}
             <div class="field-error">{{ form_errors(form.notePersonnelle) }}</div>
+        {% endif %}
+    </div>
+
+    <div class="field">
+        {{ form_label(form.screenshotFile, null, { label_attr: { class: 'field-label' } }) }}
+        {% if journal.screenshotPath %}
+            <div class="panel-section mb-3 space-y-3">
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Current screenshot</p>
+                <img
+                    src="{{ asset(journal.screenshotPath) }}"
+                    alt="Journal screenshot"
+                    class="max-h-64 w-full rounded-2xl object-cover"
+                >
+                <div class="field-checkbox">
+                    {{ form_widget(form.removeScreenshot) }}
+                    {{ form_label(form.removeScreenshot) }}
+                </div>
+            </div>
+        {% else %}
+            <div class="hidden">{{ form_widget(form.removeScreenshot) }}</div>
+        {% endif %}
+        {{ form_widget(form.screenshotFile) }}
+        <div class="text-xs text-muted">
+            {{ form_help(form.screenshotFile) }}
+        </div>
+        {% if formSubmitted and form.screenshotFile.vars.errors|length %}
+            <div class="field-error">{{ form_errors(form.screenshotFile) }}</div>
+        {% endif %}
+    </div>
+
+    <div class="field">
+        {{ form_label(form.audioFile, null, { label_attr: { class: 'field-label' } }) }}
+        {% if journal.audioPath %}
+            <div class="panel-section mb-3 space-y-3">
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Current audio note</p>
+                <audio class="w-full" controls preload="metadata">
+                    <source src="{{ asset(journal.audioPath) }}">
+                    Your browser does not support audio playback.
+                </audio>
+                <div class="field-checkbox">
+                    {{ form_widget(form.removeAudio) }}
+                    {{ form_label(form.removeAudio) }}
+                </div>
+            </div>
+        {% else %}
+            <div class="hidden">{{ form_widget(form.removeAudio) }}</div>
+        {% endif %}
+        {{ form_widget(form.audioFile) }}
+        <div class="text-xs text-muted">
+            {{ form_help(form.audioFile) }}
+        </div>
+        {% if formSubmitted and form.audioFile.vars.errors|length %}
+            <div class="field-error">{{ form_errors(form.audioFile) }}</div>
         {% endif %}
     </div>
 

@@ -2,6 +2,11 @@
 
 {% block page_title %}New Journal{% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    {{ tinymce_init() }}
+{% endblock %}
+
 {% block content %}
     <div class="page-stack">
         {{ component('PageHeader', {

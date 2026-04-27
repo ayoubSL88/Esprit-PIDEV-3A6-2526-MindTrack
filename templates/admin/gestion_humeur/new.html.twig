@@ -1,12 +1,12 @@
 {% extends 'layouts/admin_base.html.twig' %}
 
-{% block page_title %}New Humeur{% endblock %}
+{% block page_title %}New Mood{% endblock %}
 
 {% block content %}
     <div class="page-stack">
         {{ component('PageHeader', {
             eyebrow: 'Administration',
-            title: 'Create humeur',
+            title: 'Create mood',
             copy: 'Add a new mood entry to the system.'
         }) }}
 
@@ -14,7 +14,7 @@
 
         {% include 'admin/gestion_humeur/humeur/_form.html.twig' with {
             form: form,
-            button_label: 'Create humeur'
+            button_label: 'Create mood'
         } only %}
 
         <div class="button-row">
