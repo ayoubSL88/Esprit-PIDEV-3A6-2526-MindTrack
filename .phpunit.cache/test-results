@@ -1,1 +1,1 @@
-{"version":2,"defects":[],"times":{"App\\Tests\\Service\\Chat\\OllamaChatServiceTest::testGenerateHabitReplyReturnsNullWhenServiceIsUnavailable":2.099}}
+{"version":2,"defects":[],"times":{"App\\Tests\\Service\\Chat\\OllamaChatServiceTest::testGenerateHabitReplyReturnsNullWhenServiceIsUnavailable":0.028,"App\\Tests\\Service\\Chat\\OllamaChatServiceTest::testGenerateHabitReplyFallsBackToInstalledModel":0.001,"App\\Tests\\Service\\Chat\\OllamaChatServiceTest::testGetStatusReturnsResolvedModelAndInstalledModels":0.001}}

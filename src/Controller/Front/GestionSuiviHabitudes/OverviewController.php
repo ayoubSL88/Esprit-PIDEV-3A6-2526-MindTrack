@@ -248,7 +248,16 @@ final class OverviewController extends AbstractController
             $fallbackReply['highlights']
         );
 
-        return new JsonResponse($ollamaReply ?? ($fallbackReply + ['source' => 'fallback']));
+        return new JsonResponse($ollamaReply ?? ($fallbackReply + [
+            'source' => 'fallback',
+            'debug' => 'Ollama indisponible, trop lent, ou reponse vide.',
+        ]));
+    }
+
+    #[Route('/chatbot/status', name: 'chatbot_status', methods: ['GET'])]
+    public function chatbotStatus(OllamaChatService $ollamaChatService): JsonResponse
+    {
+        return new JsonResponse($ollamaChatService->getStatus());
     }
 
     #[Route('/habitude/new', name: 'habitude_new', methods: ['GET', 'POST'])]

@@ -1,6 +1,10 @@
 {# templates/components/chatbot_bubble.html.twig #}
 
-<div id="mindbot-chat" data-chat-url="{{ path('front_gestion_suivi_habitudes_chatbot_respond') }}">
+<div
+    id="mindbot-chat"
+    data-chat-url="{{ path('front_gestion_suivi_habitudes_chatbot_respond') }}"
+    data-status-url="{{ path('front_gestion_suivi_habitudes_chatbot_status') }}"
+>
     <button
         id="chat-toggle"
         type="button"
@@ -203,6 +207,7 @@
 
     const cfg = {
         apiUrl: root.dataset.chatUrl,
+        statusUrl: root.dataset.statusUrl,
         welcome: "Bonjour ! Je suis MindBot. Comment puis-je t'aider dans ton suivi d'habitudes aujourd'hui ?",
         errMsg: "Impossible de contacter MindBot pour le moment.",
     };
@@ -295,11 +300,13 @@
         document.getElementById('mindbot-typing')?.remove();
     };
 
-    const setStatus = online => {
+    const setStatus = (online, label = null) => {
         el.statusDot.style.background = online ? '#22c55e' : '#6b7280';
-        el.statusText.innerHTML = online
-            ? '<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#22c55e;margin-right:4px;"></span>En ligne - Ollama'
-            : 'Propulse par Ollama';
+        el.statusText.innerHTML = label || (
+            online
+                ? '<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#22c55e;margin-right:4px;"></span>En ligne - Ollama'
+                : 'Ollama indisponible'
+        );
     };
 
     const autoResize = () => {
@@ -328,7 +335,7 @@
         autoResize();
         isSending = true;
         el.send.disabled = true;
-        setStatus(true);
+        setStatus(true, '<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#22c55e;margin-right:4px;"></span>Generation en cours...');
         showTyping();
 
         try {
@@ -360,14 +367,57 @@
             (data.highlights || []).forEach(item => {
                 addMessage('bot', `- ${item}`, res.ok ? 'default' : 'warning');
             });
+
+            if (data.source === 'fallback') {
+                setStatus(false, 'Mode secours local');
+            } else if (data.source === 'ollama') {
+                const modelLabel = data.model ? `Ollama - ${escapeHtml(data.model)}` : 'En ligne - Ollama';
+                setStatus(true, `<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#22c55e;margin-right:4px;"></span>${modelLabel}`);
+            } else {
+                setStatus(false);
+            }
         } catch (error) {
             removeTyping();
             addMessage('bot', cfg.errMsg, 'warning');
+            setStatus(false, 'Ollama indisponible');
             console.error('[MindBot]', error);
         } finally {
             isSending = false;
             el.send.disabled = false;
-            setStatus(false);
+        }
+    };
+
+    const refreshStatus = async () => {
+        if (!cfg.statusUrl) {
+            return;
+        }
+
+        try {
+            const res = await fetch(cfg.statusUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            const contentType = res.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                setStatus(false, 'Ollama indisponible');
+                return;
+            }
+
+            const data = await res.json();
+            if (!res.ok || !data.online) {
+                setStatus(false, 'Ollama indisponible');
+                return;
+            }
+
+            const modelLabel = data.resolvedModel || data.configuredModel || 'Ollama';
+            setStatus(true, `<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#22c55e;margin-right:4px;"></span>En ligne - ${escapeHtml(modelLabel)}`);
+        } catch (error) {
+            setStatus(false, 'Ollama indisponible');
+            console.error('[MindBot status]', error);
         }
     };
 
@@ -416,5 +466,6 @@
     });
 
     clearChat();
+    refreshStatus();
 })();
 </script>
