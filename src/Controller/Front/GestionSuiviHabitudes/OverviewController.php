@@ -2,6 +2,8 @@
 
 namespace App\Controller\Front\GestionSuiviHabitudes;
 
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use App\Entity\Habitude;
 use App\Entity\Humeur;
 use App\Entity\Rappel_habitude;
@@ -18,6 +20,7 @@ use App\Service\Habitude\BadgeSystemService;
 use App\Service\Habitude\BadContentDetectionService;
 use App\Service\Habitude\HabitChatbotService;
 use App\Service\Habitude\HabitProgressService;
+use App\Service\Habitude\HabitReminderDispatcher;
 use App\Service\Habitude\HabitRecommendationService;
 use App\Service\Habitude\HabitRiskAnalyzerService;
 use App\Service\Habitude\HabitStreakService;
@@ -32,6 +35,7 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -54,8 +58,14 @@ final class OverviewController extends AbstractController
         BadgeSystemService $badgeSystemService,
         OpenMeteoWeatherService $weatherService,
         CurrentUtilisateurResolver $currentUtilisateurResolver,
+        HabitReminderDispatcher $habitReminderDispatcher,
     ): Response {
         $currentUser = $currentUtilisateurResolver->resolve();
+
+        if ($currentUser instanceof Utilisateur) {
+            $habitReminderDispatcher->dispatchDueReminders();
+        }
+
         $weather = $weatherService->getCurrentWeather();
 
         $habitudeFilters = [
@@ -159,6 +169,81 @@ final class OverviewController extends AbstractController
             'weather' => $weather,
             'currentUserResolved' => $currentUser instanceof Utilisateur,
         ]);
+    }
+
+    #[Route('/export/pdf', name: 'export_pdf', methods: ['GET'])]
+    public function exportPdf(
+        HabitudeRepository $habitudeRepository,
+        RappelHabitudeRepository $rappelHabitudeRepository,
+        EntityManagerInterface $entityManager,
+        HabitStreakService $streakService,
+        HabitProgressService $progressService,
+        HabitRiskAnalyzerService $riskAnalyzerService,
+        HabitRecommendationService $recommendationService,
+        SmartReminderService $smartReminderService,
+        MoodHabitCorrelationService $moodCorrelationService,
+        CurrentUtilisateurResolver $currentUtilisateurResolver,
+    ): Response {
+        $currentUser = $currentUtilisateurResolver->resolve();
+        if (!$currentUser instanceof Utilisateur) {
+            $this->addFlash('warning', 'Connecte-toi pour exporter tes habitudes.');
+
+            return $this->redirectToRoute('front_home');
+        }
+
+        $habitudes = $habitudeRepository->findAdminList([
+            'owner' => $currentUser,
+            'sort' => 'nom',
+            'direction' => 'ASC',
+        ]);
+        $rappels = $rappelHabitudeRepository->findAdminList([
+            'owner' => $currentUser,
+            'sort' => 'heure',
+            'direction' => 'ASC',
+            'actif' => '1',
+        ]);
+
+        /** @var list<Humeur> $humeurs */
+        $humeurs = $entityManager->getRepository(Humeur::class)->findBy([], ['date' => 'DESC', 'idH' => 'DESC']);
+        ['advancedInsights' => $advancedInsights] = $this->buildAdvancedInsights(
+            $habitudes,
+            $rappels,
+            $humeurs,
+            $entityManager,
+            $streakService,
+            $progressService,
+            $riskAnalyzerService,
+            $recommendationService,
+            $smartReminderService,
+            $moodCorrelationService,
+        );
+
+        $html = $this->renderView('front/gestion_suivi_habitudes/export_pdf.html.twig', [
+            'habitudes' => $habitudes,
+            'advancedInsights' => $advancedInsights,
+            'generatedAt' => new \DateTimeImmutable(),
+            'user' => $currentUser,
+        ]);
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', false);
+        $options->set('defaultFont', 'DejaVu Sans');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $response = new Response($dompdf->output());
+        $disposition = $response->headers->makeDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            sprintf('habitudes-%s.pdf', (new \DateTimeImmutable())->format('Ymd-His'))
+        );
+
+        $response->headers->set('Content-Type', 'application/pdf');
+        $response->headers->set('Content-Disposition', $disposition);
+
+        return $response;
     }
 
     #[Route('/chatbot/respond', name: 'chatbot_respond', methods: ['POST'])]

@@ -111,4 +111,27 @@ class RappelHabitudeRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    public function markSentAt(int $reminderId, \DateTimeInterface $sentAt): void
+    {
+        $this->getEntityManager()->getConnection()->update('rappel_habitude', [
+            'last_sent_at' => $sentAt->format('Y-m-d H:i:s'),
+        ], [
+            'id_rappel' => $reminderId,
+        ]);
+    }
+
+    /**
+     * @return list<Rappel_habitude>
+     */
+    public function findActiveWithHabitAndOwner(): array
+    {
+        return $this->createQueryBuilder('r')
+            ->innerJoin('r.idHabitude', 'h')
+            ->addSelect('h')
+            ->andWhere('r.actif = true')
+            ->orderBy('r.heureRappel', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

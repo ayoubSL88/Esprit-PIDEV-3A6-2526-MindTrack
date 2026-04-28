@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Habitude;
 use App\Entity\Suivihabitude;
 use App\Entity\Utilisateur;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -108,5 +109,25 @@ class SuivihabitudeRepository extends ServiceEntityRepository
             ->andWhere('s.etat = true')
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * @return list<Suivihabitude>
+     */
+    public function findForHabitOnDate(Habitude $habitude, \DateTimeInterface $date): array
+    {
+        $start = \DateTimeImmutable::createFromInterface($date)->setTime(0, 0, 0);
+        $end = $start->modify('+1 day');
+
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.idHabitude = :habitude')
+            ->andWhere('s.date >= :start')
+            ->andWhere('s.date < :end')
+            ->setParameter('habitude', $habitude)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->orderBy('s.date', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 }

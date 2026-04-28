@@ -1,0 +1,13 @@
+framework:
+    messenger:
+        transports:
+            async: 'sync://'
+
+        routing:
+            App\Message\HabitReminderMessage: async
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                async: 'in-memory://'

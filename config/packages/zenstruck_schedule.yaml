@@ -1,0 +1,5 @@
+zenstruck_schedule:
+    timezone: 'Europe/Paris'
+    messenger:
+        enabled: true
+        message_bus: messenger.default_bus

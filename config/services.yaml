@@ -11,6 +11,9 @@ parameters:
     app.badcontent.site_name: '%env(default::BADCONTENT_SITE_NAME)%'
     app.ollama.url: '%env(default::OLLAMA_API_URL)%'
     app.ollama.model: '%env(default::OLLAMA_MODEL)%'
+    app.timezone: 'Europe/Paris'
+    app.habit_reminder.from_email: '%env(default::HABIT_REMINDER_FROM_EMAIL)%'
+    app.habit_reminder.from_name: '%env(default::HABIT_REMINDER_FROM_NAME)%'
     app.weather.latitude: 36.8
     app.weather.longitude: 10.18
     app.weather.location_label: 'Tunis'
@@ -48,6 +51,15 @@ services:
         arguments:
             $apiUrl: '%app.ollama.url%'
             $model: '%app.ollama.model%'
+
+    App\Service\Habitude\HabitReminderDispatcher:
+        arguments:
+            $timezone: '%app.timezone%'
+
+    App\MessageHandler\HabitReminderMessageHandler:
+        arguments:
+            $fromEmail: '%app.habit_reminder.from_email%'
+            $fromName: '%app.habit_reminder.from_name%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
