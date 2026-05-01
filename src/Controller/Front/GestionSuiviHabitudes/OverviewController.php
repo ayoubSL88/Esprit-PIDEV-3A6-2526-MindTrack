@@ -240,6 +240,7 @@ final class OverviewController extends AbstractController
 
             $fallbackReply = $habitChatbotService->buildReply($message, $habitudes, $rappels, $todaySuivis, $advancedInsights);
 
+<<<<<<< HEAD
             try {
                 $ollamaReply = $ollamaChatService->generateHabitReply(
                     $message,
@@ -262,6 +263,18 @@ final class OverviewController extends AbstractController
                 'source' => 'fallback',
             ], 503);
         }
+=======
+        return new JsonResponse($ollamaReply ?? ($fallbackReply + [
+            'source' => 'fallback',
+            'debug' => 'Ollama indisponible, trop lent, ou reponse vide.',
+        ]));
+    }
+
+    #[Route('/chatbot/status', name: 'chatbot_status', methods: ['GET'])]
+    public function chatbotStatus(OllamaChatService $ollamaChatService): JsonResponse
+    {
+        return new JsonResponse($ollamaChatService->getStatus());
+>>>>>>> f0e0ca3e984f8ce7962e8acf24e795e2715b4e1c
     }
 
     #[Route('/habitude/new', name: 'habitude_new', methods: ['GET', 'POST'])]

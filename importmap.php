@@ -22,4 +22,7 @@ return [
     '@hotwired/stimulus' => [
         'version' => '3.2.2',
     ],
+    'chart.js' => [
+        'version' => '3.9.1',
+    ],
 ];

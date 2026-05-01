@@ -40,6 +40,7 @@ security:
         - { path: ^/register, roles: PUBLIC_ACCESS }
         # Allow the chatbot endpoint to return JSON 401 (instead of an HTML redirect).
         - { path: ^/app/habitudes/chatbot/respond$, roles: PUBLIC_ACCESS }
+        - { path: ^/app/habitudes/chatbot/status$, roles: PUBLIC_ACCESS }
         - { path: ^/post-login, roles: [ROLE_USER, ROLE_ADMIN] }
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/app, roles: ROLE_USER }
