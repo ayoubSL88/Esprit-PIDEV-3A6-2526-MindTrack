@@ -203,52 +203,65 @@ final class OverviewController extends AbstractController
             ], 422);
         }
 
-        $habitudes = $habitudeRepository->findAdminList(['owner' => $currentUser]);
-        $suivis = $suivihabitudeRepository->findAdminList([
-            'owner' => $currentUser,
-            'sort' => 'date',
-            'direction' => 'DESC',
-        ]);
-        $rappels = $rappelHabitudeRepository->findAdminList([
-            'owner' => $currentUser,
-            'sort' => 'heure',
-            'direction' => 'ASC',
-            'actif' => '1',
-        ]);
+        try {
+            $habitudes = $habitudeRepository->findAdminList(['owner' => $currentUser]);
+            $suivis = $suivihabitudeRepository->findAdminList([
+                'owner' => $currentUser,
+                'sort' => 'date',
+                'direction' => 'DESC',
+            ]);
+            $rappels = $rappelHabitudeRepository->findAdminList([
+                'owner' => $currentUser,
+                'sort' => 'heure',
+                'direction' => 'ASC',
+                'actif' => '1',
+            ]);
 
-        /** @var list<Humeur> $humeurs */
-        $humeurs = $entityManager->getRepository(Humeur::class)->findBy([], ['date' => 'DESC', 'idH' => 'DESC']);
-        ['advancedInsights' => $advancedInsights] = $this->buildAdvancedInsights(
-            $habitudes,
-            $rappels,
-            $humeurs,
-            $entityManager,
-            $streakService,
-            $progressService,
-            $riskAnalyzerService,
-            $recommendationService,
-            $smartReminderService,
-            $moodCorrelationService,
-        );
+            /** @var list<Humeur> $humeurs */
+            $humeurs = $entityManager->getRepository(Humeur::class)->findBy([], ['date' => 'DESC', 'idH' => 'DESC']);
+            ['advancedInsights' => $advancedInsights] = $this->buildAdvancedInsights(
+                $habitudes,
+                $rappels,
+                $humeurs,
+                $entityManager,
+                $streakService,
+                $progressService,
+                $riskAnalyzerService,
+                $recommendationService,
+                $smartReminderService,
+                $moodCorrelationService,
+            );
 
-        $todayKey = (new \DateTimeImmutable('today'))->format('Y-m-d');
-        $todaySuivis = array_values(array_filter(
-            $suivis,
-            static fn (Suivihabitude $suivi): bool => $suivi->getDate()?->format('Y-m-d') === $todayKey
-        ));
+            $todayKey = (new \DateTimeImmutable('today'))->format('Y-m-d');
+            $todaySuivis = array_values(array_filter(
+                $suivis,
+                static fn (Suivihabitude $suivi): bool => $suivi->getDate()?->format('Y-m-d') === $todayKey
+            ));
 
-        $fallbackReply = $habitChatbotService->buildReply($message, $habitudes, $rappels, $todaySuivis, $advancedInsights);
-        $ollamaReply = $ollamaChatService->generateHabitReply(
-            $message,
-            $habitudes,
-            $rappels,
-            $todaySuivis,
-            $advancedInsights,
-            $fallbackReply['reply'],
-            $fallbackReply['highlights']
-        );
+            $fallbackReply = $habitChatbotService->buildReply($message, $habitudes, $rappels, $todaySuivis, $advancedInsights);
 
-        return new JsonResponse($ollamaReply ?? ($fallbackReply + ['source' => 'fallback']));
+            try {
+                $ollamaReply = $ollamaChatService->generateHabitReply(
+                    $message,
+                    $habitudes,
+                    $rappels,
+                    $todaySuivis,
+                    $advancedInsights,
+                    $fallbackReply['reply'],
+                    $fallbackReply['highlights']
+                );
+            } catch (\Throwable) {
+                $ollamaReply = null;
+            }
+
+            return new JsonResponse($ollamaReply ?? ($fallbackReply + ['source' => 'fallback']));
+        } catch (\Throwable) {
+            return new JsonResponse([
+                'reply' => 'MindBot rencontre un probleme technique pour le moment. Reessayez dans un instant.',
+                'highlights' => [],
+                'source' => 'fallback',
+            ], 503);
+        }
     }
 
     #[Route('/habitude/new', name: 'habitude_new', methods: ['GET', 'POST'])]

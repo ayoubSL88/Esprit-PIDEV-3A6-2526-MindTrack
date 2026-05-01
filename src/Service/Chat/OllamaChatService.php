@@ -190,11 +190,6 @@ PROMPT;
             $rappels
         );
 
-        $fallbackSection = $fallbackReply;
-        if ($fallbackHighlights !== []) {
-            $fallbackSection .= "\nPoints utiles: " . implode(' | ', $fallbackHighlights);
-        }
-
         return <<<PROMPT
 Question utilisateur: {$message}
 
@@ -209,9 +204,8 @@ Habitudes:
 Rappels:
 {$this->joinLines($reminderLines, '- Aucun rappel actif')}
 
-Si le contexte ne suffit pas, reste honnete et propose une action simple.
-Tu peux t'inspirer de cette reponse locale de secours, mais ta reponse finale doit etre naturelle:
-{$fallbackSection}
+Reponds naturellement et directement a la question de l'utilisateur.
+Si le contexte est insuffisant, donne une reponse courte, honnete et utile sans recopier un texte de secours.
 PROMPT;
     }
 

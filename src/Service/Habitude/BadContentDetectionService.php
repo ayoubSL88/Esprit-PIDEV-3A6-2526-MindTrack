@@ -32,9 +32,8 @@ final class BadContentDetectionService
             ];
         }
 
-        $heuristicResult = $this->heuristicFallback($message);
         if ($this->apiKey === null || trim($this->apiKey) === '') {
-            return $heuristicResult;
+            return $this->heuristicFallback($message);
         }
 
         $payload = [
@@ -78,29 +77,29 @@ final class BadContentDetectionService
 
         $rawResponse = @file_get_contents($this->apiUrl ?: self::DEFAULT_API_URL, false, $context);
         if (!is_string($rawResponse) || $rawResponse === '') {
-            return $heuristicResult;
+            return $this->heuristicFallback($message);
         }
 
         $decoded = json_decode($rawResponse, true);
         if (!is_array($decoded)) {
-            return $heuristicResult;
+            return $this->heuristicFallback($message);
         }
 
         $content = $decoded['choices'][0]['message']['content'] ?? null;
         if (!is_string($content) || trim($content) === '') {
-            return $heuristicResult;
+            return $this->heuristicFallback($message);
         }
 
         $content = trim($content);
         $jsonStart = strpos($content, '{');
         $jsonEnd = strrpos($content, '}');
         if ($jsonStart === false || $jsonEnd === false || $jsonEnd < $jsonStart) {
-            return $heuristicResult;
+            return $this->heuristicFallback($message);
         }
 
         $parsed = json_decode(substr($content, $jsonStart, ($jsonEnd - $jsonStart) + 1), true);
         if (!is_array($parsed)) {
-            return $heuristicResult;
+            return $this->heuristicFallback($message);
         }
 
         $categories = array_values(array_filter(array_map('strval', (array) ($parsed['categories'] ?? []))));
@@ -147,10 +146,78 @@ final class BadContentDetectionService
     {
         $normalized = $this->normalize($message);
         $blockedPatterns = [
-            'hate' => ['sale race', 'sale noir', 'sale arabe', 'sale juif', 'sale musulman', 'sale gay'],
-            'self-harm' => ['je veux me suicider', 'comment me suicider', 'se tuer', 'me faire du mal'],
-            'violence' => ['comment tuer', 'je vais te tuer', 'fabriquer une bombe'],
-            'sexual' => ['contenu pedophile', 'mineur sexuel'],
+            'hate' => [
+                'sale race',
+                'sale noir',
+                'sale arabe',
+                'sale juif',
+                'sale musulman',
+                'sale gay',
+                'racaille',
+                'nazi',
+                'fasciste',
+                'haine',
+                'racisme',
+            ],
+            'harassment' => [
+                'connard',
+                'connasse',
+                'salaud',
+                'salope',
+                'encule',
+                'merde',
+                'pute',
+                'bordel',
+                'batard',
+                'idiot',
+                'stupide',
+            ],
+            'self-harm' => [
+                'je veux me suicider',
+                'comment me suicider',
+                'se tuer',
+                'me faire du mal',
+                'me poignarder',
+                'me pendre',
+                'suicide',
+            ],
+            'violence' => [
+                'comment tuer',
+                'je vais te tuer',
+                'fabriquer une bombe',
+                'tuer quelqu un',
+                'planifier une attaque',
+                'tuer',
+                'bombe',
+                'kill',
+                'kill kids',
+                'kill children',
+                'kill child',
+                'kill people',
+                'murder',
+                'stab',
+                'shoot',
+                'hurt kids',
+                'hurt children',
+            ],
+            'sexual' => [
+                'contenu pedophile',
+                'mineur sexuel',
+                'pornographie enfantine',
+                'enfant nu',
+                'pedophile',
+                'viol',
+            ],
+            'addiction' => [
+                'alcool',
+                'alcoolique',
+                'cigarette',
+                'tabac',
+                'drogue',
+                'cocaine',
+                'heroine',
+                'meth',
+            ],
         ];
 
         $categories = [];
