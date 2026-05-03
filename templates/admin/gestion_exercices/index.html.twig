@@ -167,6 +167,15 @@
         .btn-admin-secondary {
             background: #f1f5f9;
             color: #475569;
+            padding: 6px 12px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
         
         .btn-admin-secondary:hover {
@@ -204,6 +213,10 @@
     <!-- EN-TÊTE -->
     <div class="admin-header">
         <h1>📚 Gestion des exercices</h1>
+        <div style="display: flex; gap: 12px;">
+        <a href="{{ path('admin_gestion_exercices_home') }}" class="btn-admin-secondary">
+            ← Retour au Dashboard
+        </a>
         <a href="{{ path('admin_gestion_exercices_new') }}" class="btn-admin btn-admin-primary">
             + Nouvel exercice
         </a>

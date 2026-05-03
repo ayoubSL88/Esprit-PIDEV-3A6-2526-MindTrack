@@ -14,7 +14,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/admin/exercices')]
 #[IsGranted('ROLE_ADMIN')]
-final class ExerciceController extends AbstractController
+final class AdminExerciceController extends AbstractController
 {
     #[Route('/', name: 'admin_gestion_exercices_index', methods: ['GET'])]
     public function index(Request $request, EntityManagerInterface $entityManager): Response

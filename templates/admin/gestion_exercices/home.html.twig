@@ -1,0 +1,600 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}Dashboard - Gestion des exercices{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15);
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        
+        .stat-sub {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+        
+        /* CARDS SECTION */
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 28px;
+            margin-bottom: 32px;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+        }
+        
+        .card-header {
+            padding: 18px 24px;
+            border-bottom: 2px solid #f1f5f9;
+            background: white;
+        }
+        
+        .card-header h5 {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .card-body {
+            padding: 20px 24px;
+        }
+        
+        /* NAVIGATION CARDS (ACCÈS RAPIDE) */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .nav-card {
+            background: white;
+            border-radius: 24px;
+            padding: 28px 20px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.03);
+            text-decoration: none;
+            display: block;
+        }
+        
+        .nav-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 35px -12px rgba(0,0,0,0.15);
+        }
+        
+        .nav-icon {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+        
+        .nav-card h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        
+        .nav-card p {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+        
+        .nav-link {
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .nav-card:nth-child(1) .nav-link { color: #6366f1; }
+        .nav-card:nth-child(2) .nav-link { color: #10b981; }
+        .nav-card:nth-child(3) .nav-link { color: #f59e0b; }
+        .nav-card:nth-child(4) .nav-link { color: #8b5cf6; }
+        .nav-card:nth-child(5) .nav-link { color: #ef4444; }
+        
+        /* TABLEAUX */
+        .mini-table {
+            width: 100%;
+        }
+        
+        .mini-table tr {
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .mini-table tr:last-child {
+            border-bottom: none;
+        }
+        
+        .mini-table td {
+            padding: 12px 0;
+        }
+        
+        .mini-table td:first-child {
+            font-weight: 500;
+            color: #1e293b;
+        }
+        
+        .mini-table td:last-child {
+            text-align: right;
+            color: #6366f1;
+            font-weight: 600;
+        }
+        
+        .exercice-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .exercice-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .exercice-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .exercice-name {
+            font-weight: 500;
+            color: #1e293b;
+        }
+        
+        .exercice-type {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-left: 8px;
+        }
+        
+        .exercice-count {
+            background: #eef2ff;
+            color: #4f46e5;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .progress-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .progress-high {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .progress-medium {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        
+        .progress-low {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .btn-view-all {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f1f5f9;
+            color: #475569;
+            padding: 8px 16px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-view-all:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+        
+        .session-user {
+            font-weight: 500;
+            color: #1e293b;
+        }
+        
+        .session-exercice {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        
+        .session-date {
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+        
+        .session-progress {
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        
+        .btn-link {
+            color: #6366f1;
+            text-decoration: none;
+            font-size: 0.7rem;
+        }
+        
+        @media (max-width: 1000px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .nav-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 16px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto; padding: 20px;">
+    <!-- EN-TÊTE -->
+    <div class="admin-header">
+        <div>
+            <h1>📊 Tableau de bord</h1>
+            <p style="color: #64748b; margin-top: 8px;">Vue d'ensemble de la plateforme d'exercices</p>
+        </div>
+    </div>
+    <div style="margin-bottom: 32px;"></div>
+
+    <!-- STATISTIQUES GLOBALES -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-value">{{ stats.total_exercices }}</div>
+            <div class="stat-label">Exercices</div>
+            <div class="stat-sub">
+                🟢 {{ stats.exercices_par_difficulte.FACILE }} facile · 
+                🟠 {{ stats.exercices_par_difficulte.MOYEN }} moyen · 
+                🔴 {{ stats.exercices_par_difficulte.DIFFICILE }} difficile
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value">{{ stats.total_sessions }}</div>
+            <div class="stat-label">Sessions totales</div>
+            <div class="stat-sub">
+                ✅ {{ stats.sessions_terminees }} terminées · 
+                ⏳ {{ stats.sessions_encours }} en cours
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-value">{{ stats.temps_total }} min</div>
+            <div class="stat-label">Temps total passé</div>
+            <div class="stat-sub">Toutes sessions confondues</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value">{{ stats.total_users }}</div>
+            <div class="stat-label">Utilisateurs</div>
+            <div class="stat-sub">
+                🟢 {{ stats.total_users_only }} utilisateurs · 
+                🔵 {{ stats.total_admins }} admin · 
+                📊 {{ stats.total_users_actifs }} actifs
+            </div>
+        </div>
+    </div>
+
+    <!-- ACCÈS RAPIDE (COMME DANS LE FRONT) -->
+    <div class="nav-grid">
+        <a href="{{ path('admin_gestion_exercices_index') }}" class="nav-card">
+            <div class="nav-icon">📚</div>
+            <h4>Gestion des exercices</h4>
+            <p>Ajouter, modifier ou supprimer des exercices</p>
+            <span class="nav-link">Gérer les exercices →</span>
+        </a>
+        <a href="{{ path('admin_sessions_index') }}" class="nav-card">
+            <div class="nav-icon">📋</div>
+            <h4>Gestion des sessions</h4>
+            <p>Consulter toutes les sessions utilisateurs</p>
+            <span class="nav-link">Voir les sessions →</span>
+        </a>
+        <a href="{{ path('admin_historique_index') }}" class="nav-card">
+            <div class="nav-icon">📜</div>
+            <h4>Historique</h4>
+            <p>Historique détaillé des sessions</p>
+            <span class="nav-link">Voir l'historique →</span>
+        </a>
+        <a href="{{ path('admin_progression_index') }}" class="nav-card">
+            <div class="nav-icon">📊</div>
+            <h4>Progression</h4>
+            <p>Suivi de la progression des utilisateurs</p>
+            <span class="nav-link">Voir la progression →</span>
+        </a>
+        <a href="{{ path('admin_gestion_exercices_statistiques') }}" class="nav-card">
+            <div class="nav-icon">📈</div>
+            <h4>Statistiques avancées</h4>
+            <p>Analyses détaillées et graphiques</p>
+            <span class="nav-link">Voir les stats →</span>
+        </a>
+    </div>
+
+    <!-- GRILLE PRINCIPALE -->
+    <div class="dashboard-grid">
+        <!-- Graphique d'évolution (7 derniers jours) -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h5>📈 Évolution des sessions (7 derniers jours)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="evolutionChart" style="width: 100%; max-height: 250px;"></canvas>
+            </div>
+        </div>
+
+        <!-- Top 5 exercices les plus populaires -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h5>⭐ Top 5 exercices les plus pratiqués</h5>
+            </div>
+            <div class="card-body">
+                <ul class="exercice-list">
+                    {% for exercice in top_exercices %}
+                    <li>
+                        <div>
+                            <span class="exercice-name">{{ exercice.nom }}</span>
+                            <span class="exercice-type">({{ exercice.type }})</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="exercice-count">{{ exercice.count }} sessions</span>
+                            <span class="progress-badge {% if exercice.avg_progress >= 75 %}progress-high{% elseif exercice.avg_progress >= 50 %}progress-medium{% else %}progress-low{% endif %}">
+                                {{ exercice.avg_progress }}% moy.
+                            </span>
+                        </div>
+                    </li>
+                    {% else %}
+                    <li style="text-align: center; color: #94a3b8;">Aucune session enregistrée</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- DERNIERS EXERCICES AJOUTÉS -->
+    <div class="dashboard-card" style="margin-bottom: 32px;">
+        <div class="card-header">
+            <h5>🆕 Derniers exercices ajoutés</h5>
+            <a href="{{ path('admin_gestion_exercices_index') }}" class="btn-view-all" style="float: right; margin-top: -28px;">
+                Voir tous →
+            </a>
+        </div>
+        <div class="card-body">
+            <table class="mini-table">
+                <tbody>
+                    {% for exercice in recent_exercices %}
+                    <tr>
+                        <td>
+                            <strong>{{ exercice.nom }}</strong>
+                            <span style="font-size: 0.7rem; color: #94a3b8; margin-left: 8px;">{{ exercice.type }}</span>
+                        </td>
+                        <td>
+                            <span class="progress-badge 
+                                {% if exercice.difficulte == 'FACILE' %}progress-high
+                                {% elseif exercice.difficulte == 'MOYEN' %}progress-medium
+                                {% else %}progress-low{% endif %}">
+                                {{ exercice.difficulte|capitalize }}
+                            </span>
+                            <span style="margin-left: 12px; font-size: 0.7rem; color: #94a3b8;">
+                                📅 {{ exercice.dateCreation|date('d/m/Y') }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="2" style="text-align: center; color: #94a3b8;">Aucun exercice</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- DERNIÈRES SESSIONS -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h5>🕐 Dernières sessions</h5>
+            <a href="{{ path('admin_sessions_index') }}" class="btn-view-all" style="float: right; margin-top: -28px;">
+                Voir toutes →
+            </a>
+        </div>
+        <div class="card-body">
+            <div style="overflow-x: auto;">
+                <table class="mini-table">
+                    <thead>
+                        <tr>
+                            <th>Utilisateur / Exercice</th>
+                            <th>Date</th>
+                            <th>Progression</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in recent_sessions %}
+                        <tr>
+                            <td style="width: 35%;">
+                                {% if session.user %}
+                                    <div class="session-user">{{ session.user.nomU }} {{ session.user.prenomU }}</div>
+                                {% else %}
+                                    <div class="session-user" style="color: #ef4444;">⚠️ Utilisateur supprimé</div>
+                                {% endif %}
+                                {% if session.exercice %}
+                                    <div class="session-exercice">{{ session.exercice.nom }}</div>
+                                {% else %}
+                                    <div class="session-exercice" style="color: #ef4444;">⚠️ Exercice supprimé</div>
+                                {% endif %}
+                            </td>
+                            <td style="width: 25%;">
+                                <div class="session-date">{{ session.dateDebut|date('d/m/Y H:i') }}</div>
+                                {% if session.dateFin %}
+                                    <div class="session-date">Fin: {{ session.dateFin|date('d/m/Y H:i') }}</div>
+                                {% endif %}
+                            </td>
+                            <td style="width: 20%;">
+                                <div class="session-progress" style="color: {% if session.progress >= 75 %}#10b981{% elseif session.progress >= 50 %}#f59e0b{% else %}#ef4444{% endif %};">
+                                    {{ session.progress }}%
+                                </div>
+                                <div style="font-size: 0.7rem; color: #94a3b8;">
+                                    {% if session.dureeReelle %}{{ (session.dureeReelle / 60)|round }} min{% else %}—{% endif %}
+                                </div>
+                            </td>
+                            <td style="width: 20%; text-align: right;">
+                                <a href="{{ path('admin_sessions_show', {'idSession': session.idSession}) }}" class="btn-link">
+                                    👁️ Détail
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #94a3b8;">Aucune session enregistrée</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('evolutionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: {{ chart_sessions.labels|json_encode|raw }},
+                    datasets: [{
+                        label: '📊 Sessions réalisées',
+                        data: {{ chart_sessions.data|json_encode|raw }},
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderColor: '#6366f1',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: '#8b5cf6',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            callbacks: {
+                                label: function(context) {
+                                    return `🎯 Sessions: ${context.parsed.y}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, precision: 0, color: '#64748b' },
+                            grid: { color: '#f1f5f9' }
+                        },
+                        x: {
+                            ticks: { color: '#64748b' },
+                            grid: { color: '#f1f5f9' }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

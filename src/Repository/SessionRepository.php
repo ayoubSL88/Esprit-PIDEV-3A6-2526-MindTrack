@@ -75,4 +75,6 @@ class SessionRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    
 }

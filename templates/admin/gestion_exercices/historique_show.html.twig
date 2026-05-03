@@ -1,0 +1,264 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block page_title %}Détail session #{{ session.idSession }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        
+        .admin-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+        }
+        
+        .card-header {
+            padding: 16px 20px;
+            color: white;
+        }
+        
+        .card-header h5 {
+            margin: 0;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .info-table {
+            width: 100%;
+        }
+        
+        .info-table tr {
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .info-table th {
+            padding: 12px 0;
+            text-align: left;
+            font-weight: 600;
+            color: #1e293b;
+            width: 130px;
+        }
+        
+        .info-table td {
+            padding: 12px 0;
+            color: #64748b;
+        }
+        
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 4px 12px;
+            border-radius: 30px;
+        }
+        
+        .progress-large {
+            background: #e2e8f0;
+            border-radius: 12px;
+            height: 32px;
+            overflow: hidden;
+        }
+        
+        .progress-fill-large {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 16px;
+            color: white;
+            font-weight: 700;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        }
+        
+        .steps-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .steps-list li {
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .steps-list li:before {
+            content: "✓";
+            background: #10b981;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .comment-box {
+            background: #fffbeb;
+            padding: 16px;
+            border-radius: 16px;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .btn-back {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 10px 20px;
+            border-radius: 40px;
+            text-decoration: none;
+        }
+        
+        .btn-admin-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 6px 12px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .btn-admin-secondary:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            .admin-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    <div class="admin-header">
+        <h1>📋 Détails de la session</h1>
+        <a href="{{ path('admin_historique_index') }}" class="btn-back">← Retour à l'historique</a>
+    </div>
+
+    <div class="detail-grid">
+        <!-- Colonne gauche -->
+        <div>
+            <div class="info-card">
+                <div class="card-header" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+                    <h5>👤 Utilisateur</h5>
+                </div>
+                <div class="card-body">
+                    <table class="info-table">
+                        <tr><th>Nom</th><td><strong>{{ session.user.nomU }} {{ session.user.prenomU }}</strong></td></tr>
+                        <tr><th>Email</th><td>{{ session.user.emailU }}</td></tr>
+                        <tr><th>Âge</th><td>{{ session.user.ageU }} ans</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="card-header" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                    <h5>🎯 Exercice</h5>
+                </div>
+                <div class="card-body">
+                    <table class="info-table">
+                        <tr><th>Nom</th><td><strong>{{ session.exercice.nom }}</strong></td></tr>
+                        <tr><th>Type</th><td>{{ session.exercice.type }}</td></tr>
+                        <tr><th>Difficulté</th><td>{{ session.exercice.difficulte|capitalize }}</td></tr>
+                        <tr><th>Durée estimée</th><td>{{ session.exercice.duree }} min</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne droite -->
+        <div>
+            <div class="info-card">
+                <div class="card-header" style="background: linear-gradient(135deg, #0ea5e9, #38bdf8);">
+                    <h5>⏱️ Session</h5>
+                </div>
+                <div class="card-body">
+                    <table class="info-table">
+                        <tr><th>Date début</th><td>{{ session.dateDebut|date('d/m/Y H:i:s') }}</td></tr>
+                        <tr><th>Date fin</th><td>{{ session.dateFin|date('d/m/Y H:i:s') }}</td></tr>
+                        <tr><th>Durée réelle</th><td>{% if session.dureeReelle %}{{ (session.dureeReelle / 60)|round }} minutes{% else %}—{% endif %}</td></tr>
+                        <tr><th>Progression</th>
+                            <td>
+                                <div class="progress-large">
+                                    <div class="progress-fill-large" style="width: {{ session.progress }}%">{{ session.progress }}%</div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr><th>Statut</th><td><span class="badge-success">✅ Terminée</span></td></tr>
+                        <tr><th>Résultat</th><td>{{ session.resultat|default('—') }}</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            {% if session.commentaires %}
+            <div class="info-card">
+                <div class="card-header" style="background: linear-gradient(135deg, #64748b, #94a3b8);">
+                    <h5>💬 Commentaire</h5>
+                </div>
+                <div class="card-body">
+                    <div class="comment-box">{{ session.commentaires|nl2br }}</div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if session.steps %}
+            <div class="info-card">
+                <div class="card-header" style="background: linear-gradient(135deg, #1e293b, #334155);">
+                    <h5>✓ Étapes réalisées</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="steps-list">
+                        {% for step in session.steps %}
+                            <li>{{ step }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

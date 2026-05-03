@@ -13,7 +13,7 @@ use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/admin/sessions')]
 #[IsGranted('ROLE_ADMIN')]
-final class SessionController extends AbstractController
+final class AdminSessionController extends AbstractController
 {
     #[Route('/', name: 'admin_sessions_index')]
     public function index(Request $request, SessionRepository $sessionRepository, PaginatorInterface $paginator): Response

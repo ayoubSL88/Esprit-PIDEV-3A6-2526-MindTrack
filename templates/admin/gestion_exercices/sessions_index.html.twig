@@ -185,7 +185,7 @@
             border-radius: 40px;
             text-decoration: none;
             font-size: 0.7rem;
-            font-weight: 500;
+            font-weight: 600;
             transition: all 0.2s;
             display: inline-flex;
             align-items: center;
@@ -296,6 +296,10 @@
     <!-- EN-TÊTE -->
     <div class="admin-header">
         <h1>📊 Toutes les sessions d'exercices</h1>
+        <div style="display: flex; gap: 12px;">
+        <a href="{{ path('admin_gestion_exercices_home') }}" class="btn-admin-secondary">
+            ← Retour au Dashboard
+        </a>
         <a href="{{ path('admin_gestion_exercices_index') }}" class="btn-admin-secondary">
             ← Retour aux exercices
         </a>
@@ -365,7 +369,6 @@
             <table class="modern-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Utilisateur</th>
                         <th>Exercice</th>
                         <th>Date début</th>
@@ -379,31 +382,38 @@
                 <tbody>
                 {% for session in sessions %}
                     <tr>
-                        <td>#{{ session.idSession }}</td>
-                        <td>
-                            <strong>{{ session.user.nomU }} {{ session.user.prenomU }}</strong><br>
-                            <small style="color: #94a3b8;">{{ session.user.emailU }}</small>
+                        <td style="width: 20%;">
+                            {% if session.user %}
+                                <strong>{{ session.user.nomU }} {{ session.user.prenomU }}</strong><br>
+                                <small style="color: #94a3b8;">{{ session.user.emailU }}</small>
+                            {% else %}
+                                <strong style="color: #ef4444;">⚠️ Utilisateur supprimé</strong>
+                            {% endif %}
                         </td>
-                        <td>
-                            <strong>{{ session.exercice.nom }}</strong><br>
-                            <small style="color: #94a3b8;">{{ session.exercice.type }}</small>
+                        <td style="width: 20%;">
+                            {% if session.exercice %}
+                                <strong>{{ session.exercice.nom }}</strong><br>
+                                <small style="color: #94a3b8;">{{ session.exercice.type }}</small>
+                            {% else %}
+                                <strong style="color: #ef4444;">⚠️ Exercice supprimé</strong>
+                            {% endif %}
                         </td>
-                        <td>{{ session.dateDebut|date('d/m/Y H:i') }}</td>
-                        <td>
+                        <td style="width: 15%;">{{ session.dateDebut|date('d/m/Y H:i') }}</td>
+                        <td style="width: 15%;">
                             {% if session.dateFin %}
                                 {{ session.dateFin|date('d/m/Y H:i') }}
                             {% else %}
                                 <span class="badge-warning">En cours</span>
                             {% endif %}
                         </td>
-                        <td>
+                        <td style="width: 10%;">
                             {% if session.dureeReelle %}
                                 {{ (session.dureeReelle / 60)|round }} min
                             {% else %}
                                 —
                             {% endif %}
                         </td>
-                        <td>
+                        <td style="width: 15%;">
                             <div class="progress-wrapper">
                                 <div class="progress-bar-sm">
                                     <div class="progress-fill-sm {% if session.progress == 100 %}success{% else %}primary{% endif %}" 
@@ -412,19 +422,23 @@
                                 <span class="progress-percent">{{ session.progress }}%</span>
                             </div>
                         </td>
-                        <td>
+                        <td style="width: 20%;">
                             {% if session.terminee %}
-                                <span class="badge-success">✅ Terminée</span>
+                                <span class="badge-success">✅Terminée</span>
                             {% else %}
-                                <span class="badge-warning">⏳ En cours</span>
+                                <span class="badge-warning">⏳En cours</span>
                             {% endif %}
                         </td>
-                        <td>
+                        <td style="width: 25%;">
                             <div class="action-group">
-                                <a href="{{ path('admin_sessions_show', {'idSession': session.idSession}) }}" 
-                                   class="btn-admin-info">👁️ Détail</a>
+                            <a href="{{ path('admin_sessions_show', {'idSession': session.idSession}) }}" 
+                                class="btn-admin-info">👁️Détails</a>
+                            {% if session.user %}
                                 <a href="{{ path('admin_sessions_user', {'idU': session.user.idU}) }}" 
-                                   class="btn-admin-secondary">👤 User</a>
+                                    class="btn-admin-secondary">👤 User</a>
+                            {% else %}
+                                <span class="badge-warning" style="background:#fee2e2; color:#dc2626;">⚠️Utilisateur supprimé</span>
+                            {% endif %}
                             </div>
                         </td>
                     </tr>

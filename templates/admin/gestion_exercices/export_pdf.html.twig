@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Export Historique - {{ date|date('d/m/Y') }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 20px;
+        }
+        h1 {
+            font-size: 18px;
+            color: #333;
+            border-bottom: 2px solid #4f46e5;
+            padding-bottom: 10px;
+        }
+        h2 {
+            font-size: 14px;
+            color: #555;
+            margin-top: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .filters {
+            background: #f3f4f6;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-size: 10px;
+        }
+        .stats {
+            background: #e0e7ff;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-around;
+        }
+        .stat-box {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+        .stat-label {
+            font-size: 10px;
+            color: #555;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #4f46e5;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        .progress-bar-container {
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            width: 80px;
+        }
+        .progress-bar {
+            background-color: #10b981;
+            color: white;
+            font-size: 10px;
+            padding: 2px 5px;
+            text-align: center;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+        .badge-success {
+            background-color: #10b981;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            display: inline-block;
+        }
+        .badge-warning {
+            background-color: #f59e0b;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            display: inline-block;
+        }
+        .text-muted {
+            color: #999;
+            font-style: italic;
+        }
+        .difficile-facile {
+            color: #10b981;
+        }
+        .difficile-moyen {
+            color: #f59e0b;
+        }
+        .difficile-difficile {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1> Historique des Sessions</h1>
+        <p>Généré le {{ date|date('d/m/Y à H:i:s') }}</p>
+    </div>
+
+    <div class="filters">
+        <strong>Filtres appliqués :</strong><br>
+        {% if selected_user is defined and selected_user %}
+            👤 Utilisateur : {{ selected_user.prenomU }} {{ selected_user.nomU }}<br>
+        {% endif %}
+        {% if search is defined and search %}
+            🔍 Recherche : {{ search }}<br>
+        {% endif %}
+        {% if date_debut is defined and date_debut %}
+            📅 Date début : {{ date_debut }}<br>
+        {% endif %}
+        {% if date_fin is defined and date_fin %}
+            📅 Date fin : {{ date_fin }}<br>
+        {% endif %}
+        {% if not selected_user and not search and not date_debut and not date_fin %}
+            Aucun filtre (toutes les sessions)
+        {% endif %}
+    </div>
+
+    <div class="stats">
+        <div class="stat-box">
+            <div class="stat-value">{{ total_sessions }}</div>
+            <div class="stat-label">Sessions totales</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ total_temps }} min</div>
+            <div class="stat-label">Temps total</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">{{ moyenne_progress }}%</div>
+            <div class="stat-label">Progression moyenne</div>
+        </div>
+    </div>
+
+    <h2> Liste des sessions</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Utilisateur</th>
+                <th>Exercice</th>
+                <th>Type</th>
+                <th>Difficulté</th>
+                <th>Date début</th>
+                <th>Date fin</th>
+                <th>Durée</th>
+                <th>Progression</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in sessions %}
+            <tr>
+                <td>
+                    {% if session.user %}
+                        {{ session.user.prenomU }} {{ session.user.nomU }}
+                    {% else %}
+                        <span class="text-muted">Utilisateur supprimé</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if session.exercice %}
+                        {{ session.exercice.nom }}
+                    {% else %}
+                        <span class="text-muted">Exercice supprimé</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if session.exercice %}
+                        {{ session.exercice.type }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td>
+                    {% if session.exercice %}
+                        {% if session.exercice.difficulte == 'FACILE' %}
+                            <span class="difficile-facile"> Facile</span>
+                        {% elseif session.exercice.difficulte == 'MOYEN' %}
+                            <span class="difficile-moyen"> Moyen</span>
+                        {% else %}
+                            <span class="difficile-difficile"> Difficile</span>
+                        {% endif %}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td>{{ session.dateDebut ? session.dateDebut|date('d/m/Y H:i') : '-' }}</td>
+                <td>{{ session.dateFin ? session.dateFin|date('d/m/Y H:i') : '-' }}</td>
+                <td>{{ session.dureeReelle ? (session.dureeReelle / 60)|round(0) : 0 }} min</td>
+                <td>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: {{ session.progress }}%;">
+                            {{ session.progress }}%
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    {% if session.terminee %}
+                        <span class="badge-success"> Terminée</span>
+                    {% else %}
+                        <span class="badge-warning"> En cours</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" style="text-align: center;">Aucune session trouvée</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Document généré automatiquement - Plateforme de Gestion d'Exercices</p>
+    </div>
+</body>
+</html>
