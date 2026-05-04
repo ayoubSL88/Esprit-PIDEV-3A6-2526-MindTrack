@@ -1,0 +1,189 @@
+{% extends 'layouts/front_base.html.twig' %}
+
+{% block page_title %}Recommandations YouTube{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .hero-section {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        
+        .hero-section h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .search-card {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 28px;
+            padding: 32px;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 60px;
+            font-size: 1rem;
+            outline: none;
+        }
+        
+        .search-btn {
+            background: white;
+            color: #6366f1;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+            margin-top: 32px;
+        }
+        
+        .video-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+        
+        .video-thumbnail {
+            width: 100%;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+        }
+        
+        .video-info {
+            padding: 16px;
+        }
+        
+        .video-title {
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+            font-size: 1rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .video-channel {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+        
+        .similarity-badge {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #4f46e5;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            background: #f8fafc;
+            border-radius: 24px;
+            color: #94a3b8;
+        }
+        
+        @media (max-width: 768px) {
+            .videos-grid {
+                grid-template-columns: 1fr;
+            }
+            .search-form {
+                flex-direction: column;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    <div class="hero-section">
+        <h1>🎬 Vidéos recommandées</h1>
+        <p>Découvrez des vidéos de développement personnel adaptées à vos besoins</p>
+    </div>
+    
+    <div class="search-card">
+        <h3>🔍 Trouvez des vidéos qui vous correspondent</h3>
+        <p>Entrez un thème, une émotion ou un sujet qui vous intéresse</p>
+        
+        <form method="get" class="search-form">
+            <input type="text" 
+                   name="search" 
+                   class="search-input" 
+                   placeholder="Ex: gérer le stress, méditation, confiance en soi..."
+                   value="{{ search }}">
+            <button type="submit" class="search-btn">🔍 Recommander</button>
+        </form>
+    </div>
+    
+    {% if search %}
+        <h2>📺 Résultats pour "{{ search }}"</h2>
+    {% else %}
+        <h2>🎯 Recommandations du moment</h2>
+    {% endif %}
+    
+    <div class="videos-grid">
+        {% for video in recommendations %}
+            <a href="{{ video.url }}" target="_blank" class="video-card">
+                {% if video.thumbnail %}
+                    <img src="{{ video.thumbnail }}" alt="{{ video.title }}" class="video-thumbnail">
+                {% endif %}
+                <div class="video-info">
+                    <div class="video-title">{{ video.title }}</div>
+                    {% if video.channel %}
+                        <div class="video-channel">📺 {{ video.channel }}</div>
+                    {% endif %}
+                    {% if video.similarity_score is defined %}
+                        <div class="similarity-badge">🎯 {{ video.similarity_score }}% pertinent</div>
+                    {% endif %}
+                </div>
+            </a>
+        {% else %}
+            <div class="empty-state">
+                <div style="font-size: 3rem; margin-bottom: 16px;">🎬</div>
+                <p>Aucune vidéo trouvée. Essayez une autre recherche !</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

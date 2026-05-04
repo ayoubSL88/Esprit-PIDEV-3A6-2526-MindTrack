@@ -5,7 +5,7 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     compreface.base_url: 'http://localhost:8000'
-
+    youtube.api_key: 'AIzaSyA_-YBwEAP4lkkrRSXgq1cqs6TcHLcnJxM'
 services:
     _defaults:
         autowire: true
@@ -38,3 +38,9 @@ services:
         arguments:
             $exerciceRepo: '@App\Repository\ExerciceRepository'
             $sessionRepo: '@App\Repository\SessionRepository'
+
+    App\Service\YouTubeRecommendationService:
+        arguments:
+            $apiKey: '%youtube.api_key%'
+            $logger: '@logger'
+            $projectDir: '%kernel.project_dir%'
