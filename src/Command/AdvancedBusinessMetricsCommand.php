@@ -110,7 +110,7 @@ final class AdvancedBusinessMetricsCommand extends Command
     private function findReminderForHabit(int $habitId, array $rappels): ?Rappel_habitude
     {
         foreach ($rappels as $rappel) {
-            if ($rappel->getIdHabitude()?->getIdHabitude() === $habitId) {
+            if ($rappel->getIdHabitude()->getIdHabitude() === $habitId) {
                 return $rappel;
             }
         }

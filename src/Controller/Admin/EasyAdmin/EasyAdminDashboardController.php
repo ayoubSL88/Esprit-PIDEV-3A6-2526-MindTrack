@@ -229,10 +229,10 @@ final class EasyAdminDashboardController extends AbstractDashboardController
             ->getQuery()
             ->getArrayResult();
 
-        return array_map(static fn(array $row): array => [
+        return array_values(array_map(static fn(array $row): array => [
             'name' => (string) $row['name'],
             'sessions' => (int) $row['sessions'],
-        ], $rows);
+        ], $rows));
     }
 
     private function countProtectedUsers(): int

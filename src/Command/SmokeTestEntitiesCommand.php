@@ -60,7 +60,7 @@ final class SmokeTestEntitiesCommand extends Command
 
             $io->section('Testing Utilisateur + Password_reset_tokens relation');
 
-            $nextUserId = (int) $this->connection->fetchOne('SELECT COALESCE(MAX(id_u), 0) + 1 FROM utilisateur');
+            $nextUserId = (int) $this->connection->fetchOne('SELECT COALESCE(MAX(user_id), 0) + 1 FROM utilisateur');
             $nextTokenId = (int) $this->connection->fetchOne('SELECT COALESCE(MAX(id), 0) + 1 FROM password_reset_tokens');
 
             $user = new Utilisateur();
@@ -100,7 +100,7 @@ final class SmokeTestEntitiesCommand extends Command
             }
 
             $reloadedUser = $reloaded->getUser_id();
-            if ($reloadedUser === null || $reloadedUser->getIdU() !== $nextUserId) {
+            if ($reloadedUser->getIdU() !== $nextUserId) {
                 $io->error('Reloaded relation user_id does not match expected Utilisateur.');
                 throw new \RuntimeException('Relation check failed');
             }
@@ -142,7 +142,7 @@ final class SmokeTestEntitiesCommand extends Command
             }
 
             $reloadedObjectif = $reloadedJalon->getIdObj();
-            if ($reloadedObjectif === null || $reloadedObjectif->getIdObj() !== $nextObjectifId) {
+            if ($reloadedObjectif->getIdObj() !== $nextObjectifId) {
                 $io->error('Reloaded relation idObj does not match expected Objectif.');
                 throw new \RuntimeException('Relation check failed');
             }
@@ -186,7 +186,7 @@ final class SmokeTestEntitiesCommand extends Command
             }
 
             $reloadedHabitude = $reloadedRappel->getIdHabitude();
-            if ($reloadedHabitude === null || $reloadedHabitude->getIdHabitude() !== $nextHabitudeId) {
+            if ($reloadedHabitude->getIdHabitude() !== $nextHabitudeId) {
                 $io->error('Reloaded relation idHabitude does not match expected Habitude.');
                 throw new \RuntimeException('Relation check failed');
             }
@@ -227,7 +227,7 @@ final class SmokeTestEntitiesCommand extends Command
             }
 
             $reloadedHabitude2 = $reloadedSuivi->getIdHabitude();
-            if ($reloadedHabitude2 === null || $reloadedHabitude2->getIdHabitude() !== $nextHabitudeId2) {
+            if ($reloadedHabitude2->getIdHabitude() !== $nextHabitudeId2) {
                 $io->error('Reloaded relation idHabitude does not match expected Habitude.');
                 throw new \RuntimeException('Relation check failed');
             }
@@ -250,7 +250,7 @@ final class SmokeTestEntitiesCommand extends Command
 
             $session = new Session();
             $session->setIdSession($nextSessionId);
-            $session->setIdEx($exercice);
+            $session->setExercice($exercice);
             $session->setDateSession(new DateTime('today'));
             $session->setDateDebut(new DateTime());
             $session->setDateFin(new DateTime('+10 minutes'));
@@ -273,8 +273,8 @@ final class SmokeTestEntitiesCommand extends Command
                 throw new \RuntimeException('Entity reload failed');
             }
 
-            $reloadedExercice = $reloadedSession->getIdEx();
-            if ($reloadedExercice === null || $reloadedExercice->getIdEx() !== $nextExerciceId) {
+            $reloadedExercice = $reloadedSession->getExercice();
+            if ($reloadedExercice->getIdEx() !== $nextExerciceId) {
                 $io->error('Reloaded relation idEx does not match expected Exercice.');
                 throw new \RuntimeException('Relation check failed');
             }
@@ -312,7 +312,7 @@ final class SmokeTestEntitiesCommand extends Command
             }
 
             $reloadedTodoExercice = $reloadedTodo->getIdExercice();
-            if ($reloadedTodoExercice === null || $reloadedTodoExercice->getIdEx() !== $nextExerciceId) {
+            if ($reloadedTodoExercice->getIdEx() !== $nextExerciceId) {
                 $io->error('Reloaded relation idExercice does not match expected Exercice.');
                 throw new \RuntimeException('Relation check failed');
             }

@@ -23,7 +23,7 @@ final class HabitRiskAnalyzerService
 
         usort(
             $suivis,
-            static fn (Suivihabitude $left, Suivihabitude $right): int => ($left->getDate()?->getTimestamp() ?? 0) <=> ($right->getDate()?->getTimestamp() ?? 0)
+            static fn (Suivihabitude $left, Suivihabitude $right): int => $left->getDate()->getTimestamp() <=> $right->getDate()->getTimestamp()
         );
 
         $failedInRow = 0;

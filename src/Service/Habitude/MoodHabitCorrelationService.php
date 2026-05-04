@@ -31,10 +31,6 @@ final class MoodHabitCorrelationService
 
         /** @var Suivihabitude $suivi */
         foreach ($habitude->getSuivihabitudes() as $suivi) {
-            if ($suivi->getDate() === null) {
-                continue;
-            }
-
             $day = $suivi->getDate()->format('Y-m-d');
             $moods = $moodByDay[$day] ?? [];
 

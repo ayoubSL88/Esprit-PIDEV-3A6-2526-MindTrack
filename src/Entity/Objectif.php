@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 use Doctrine\Common\Collections\Collection;
@@ -90,12 +91,34 @@ class Objectif
         $this->statut = $value;
     }
 
-    #[ORM\OneToMany(mappedBy: "idObj", targetEntity: Jalonprogression::class)]
+    #[ORM\OneToMany(mappedBy: "idObj", targetEntity: Jalonprogression::class, cascade: ["persist", "remove"], orphanRemoval: true)]
     private Collection $jalonprogressions;
 
-    #[ORM\OneToMany(mappedBy: "idObj", targetEntity: Planaction::class)]
+    #[ORM\OneToMany(mappedBy: "idObj", targetEntity: Planaction::class, cascade: ["persist", "remove"], orphanRemoval: true)]
     private Collection $planactions;
 
-    #[ORM\OneToMany(mappedBy: "idObj", targetEntity: Planificateurintelligent::class)]
+    #[ORM\OneToMany(mappedBy: "idObj", targetEntity: Planificateurintelligent::class, cascade: ["persist", "remove"], orphanRemoval: true)]
     private Collection $planificateurintelligents;
+
+    public function __construct()
+    {
+        $this->jalonprogressions = new ArrayCollection();
+        $this->planactions = new ArrayCollection();
+        $this->planificateurintelligents = new ArrayCollection();
+    }
+
+    public function getJalonprogressions(): Collection
+    {
+        return $this->jalonprogressions;
+    }
+
+    public function getPlanactions(): Collection
+    {
+        return $this->planactions;
+    }
+
+    public function getPlanificateurintelligents(): Collection
+    {
+        return $this->planificateurintelligents;
+    }
 }

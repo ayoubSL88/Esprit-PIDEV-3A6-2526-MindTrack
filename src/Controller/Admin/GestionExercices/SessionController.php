@@ -25,7 +25,7 @@ final class SessionController extends AbstractController
     }
     
     #[Route('/user/{idU}', name: 'admin_sessions_user')]
-    public function userSessions($idU, EntityManagerInterface $entityManager, SessionRepository $sessionRepository): Response
+    public function userSessions(int $idU, EntityManagerInterface $entityManager, SessionRepository $sessionRepository): Response
     {
         $user = $entityManager->find(Utilisateur::class, $idU);
         
@@ -42,7 +42,7 @@ final class SessionController extends AbstractController
     }
     
     #[Route('/{idSession}', name: 'admin_sessions_show')]
-    public function show($idSession, SessionRepository $sessionRepository): Response
+    public function show(int $idSession, SessionRepository $sessionRepository): Response
     {
         $session = $sessionRepository->find($idSession);
         

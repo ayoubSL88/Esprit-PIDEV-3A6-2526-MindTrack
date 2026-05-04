@@ -19,7 +19,7 @@ class Exercice
     #[ORM\Id]
     #[ORM\Column(name:"id_ex", type: "integer")]
     #[ORM\GeneratedValue(strategy: "IDENTITY")]
-    private int $idEx;
+    private int $idEx = 0;
 
     #[ORM\Column(type: "string", length: 255)]
     #[Assert\Length(min: 3, max: 255, minMessage: "Minimum 3 caractères")]
@@ -48,10 +48,10 @@ class Exercice
     #[ORM\Column(type: "datetime", nullable: true)]
     private ?\DateTimeInterface $date_modification = null;
 
-    #[ORM\OneToMany(mappedBy: "exercice", targetEntity: Session::class, cascade: ["remove"])]
+    #[ORM\OneToMany(mappedBy: "exercice", targetEntity: Session::class, cascade: ["persist", "remove"], orphanRemoval: true)]
     private Collection $sessions;
 
-    #[ORM\OneToMany(mappedBy: "idExercice", targetEntity: Todo::class)]
+    #[ORM\OneToMany(mappedBy: "idExercice", targetEntity: Todo::class, cascade: ["persist", "remove"], orphanRemoval: true)]
     private Collection $todos;
 
     // Constructeur pour initialiser les collections

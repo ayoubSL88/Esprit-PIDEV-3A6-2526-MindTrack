@@ -15,12 +15,13 @@ final class ChatController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
         $message = trim((string) ($data['message'] ?? ''));
+        $conversation = is_array($data['history'] ?? null) ? $data['history'] : [];
 
         if ($message === '') {
             return new JsonResponse(['error' => 'Message vide'], 400);
         }
 
-        $reply = $ollamaChatService->generateGenericReply($message);
+        $reply = $ollamaChatService->generateGenericReply($message, $conversation);
 
         if ($reply === null) {
             return new JsonResponse([

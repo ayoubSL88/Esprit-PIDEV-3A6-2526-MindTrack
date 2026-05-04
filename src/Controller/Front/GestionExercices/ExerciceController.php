@@ -52,10 +52,19 @@ final class ExerciceController extends AbstractController
     #[Route('/list', name: 'front_gestion_exercices_index', methods: ['GET'])]
     public function index(Request $request, EntityManagerInterface $entityManager): Response
     {
-        $search = $request->query->get('search', '');
-        $difficulte = $request->query->get('difficulte', '');
-        $sort = $request->query->get('sort', 'nom');
-        $order = $request->query->get('order', 'ASC');
+        $search = trim((string) $request->query->get('search', ''));
+        $difficulte = trim((string) $request->query->get('difficulte', ''));
+        $sort = (string) $request->query->get('sort', 'nom');
+        $order = strtoupper((string) $request->query->get('order', 'ASC'));
+
+        $allowedSorts = ['nom', 'type', 'difficulte', 'date_creation'];
+        if (!in_array($sort, $allowedSorts, true)) {
+            $sort = 'nom';
+        }
+
+        if (!in_array($order, ['ASC', 'DESC'], true)) {
+            $order = 'ASC';
+        }
 
         $qb = $entityManager->getRepository(Exercice::class)->createQueryBuilder('e');
 

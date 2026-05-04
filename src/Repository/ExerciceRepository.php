@@ -5,6 +5,9 @@ use App\Entity\Exercice;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Exercice>
+ */
 class ExerciceRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -12,6 +15,9 @@ class ExerciceRepository extends ServiceEntityRepository
         parent::__construct($registry, Exercice::class);
     }
 
+    /**
+     * @return list<Exercice>
+     */
     public function findByFilters(?string $search = null, ?string $difficulte = null): array
     {
         $qb = $this->createQueryBuilder('e');

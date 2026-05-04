@@ -56,6 +56,9 @@ final class PlanactionController extends AbstractController
         return $this->redirectToRoute('admin_planaction_index');
     }
 
+    /**
+     * @return array{q: string, sort: string, status: string}
+     */
     private function getFilters(Request $request): array
     {
         return [
@@ -71,13 +74,16 @@ public function exportCsv(PlanactionRepository $repository): Response
 
     $response = new StreamedResponse(function () use ($planactions) {
         $handle = fopen('php://output', 'w+');
+        if ($handle === false) {
+            throw new \RuntimeException('Unable to open output stream for CSV export.');
+        }
 
         // Header CSV
         fputcsv($handle, ['ID', 'Titre', 'Description', 'Date début', 'Date fin', 'Statut']);
 
         foreach ($planactions as $p) {
             fputcsv($handle, [
-                $p->getId(),
+                $p->getIdPlan(),
                 $p->getTitre(),
                 $p->getDescription(),
                 $p->getDateDebut()?->format('Y-m-d'),

@@ -15,6 +15,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
+/**
+ * @extends AbstractCrudController<Utilisateur>
+ */
 final class UtilisateurCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
@@ -62,14 +65,8 @@ final class UtilisateurCrudController extends AbstractCrudController
 
     public function deleteEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
-        if (!$entityInstance instanceof Utilisateur) {
-            parent::deleteEntity($entityManager, $entityInstance);
-
-            return;
-        }
-
         $loggedUser = $this->getUser();
-        if ($loggedUser instanceof Utilisateur && $loggedUser->getIdU() === $entityInstance->getIdU()) {
+        if ($loggedUser !== null && $loggedUser->getUserIdentifier() === $entityInstance->getUserIdentifier()) {
             $this->addFlash('danger', 'You cannot delete your own account.');
 
             return;
@@ -80,16 +77,10 @@ final class UtilisateurCrudController extends AbstractCrudController
 
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
-        if (!$entityInstance instanceof Utilisateur) {
-            parent::updateEntity($entityManager, $entityInstance);
-
-            return;
-        }
-
         $loggedUser = $this->getUser();
         if (
-            $loggedUser instanceof Utilisateur
-            && $loggedUser->getIdU() === $entityInstance->getIdU()
+            $loggedUser !== null
+            && $loggedUser->getUserIdentifier() === $entityInstance->getUserIdentifier()
             && strtoupper((string) $entityInstance->getRoleU()) !== 'ADMIN'
         ) {
             $this->addFlash('danger', 'You cannot remove your own admin role.');

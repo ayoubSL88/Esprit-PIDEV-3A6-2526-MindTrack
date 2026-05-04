@@ -97,17 +97,9 @@ final class HumeurAnalyticsService
         $entries = [];
 
         foreach ($humeurs as $humeur) {
-            if (!$humeur instanceof Humeur) {
-                continue;
-            }
-
             $date = $humeur->getDate();
             $category = $humeur->getTypeHumeur();
             $intensity = $humeur->getIntensite();
-
-            if ($date === null || $category === null || $intensity === null) {
-                continue;
-            }
 
             $normalizedCategory = $this->normalizeMoodType($category);
             $normalizedIntensity = max(1, min(10, $intensity));
@@ -823,7 +815,7 @@ final class HumeurAnalyticsService
                 'low' => 1,
             ];
 
-            return ($weights[$right['priority']] ?? 0) <=> ($weights[$left['priority']] ?? 0);
+            return $weights[$right['priority']] <=> $weights[$left['priority']];
         });
 
         return array_slice($recommendations, 0, 3);

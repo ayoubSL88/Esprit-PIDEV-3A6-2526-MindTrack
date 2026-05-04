@@ -41,7 +41,7 @@ final class EmotionDetectionService
         $imagePaths = [];
         try {
             foreach ($dataUris as $dataUri) {
-                if (!is_string($dataUri) || trim($dataUri) === '') {
+                if (trim($dataUri) === '') {
                     continue;
                 }
 
@@ -198,7 +198,7 @@ final class EmotionDetectionService
         $groupedByType = [];
         foreach ($successfulDetections as $detection) {
             $type = $detection['type'];
-            $metrics = is_array($detection['metrics'] ?? null) ? $detection['metrics'] : [];
+            $metrics = $detection['metrics'];
             $dominantRaw = max(0.0, min(1.0, (float) ($metrics['dominant_emotion_raw'] ?? $detection['confidence'])));
             $weightedVote = max(0.05, ((float) $detection['confidence'] * 0.7) + ($dominantRaw * 0.3));
 
@@ -232,9 +232,6 @@ final class EmotionDetectionService
         });
 
         $winningGroup = reset($groupedByType);
-        if ($winningGroup === false) {
-            throw new \RuntimeException('The detector could not stabilize a mood result.');
-        }
 
         $winningFrames = $winningGroup['frames'];
         $confidenceTotal = 0.0;
@@ -248,10 +245,6 @@ final class EmotionDetectionService
             $weightedIntensityTotal += ((float) $frame['intensity']) * $weight;
 
             foreach ($frame['metrics'] as $metric => $value) {
-                if (!is_int($value) && !is_float($value)) {
-                    continue;
-                }
-
                 $averagedMetrics[$metric] = ($averagedMetrics[$metric] ?? 0.0) + (float) $value;
                 $metricsCount[$metric] = ($metricsCount[$metric] ?? 0) + 1;
             }

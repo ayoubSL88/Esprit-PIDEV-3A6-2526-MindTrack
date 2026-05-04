@@ -380,9 +380,13 @@ $planactions = $em
             $statut  = $obj->getStatut();
             $dateFin = $obj->getDateFin();
 
-            if ($statut === 'termine') $termines++;
-            elseif ($dateFin && $dateFin < $now && $statut !== 'termine') $enRetard++;
-            else $enCours++;
+            if ($statut === 'termine') {
+                $termines++;
+            } elseif ($dateFin && $dateFin < $now) {
+                $enRetard++;
+            } else {
+                $enCours++;
+            }
 
            $jalons = $em
     ->getRepository(\App\Entity\Jalonprogression::class)
@@ -435,6 +439,9 @@ $planactions = $em
     }
 
     // ── FILTERS ───────────────────────────────────────────────────
+    /**
+     * @return array{q: string, sort: string, status: string}
+     */
     private function getFilters(Request $request): array
     {
         return [

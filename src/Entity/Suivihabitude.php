@@ -15,15 +15,15 @@ class Suivihabitude
 
     #[ORM\Column(type: 'date')]
     #[Assert\NotNull(message: 'La date est obligatoire.')]
-    private ?\DateTimeInterface $date = null;
+    private \DateTimeInterface $date;
 
     #[ORM\Column(type: 'boolean')]
     private bool $etat = false;
 
     #[ORM\ManyToOne(targetEntity: Habitude::class, inversedBy: 'suivihabitudes')]
-    #[ORM\JoinColumn(name: 'idHabitude', referencedColumnName: 'id_habitude', onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'habitude_id', referencedColumnName: 'id_habitude', nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull(message: 'Selectionnez une habitude.')]
-    private ?Habitude $idHabitude = null;
+    private Habitude $idHabitude;
 
     #[ORM\Column(type: 'integer')]
     #[Assert\NotNull(message: 'La valeur est obligatoire.')]
@@ -42,12 +42,17 @@ class Suivihabitude
         return $this;
     }
 
-    public function getDate(): ?\DateTimeInterface
+    public function __construct()
+    {
+        $this->date = new \DateTime();
+    }
+
+    public function getDate(): \DateTimeInterface
     {
         return $this->date;
     }
 
-    public function setDate(?\DateTimeInterface $value): self
+    public function setDate(\DateTimeInterface $value): self
     {
         $this->date = $value;
 
@@ -66,12 +71,12 @@ class Suivihabitude
         return $this;
     }
 
-    public function getIdHabitude(): ?Habitude
+    public function getIdHabitude(): Habitude
     {
         return $this->idHabitude;
     }
 
-    public function setIdHabitude(?Habitude $value): self
+    public function setIdHabitude(Habitude $value): self
     {
         $this->idHabitude = $value;
 

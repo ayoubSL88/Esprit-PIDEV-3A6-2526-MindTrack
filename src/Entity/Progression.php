@@ -14,7 +14,7 @@ class Progression
     private ?int $idProgression = null;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
-    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id_u", nullable: false)]
+    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "user_id", nullable: false)]
     private ?Utilisateur $user = null;
 
     #[ORM\ManyToOne(targetEntity: Exercice::class)]

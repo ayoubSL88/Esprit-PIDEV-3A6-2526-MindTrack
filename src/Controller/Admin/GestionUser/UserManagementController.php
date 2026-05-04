@@ -68,7 +68,7 @@ final class UserManagementController extends AbstractController
             } else {
                 $age = (int) $validated['data']['age'];
                 $plainPassword = (string) $validated['data']['password'];
-                $nextUserId = (int) $connection->fetchOne('SELECT COALESCE(MAX(id_u), 0) + 1 FROM utilisateur');
+                $nextUserId = (int) $connection->fetchOne('SELECT COALESCE(MAX(user_id), 0) + 1 FROM utilisateur');
 
                 $user = new Utilisateur();
                 $user->setIdU($nextUserId);

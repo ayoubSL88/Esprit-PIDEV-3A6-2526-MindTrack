@@ -28,13 +28,11 @@ class GenerateEntitiesCommand extends Command
      * Constructor.
      *
      * @param Connection $connection The database connection instance.
-     * @param Filesystem $filesystem The filesystem instance.
      */
-    public function __construct(Connection $connection, Filesystem $filesystem)
+    public function __construct(Connection $connection)
     {
         parent::__construct();
         $this->connection = $connection;
-        // $this->filesystem = $filesystem;
     }
 
     /**
@@ -172,8 +170,8 @@ class GenerateEntitiesCommand extends Command
     /**
      * Generates necessary import statements based on detected relations.
      *
-     * @param array $oneToManyRelations OneToMany relations.
      * @param array $manyToOneRelationsName ManyToOne relations.
+     * @param array $oneToManyRelationsName OneToMany relations.
      * @param string $className The name of the entity class.
      * @return string Formatted import statements.
      */

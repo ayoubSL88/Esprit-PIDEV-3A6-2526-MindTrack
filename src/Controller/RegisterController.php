@@ -89,7 +89,7 @@ final class RegisterController extends AbstractController
                 ]);
             }
 
-            $nextUserId = (int) $connection->fetchOne('SELECT COALESCE(MAX(id_u), 0) + 1 FROM utilisateur');
+            $nextUserId = (int) $connection->fetchOne('SELECT COALESCE(MAX(user_id), 0) + 1 FROM utilisateur');
             $faceEnrollment = null;
 
             if ($faceEnabled) {
@@ -128,7 +128,7 @@ final class RegisterController extends AbstractController
             $user->setRoleU('USER');
             $user->setFace_subject((string) ($faceEnrollment['subject'] ?? ''));
             $user->setFace_image_id((string) ($faceEnrollment['image_id'] ?? ''));
-            $user->setFace_enabled($faceEnabled && $faceEnrollment !== null);
+            $user->setFace_enabled($faceEnabled);
             $user->setProfile_picture_path('');
             $user->setTotp_secret('');
             $user->setTotp_enabled(false);

@@ -303,9 +303,6 @@ final class OverviewController extends AbstractController
     private function guardSuiviFormAgainstBadContent(FormInterface $form, Suivihabitude $suivi, BadContentDetectionService $badContentDetectionService): void
     {
         $habit = $suivi->getIdHabitude();
-        if (!$habit instanceof Habitude) {
-            return;
-        }
 
         $result = $badContentDetectionService->analyzeFields([
             'nom de l habitude' => $habit->getNom(),
@@ -328,8 +325,8 @@ final class OverviewController extends AbstractController
         $result = $badContentDetectionService->analyzeFields([
             'message' => $rappel->getMessage(),
             'jours' => $rappel->getJours(),
-            'nom de l habitude' => $habit?->getNom(),
-            'objectif de l habitude' => $habit?->getObjectif(),
+            'nom de l habitude' => $habit->getNom(),
+            'objectif de l habitude' => $habit->getObjectif(),
         ]);
 
         if (!$result['blocked']) {

@@ -214,6 +214,7 @@
 
     let isOpen = false;
     let isSending = false;
+    let conversation = [];
 
     const scrollBottom = () => {
         el.messages.scrollTop = el.messages.scrollHeight;
@@ -331,6 +332,7 @@
         if (!text) return;
 
         addMessage('user', text);
+        conversation.push({ role: 'user', content: text });
         el.input.value = '';
         autoResize();
         isSending = true;
@@ -346,7 +348,7 @@
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
                 },
-                body: JSON.stringify({ message: text }),
+                body: JSON.stringify({ message: text, history: conversation }),
             });
 
             // Be defensive: if we get HTML (login redirect page) or empty body, don't crash.
@@ -363,6 +365,10 @@
             }
 
             addMessage('bot', data.reply || cfg.errMsg, res.ok ? 'default' : 'warning');
+
+            if (res.ok && data.reply) {
+                conversation.push({ role: 'assistant', content: String(data.reply) });
+            }
 
             (data.highlights || []).forEach(item => {
                 addMessage('bot', `- ${item}`, res.ok ? 'default' : 'warning');
@@ -422,6 +428,7 @@
     };
 
     const clearChat = () => {
+        conversation = [];
         el.messages.innerHTML = '';
         el.messages.appendChild(dateBadge());
         addMessage('bot', cfg.welcome);

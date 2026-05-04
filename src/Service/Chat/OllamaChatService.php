@@ -17,6 +17,7 @@ final class OllamaChatService
     private const TAGS_TIMEOUT_SECONDS = 5;
     private const MAX_HABITS_IN_PROMPT = 6;
     private const MAX_REMINDERS_IN_PROMPT = 4;
+    private const MAX_CONVERSATION_MESSAGES = 8;
 
     public function __construct(
         private readonly ?string $apiUrl,
@@ -41,6 +42,7 @@ final class OllamaChatService
         array $advancedInsights,
         string $fallbackReply,
         array $fallbackHighlights = [],
+        array $conversation = [],
     ): ?array {
         if ($this->isDisabled()) {
             return null;
@@ -61,7 +63,7 @@ final class OllamaChatService
                 ],
                 [
                     'role' => 'user',
-                    'content' => $this->buildUserPrompt($message, $habitudes, $rappels, $todaySuivis, $advancedInsights, $fallbackReply, $fallbackHighlights),
+                    'content' => $this->buildUserPrompt($message, $habitudes, $rappels, $todaySuivis, $advancedInsights, $fallbackReply, $fallbackHighlights, $conversation),
                 ],
             ],
             'options' => [
@@ -88,7 +90,7 @@ final class OllamaChatService
         ];
     }
 
-    public function generateGenericReply(string $message): ?string
+    public function generateGenericReply(string $message, array $conversation = []): ?string
     {
         if ($this->isDisabled()) {
             return null;
@@ -109,7 +111,7 @@ final class OllamaChatService
                 ],
                 [
                     'role' => 'user',
-                    'content' => $message,
+                    'content' => $this->buildGenericPrompt($message, $conversation),
                 ],
             ],
             'options' => [
@@ -190,6 +192,7 @@ PROMPT;
         array $advancedInsights,
         string $fallbackReply,
         array $fallbackHighlights,
+        array $conversation,
     ): string {
         $completedToday = count(array_filter(
             $todaySuivis,
@@ -214,17 +217,22 @@ PROMPT;
         $reminderLines = array_map(
             static fn (Rappel_habitude $rappel): string => sprintf(
                 '- %s a %s (%s)',
-                $rappel->getIdHabitude()?->getNom() ?? 'Habitude',
-                $rappel->getHeureRappel() ?? 'heure inconnue',
+                $rappel->getIdHabitude()->getNom(),
+                $rappel->getHeureRappel(),
                 $rappel->getJours() ?: 'jours non precises'
             ),
             array_slice($rappels, 0, self::MAX_REMINDERS_IN_PROMPT)
         );
 
+        $conversationContext = $this->buildConversationContext($conversation);
+        $conversationBlock = $conversationContext !== ''
+            ? "Conversation recente:\n{$conversationContext}\n\n"
+            : '';
+
         return <<<PROMPT
 Question: {$message}
 
-Resume:
+{$conversationBlock}Resume:
 - habitudes: {$this->countItems($habitudes)}
 - rappels: {$this->countItems($rappels)}
 - suivis completes aujourd hui: {$completedToday}
@@ -235,15 +243,50 @@ Habitudes:
 Rappels:
 {$this->joinLines($reminderLines, '- Aucun rappel actif')}
 
-<<<<<<< HEAD
 Reponds naturellement et directement a la question de l'utilisateur.
 Si le contexte est insuffisant, donne une reponse courte, honnete et utile sans recopier un texte de secours.
-=======
-Si le contexte ne suffit pas, reste honnete et propose une action simple.
-Reponse locale de secours disponible si besoin:
-{$fallbackSection}
->>>>>>> f0e0ca3e984f8ce7962e8acf24e795e2715b4e1c
 PROMPT;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $conversation
+     */
+    private function buildGenericPrompt(string $message, array $conversation): string
+    {
+        $conversationContext = $this->buildConversationContext($conversation);
+
+        if ($conversationContext === '') {
+            return $message;
+        }
+
+        return <<<PROMPT
+Conversation recente:
+{$conversationContext}
+
+Question actuelle: {$message}
+PROMPT;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $conversation
+     */
+    private function buildConversationContext(array $conversation): string
+    {
+        $lines = [];
+
+        foreach (array_slice($conversation, -self::MAX_CONVERSATION_MESSAGES) as $entry) {
+            $role = strtolower(trim((string) ($entry['role'] ?? '')));
+            $content = trim((string) ($entry['content'] ?? ''));
+
+            if ($content === '' || !in_array($role, ['user', 'assistant'], true)) {
+                continue;
+            }
+
+            $label = $role === 'assistant' ? 'MindBot' : 'Utilisateur';
+            $lines[] = sprintf('%s: %s', $label, $content);
+        }
+
+        return $lines !== [] ? implode("\n", $lines) : '';
     }
 
     private function request(array $payload): ?array
@@ -526,13 +569,14 @@ PROMPT;
             ],
         ]);
 
+        $http_response_header = [];
         $body = @file_get_contents($url, false, $context);
         if ($body === false) {
             $error = error_get_last();
 
-            return [0, null, is_array($error) ? (string) ($error['message'] ?? 'stream request failed') : 'stream request failed'];
+            return [0, null, is_array($error) ? (string) $error['message'] : 'stream request failed'];
         }
 
-        return [$this->extractStatusCode($http_response_header ?? []), $body, null];
+        return [$this->extractStatusCode($http_response_header), $body, null];
     }
 }

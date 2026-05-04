@@ -70,9 +70,6 @@ final class PasswordResetService
 
         $code = str_pad((string) random_int(0, 999999), self::CODE_LENGTH, '0', STR_PAD_LEFT);
         $codeHash = password_hash($code, PASSWORD_DEFAULT);
-        if ($codeHash === false) {
-            throw new \RuntimeException('Unable to hash the password reset code.');
-        }
 
         $nextTokenId = (int) $this->connection->fetchOne('SELECT COALESCE(MAX(id), 0) + 1 FROM password_reset_tokens');
 

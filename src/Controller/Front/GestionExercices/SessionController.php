@@ -68,11 +68,11 @@ final class SessionController extends AbstractController
         $data = json_decode($request->getContent(), true);
         
         $session->setTerminee(true);
-        $session->setDateFin(new \DateTime());
+        $dateFin = new \DateTime();
+        $session->setDateFin($dateFin);
         
         // Calcul de la durée réelle
         $dateDebut = $session->getDateDebut();
-        $dateFin = $session->getDateFin();
         $dureeReelle = $dateFin->getTimestamp() - $dateDebut->getTimestamp();
         $session->setDureeReelle($dureeReelle);
         

@@ -348,10 +348,7 @@ final class ProfileController extends AbstractController
         $entityManager->flush();
 
         $tokenStorage->setToken(null);
-        $session = $request->getSession();
-        if ($session !== null) {
-            $session->invalidate();
-        }
+        $request->getSession()->invalidate();
 
         return $this->redirectToRoute('app_login');
     }
@@ -366,7 +363,7 @@ final class ProfileController extends AbstractController
             return 'The uploaded profile picture is invalid.';
         }
 
-        if ($uploadedAvatar->getSize() !== null && $uploadedAvatar->getSize() > 4 * 1024 * 1024) {
+        if ($uploadedAvatar->getSize() > 4 * 1024 * 1024) {
             return 'Profile picture must stay under 4 MB.';
         }
 
@@ -380,7 +377,12 @@ final class ProfileController extends AbstractController
 
     private function storeProfilePicture(UploadedFile $uploadedAvatar, Utilisateur $user, SluggerInterface $slugger): string
     {
-        $uploadDir = (string) $this->getParameter('app.profile_pictures_dir');
+        $uploadDirParameter = $this->getParameter('app.profile_pictures_dir');
+        if (!is_string($uploadDirParameter) || $uploadDirParameter === '') {
+            throw new \RuntimeException('Parameter "app.profile_pictures_dir" must be a non-empty string.');
+        }
+
+        $uploadDir = $uploadDirParameter;
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0775, true);
         }

@@ -46,15 +46,15 @@ class Habitude
     private string $unit = '';
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'habitudes')]
-    #[ORM\JoinColumn(name: 'id_u', referencedColumnName: 'id_u', nullable: true, onDelete: 'SET NULL')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'user_id', nullable: true, onDelete: 'SET NULL')]
     private ?Utilisateur $idU = null;
 
     /** @var Collection<int, Rappel_habitude> */
-    #[ORM\OneToMany(mappedBy: 'idHabitude', targetEntity: Rappel_habitude::class)]
+    #[ORM\OneToMany(mappedBy: 'idHabitude', targetEntity: Rappel_habitude::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $rappel_habitudes;
 
     /** @var Collection<int, Suivihabitude> */
-    #[ORM\OneToMany(mappedBy: 'idHabitude', targetEntity: Suivihabitude::class)]
+    #[ORM\OneToMany(mappedBy: 'idHabitude', targetEntity: Suivihabitude::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $suivihabitudes;
 
     public function __construct()
@@ -184,9 +184,7 @@ class Habitude
 
     public function removeRappel_habitude(Rappel_habitude $rappel_habitude): self
     {
-        if ($this->rappel_habitudes->removeElement($rappel_habitude) && $rappel_habitude->getIdHabitude() === $this) {
-            $rappel_habitude->setIdHabitude(null);
-        }
+        $this->rappel_habitudes->removeElement($rappel_habitude);
 
         return $this;
     }
@@ -211,9 +209,7 @@ class Habitude
 
     public function removeSuivihabitude(Suivihabitude $suivihabitude): self
     {
-        if ($this->suivihabitudes->removeElement($suivihabitude) && $suivihabitude->getIdHabitude() === $this) {
-            $suivihabitude->setIdHabitude(null);
-        }
+        $this->suivihabitudes->removeElement($suivihabitude);
 
         return $this;
     }

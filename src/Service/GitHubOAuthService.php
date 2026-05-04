@@ -113,10 +113,6 @@ final class GitHubOAuthService
     {
         $emails = $this->request(self::USER_EMAILS_URL, null, true, $accessToken);
 
-        if (!is_array($emails)) {
-            throw new GitHubAuthenticationException('GitHub returned an invalid email payload.');
-        }
-
         foreach ($emails as $emailRecord) {
             if (!is_array($emailRecord)) {
                 continue;

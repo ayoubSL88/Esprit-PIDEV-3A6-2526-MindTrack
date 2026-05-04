@@ -27,9 +27,6 @@ final class CurrentUtilisateurResolver
         }
 
         $session = $this->requestStack->getSession();
-        if ($session === null) {
-            return null;
-        }
 
         foreach (['current_user_id', 'user_id', 'utilisateur_id', 'id_u'] as $key) {
             $value = $session->get($key);

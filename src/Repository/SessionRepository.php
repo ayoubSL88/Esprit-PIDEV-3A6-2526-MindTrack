@@ -7,6 +7,9 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+/**
+ * @extends ServiceEntityRepository<Session>
+ */
 class SessionRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -14,6 +17,9 @@ class SessionRepository extends ServiceEntityRepository
         parent::__construct($registry, Session::class);
     }
 
+    /**
+     * @return list<Session>
+     */
     public function findSessionsByUser(Utilisateur $user): array
     {
         return $this->createQueryBuilder('s')
@@ -24,6 +30,9 @@ class SessionRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return list<Session>
+     */
     public function findTermineesByUser(UserInterface $user): array
     {
         return $this->createQueryBuilder('s')
@@ -35,6 +44,9 @@ class SessionRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return list<Session>
+     */
     public function findAllSessionsForAdmin(): array
     {
         return $this->createQueryBuilder('s')

@@ -19,8 +19,23 @@ class Planaction
     #[ORM\Column(type: "integer")]
     private int $priorite;
 
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    private ?string $titre = null;
+
+    #[ORM\Column(type: "text", nullable: true)]
+    private ?string $description = null;
+
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private ?\DateTimeInterface $dateDebut = null;
+
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private ?\DateTimeInterface $dateFin = null;
+
+    #[ORM\Column(type: "string", length: 50, nullable: true)]
+    private ?string $statut = null;
+
         #[ORM\ManyToOne(targetEntity: Objectif::class, inversedBy: "planactions")]
-    #[ORM\JoinColumn(name: 'idObj', referencedColumnName: 'id_obj', onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'objectif_id', referencedColumnName: 'id_obj', nullable: false, onDelete: 'CASCADE')]
     private Objectif $idObj;
 
     public function getIdPlan()
@@ -61,5 +76,60 @@ class Planaction
     public function setIdObj($value)
     {
         $this->idObj = $value;
+    }
+
+    public function getTitre(): ?string
+    {
+        return $this->titre;
+    }
+
+    public function setTitre(?string $value): self
+    {
+        $this->titre = $value;
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $value): self
+    {
+        $this->description = $value;
+        return $this;
+    }
+
+    public function getDateDebut(): ?\DateTimeInterface
+    {
+        return $this->dateDebut;
+    }
+
+    public function setDateDebut(?\DateTimeInterface $value): self
+    {
+        $this->dateDebut = $value;
+        return $this;
+    }
+
+    public function getDateFin(): ?\DateTimeInterface
+    {
+        return $this->dateFin;
+    }
+
+    public function setDateFin(?\DateTimeInterface $value): self
+    {
+        $this->dateFin = $value;
+        return $this;
+    }
+
+    public function getStatut(): ?string
+    {
+        return $this->statut;
+    }
+
+    public function setStatut(?string $value): self
+    {
+        $this->statut = $value;
+        return $this;
     }
 }

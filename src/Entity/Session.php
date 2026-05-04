@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Exercice;
 
 #[ORM\Entity]
@@ -16,7 +15,7 @@ class Session
     private ?int $idSession = null;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
-    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id_u", nullable: false)]
+    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "user_id", nullable: false)]
     private ?Utilisateur $user = null;
 
     #[ORM\Column(type: "date")]
@@ -47,8 +46,8 @@ class Session
     private ?array $steps = null;
 
     #[ORM\ManyToOne(targetEntity: Exercice::class, inversedBy: "sessions")]
-    #[ORM\JoinColumn(name: 'idEx', referencedColumnName: 'id_ex', nullable: false, onDelete: 'CASCADE')]
-    private ?Exercice $exercice = null;
+    #[ORM\JoinColumn(name: 'exercice_id', referencedColumnName: 'id_ex', nullable: false, onDelete: 'CASCADE')]
+    private Exercice $exercice;
 
     // Constructeur
     public function __construct()
@@ -170,12 +169,12 @@ class Session
         return $this;
     }
 
-    public function getExercice(): ?Exercice
+    public function getExercice(): Exercice
     {
         return $this->exercice;
     }
 
-    public function setExercice(?Exercice $exercice): self
+    public function setExercice(Exercice $exercice): self
     {
         $this->exercice = $exercice;
         return $this;

@@ -10,34 +10,21 @@ use App\Entity\Suivihabitude;
 final class HabitCompletionService
 {
     public function isCompleted(Suivihabitude $suivi): bool
-{
-    $habitude = $suivi->getIdHabitude();
+    {
+        $habitude = $suivi->getIdHabitude();
 
-    if ($habitude === null) {
-        return $suivi->getEtat();
-    }
+        if ($habitude->getHabitType() === 'NUMERIC') {
+            $valeur = $suivi->getValeur();
 
-    if ($habitude->getHabitType() === 'NUMERIC') {
-        $valeur = $suivi->getValeur();
-
-        // Bug 3 corrigé : une valeur null = suivi enregistré mais pas complété
-        if ($valeur === null) {
-            return false;
+            return $valeur >= $habitude->getTargetValue();
         }
 
-        return $valeur >= $habitude->getTargetValue();
+        return $suivi->getEtat();
     }
-
-    return $suivi->getEtat();
-}
 
     public function completionRatio(Suivihabitude $suivi): float
     {
         $habitude = $suivi->getIdHabitude();
-
-        if ($habitude === null) {
-            return $suivi->getEtat() ? 1.0 : 0.0;
-        }
 
         if ($habitude->getHabitType() === 'NUMERIC') {
             $target = max(1, $habitude->getTargetValue());
@@ -53,7 +40,7 @@ final class HabitCompletionService
         $days = [];
 
         foreach ($habitude->getSuivihabitudes() as $suivi) {
-            if (!$this->isCompleted($suivi) || $suivi->getDate() === null) {
+            if (!$this->isCompleted($suivi)) {
                 continue;
             }
 

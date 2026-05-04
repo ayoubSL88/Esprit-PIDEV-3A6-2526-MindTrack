@@ -14,7 +14,7 @@ class Planificateurintelligent
     private int $idPlanificateur;
 
         #[ORM\ManyToOne(targetEntity: Objectif::class, inversedBy: "planificateurintelligents")]
-    #[ORM\JoinColumn(name: 'idObj', referencedColumnName: 'id_obj', onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'objectif_id', referencedColumnName: 'id_obj', nullable: false, onDelete: 'CASCADE')]
     private Objectif $idObj;
 
     #[ORM\Column(type: "string", length: 30)]

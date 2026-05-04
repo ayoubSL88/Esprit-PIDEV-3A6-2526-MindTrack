@@ -60,6 +60,9 @@ final class ObjectifController extends AbstractController
         return $this->redirectToRoute('admin_objectif_index');
     }
 
+    /**
+     * @return array{q: string, sort: string, status: string}
+     */
     private function getFilters(Request $request): array
     {
         return [
@@ -75,6 +78,9 @@ public function exportCsv(ObjectifRepository $repository): Response
 
     $response = new StreamedResponse(function () use ($objectifs) {
         $handle = fopen('php://output', 'w+');
+        if ($handle === false) {
+            throw new \RuntimeException('Unable to open output stream for CSV export.');
+        }
 
         // header CSV
         fputcsv($handle, ['ID', 'Titre', 'Description', 'Début', 'Fin', 'Statut']);

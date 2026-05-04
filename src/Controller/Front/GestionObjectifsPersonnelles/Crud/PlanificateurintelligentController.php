@@ -133,6 +133,9 @@ final class PlanificateurintelligentController extends AbstractController
         return $this->redirectToRoute('front_planificateurintelligent_index');
     }
 
+    /**
+     * @return array{q: string, sort: string, status: string}
+     */
     private function getFilters(Request $request): array
     {
         return [

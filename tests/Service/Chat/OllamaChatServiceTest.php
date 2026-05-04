@@ -11,6 +11,30 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 
 final class OllamaChatServiceTest extends TestCase
 {
+    public function testGenerateGenericReplyReturnsNullWhenServiceIsDisabled(): void
+    {
+        $service = new OllamaChatService(
+            '',
+            'llama3.2:1b',
+            new MockHttpClient()
+        );
+
+        self::assertNull($service->generateGenericReply('Bonjour'));
+    }
+
+    public function testGenerateGenericReplyReturnsNullWhenModelReplyIsEmpty(): void
+    {
+        $service = new OllamaChatService(
+            'http://127.0.0.1:11434/api/chat',
+            'llama3.2:1b',
+            new MockHttpClient([
+                new MockResponse('{"message":{"content":"   "}}', ['http_code' => 200]),
+            ])
+        );
+
+        self::assertNull($service->generateGenericReply('Salut'));
+    }
+
     public function testGenerateHabitReplyReturnsNullWhenServiceIsUnavailable(): void
     {
         $service = new OllamaChatService(
@@ -70,5 +94,23 @@ final class OllamaChatServiceTest extends TestCase
         self::assertSame('http://127.0.0.1:11434/api/chat', $status['configuredUrl']);
         self::assertSame('llama3.2:1b', $status['resolvedModel']);
         self::assertSame(['llama3.2:1b', 'phi3:latest'], $status['installedModels']);
+    }
+
+    public function testGetStatusHandlesOfflineTagsEndpoint(): void
+    {
+        $service = new OllamaChatService(
+            'http://127.0.0.1:11434',
+            'llama3.2:1b',
+            new MockHttpClient([
+                new MockResponse('', ['http_code' => 503]),
+            ])
+        );
+
+        $status = $service->getStatus();
+
+        self::assertTrue($status['enabled']);
+        self::assertFalse($status['online']);
+        self::assertSame('llama3.2:1b', $status['resolvedModel']);
+        self::assertSame([], $status['installedModels']);
     }
 }

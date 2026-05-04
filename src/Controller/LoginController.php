@@ -165,7 +165,7 @@ final class LoginController extends AbstractController
         $user = $utilisateurRepository->findOneBy(['emailU' => $googleUser['email']]);
 
         if ($user === null) {
-            $nextUserId = (int) $connection->fetchOne('SELECT COALESCE(MAX(id_u), 0) + 1 FROM utilisateur');
+            $nextUserId = (int) $connection->fetchOne('SELECT COALESCE(MAX(user_id), 0) + 1 FROM utilisateur');
             $user = new Utilisateur();
             $user->setIdU($nextUserId);
             $user->setNomU($googleUser['family_name'] !== '' ? $googleUser['family_name'] : 'Google');
@@ -255,7 +255,7 @@ final class LoginController extends AbstractController
         $user = $utilisateurRepository->findOneBy(['emailU' => $gitHubUser['email']]);
 
         if ($user === null) {
-            $nextUserId = (int) $connection->fetchOne('SELECT COALESCE(MAX(id_u), 0) + 1 FROM utilisateur');
+            $nextUserId = (int) $connection->fetchOne('SELECT COALESCE(MAX(user_id), 0) + 1 FROM utilisateur');
             $user = new Utilisateur();
             $user->setIdU($nextUserId);
             $user->setNomU($gitHubUser['family_name'] !== '' ? $gitHubUser['family_name'] : 'GitHub');

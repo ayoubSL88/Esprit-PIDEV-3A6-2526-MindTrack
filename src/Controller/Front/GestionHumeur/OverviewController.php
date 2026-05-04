@@ -118,7 +118,7 @@ final class OverviewController extends AbstractController
             ],
             'entry' => [
                 'idH' => $humeur->getIdH(),
-                'date' => $humeur->getDate()?->format('Y-m-d'),
+                'date' => $humeur->getDate()->format('Y-m-d'),
                 'showUrl' => $this->generateUrl('front_gestion_humeur_show', [
                     'idH' => $humeur->getIdH(),
                 ]),

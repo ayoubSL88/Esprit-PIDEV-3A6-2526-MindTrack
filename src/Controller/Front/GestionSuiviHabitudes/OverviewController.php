@@ -94,7 +94,7 @@ final class OverviewController extends AbstractController
         $todayKey = (new \DateTimeImmutable('today'))->format('Y-m-d');
         $todaySuivis = array_values(array_filter(
             $suivis,
-            static fn (Suivihabitude $suivi): bool => $suivi->getDate()?->format('Y-m-d') === $todayKey
+            static fn (Suivihabitude $suivi): bool => $suivi->getDate()->format('Y-m-d') === $todayKey
         ));
 
         $recentSuivis = array_slice($suivis, 0, 6);
@@ -125,7 +125,7 @@ final class OverviewController extends AbstractController
         $notificationRappels = array_map(
             static fn (Rappel_habitude $rappel): array => [
                 'id' => $rappel->getIdRappel(),
-                'habitude' => $rappel->getIdHabitude()?->getNom() ?? 'Habitude',
+                'habitude' => $rappel->getIdHabitude()->getNom(),
                 'message' => $rappel->getMessage(),
                 'heure' => $rappel->getHeureRappel(),
                 'jours' => $rappel->getJours(),
@@ -181,6 +181,7 @@ final class OverviewController extends AbstractController
     ): JsonResponse {
         $payload = json_decode($request->getContent(), true);
         $message = trim((string) ($payload['message'] ?? ''));
+        $conversation = is_array($payload['history'] ?? null) ? $payload['history'] : [];
 
         if ($message === '') {
             return new JsonResponse(['reply' => 'Ecrivez votre question pour que je puisse vous aider.', 'highlights' => []], 400);
@@ -196,8 +197,8 @@ final class OverviewController extends AbstractController
             return new JsonResponse([
                 'reply' => 'Votre message a ete bloque par le filtre de securite badcontent. Reformulez votre demande avec un texte plus respectueux et non dangereux.',
                 'highlights' => array_values(array_filter([
-                    $moderation['reason'] !== '' ? $moderation['reason'] : null,
-                    $moderation['categories'] !== [] ? 'Categories: ' . implode(', ', $moderation['categories']) : null,
+                    !empty(trim($moderation['reason'])) ? $moderation['reason'] : null,
+                    !empty($moderation['categories']) ? 'Categories: ' . implode(', ', $moderation['categories']) : null,
                 ], static fn ($value): bool => is_string($value) && $value !== '')),
                 'moderation' => $moderation,
             ], 422);
@@ -235,12 +236,11 @@ final class OverviewController extends AbstractController
             $todayKey = (new \DateTimeImmutable('today'))->format('Y-m-d');
             $todaySuivis = array_values(array_filter(
                 $suivis,
-                static fn (Suivihabitude $suivi): bool => $suivi->getDate()?->format('Y-m-d') === $todayKey
+                static fn (Suivihabitude $suivi): bool => $suivi->getDate()->format('Y-m-d') === $todayKey
             ));
 
             $fallbackReply = $habitChatbotService->buildReply($message, $habitudes, $rappels, $todaySuivis, $advancedInsights);
 
-<<<<<<< HEAD
             try {
                 $ollamaReply = $ollamaChatService->generateHabitReply(
                     $message,
@@ -249,7 +249,8 @@ final class OverviewController extends AbstractController
                     $todaySuivis,
                     $advancedInsights,
                     $fallbackReply['reply'],
-                    $fallbackReply['highlights']
+                    $fallbackReply['highlights'],
+                    $conversation
                 );
             } catch (\Throwable) {
                 $ollamaReply = null;
@@ -263,18 +264,12 @@ final class OverviewController extends AbstractController
                 'source' => 'fallback',
             ], 503);
         }
-=======
-        return new JsonResponse($ollamaReply ?? ($fallbackReply + [
-            'source' => 'fallback',
-            'debug' => 'Ollama indisponible, trop lent, ou reponse vide.',
-        ]));
     }
 
     #[Route('/chatbot/status', name: 'chatbot_status', methods: ['GET'])]
     public function chatbotStatus(OllamaChatService $ollamaChatService): JsonResponse
     {
         return new JsonResponse($ollamaChatService->getStatus());
->>>>>>> f0e0ca3e984f8ce7962e8acf24e795e2715b4e1c
     }
 
     #[Route('/habitude/new', name: 'habitude_new', methods: ['GET', 'POST'])]
@@ -396,7 +391,7 @@ final class OverviewController extends AbstractController
             $suivi->setIdSuivi($suivihabitudeRepository->nextId());
             $habitude = $suivi->getIdHabitude();
 
-            if ($habitude !== null && $habitude->getHabitType() !== 'NUMERIC') {
+            if ($habitude->getHabitType() !== 'NUMERIC') {
                 $suivi->setEtat(true);
             }
 
@@ -436,15 +431,13 @@ final class OverviewController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $habitude = $suivihabitude->getIdHabitude();
-            if ($habitude !== null && $habitude->getHabitType() !== 'NUMERIC') {
+            if ($habitude->getHabitType() !== 'NUMERIC') {
                 $suivihabitude->setEtat(true);
             }
 
             $entityManager->flush();
 
-            if ($habitude !== null) {
-                $entityManager->refresh($habitude);
-            }
+            $entityManager->refresh($habitude);
 
             $this->addFlash('success', 'Suivi mis a jour.');
 
@@ -576,7 +569,7 @@ final class OverviewController extends AbstractController
     private function findReminderForHabit(int $habitId, array $rappels): ?Rappel_habitude
     {
         foreach ($rappels as $rappel) {
-            if ($rappel->getIdHabitude()?->getIdHabitude() === $habitId) {
+            if ($rappel->getIdHabitude()->getIdHabitude() === $habitId) {
                 return $rappel;
             }
         }
@@ -587,8 +580,13 @@ final class OverviewController extends AbstractController
     private function denyAccessUnlessHabitOwner(Habitude $habitude, CurrentUtilisateurResolver $currentUtilisateurResolver): void
     {
         $currentUser = $currentUtilisateurResolver->resolve();
+        $owner = $habitude->getIdU();
 
-        if (!$currentUser instanceof Utilisateur || $habitude->getIdU()?->getIdU() !== $currentUser->getIdU()) {
+        if (
+            !$currentUser instanceof Utilisateur
+            || !$owner instanceof Utilisateur
+            || $owner->getIdU() !== $currentUser->getIdU()
+        ) {
             throw new NotFoundHttpException('Cette habitude est introuvable.');
         }
     }
@@ -597,20 +595,12 @@ final class OverviewController extends AbstractController
     {
         $habitude = $suivi->getIdHabitude();
 
-        if (!$habitude instanceof Habitude) {
-            throw new NotFoundHttpException('Suivi introuvable.');
-        }
-
         $this->denyAccessUnlessHabitOwner($habitude, $currentUtilisateurResolver);
     }
 
     private function denyAccessUnlessRappelOwner(Rappel_habitude $rappel, CurrentUtilisateurResolver $currentUtilisateurResolver): void
     {
         $habitude = $rappel->getIdHabitude();
-
-        if (!$habitude instanceof Habitude) {
-            throw new NotFoundHttpException('Rappel introuvable.');
-        }
 
         $this->denyAccessUnlessHabitOwner($habitude, $currentUtilisateurResolver);
     }
@@ -695,9 +685,6 @@ final class OverviewController extends AbstractController
     private function guardSuiviFormAgainstBadContent(FormInterface $form, Suivihabitude $suivi, BadContentDetectionService $badContentDetectionService): void
     {
         $habit = $suivi->getIdHabitude();
-        if (!$habit instanceof Habitude) {
-            return;
-        }
 
         $result = $badContentDetectionService->analyzeFields([
             'nom de l habitude' => $habit->getNom(),
@@ -720,8 +707,8 @@ final class OverviewController extends AbstractController
         $result = $badContentDetectionService->analyzeFields([
             'message' => $rappel->getMessage(),
             'jours' => $rappel->getJours(),
-            'nom de l habitude' => $habit?->getNom(),
-            'objectif de l habitude' => $habit?->getObjectif(),
+            'nom de l habitude' => $habit->getNom(),
+            'objectif de l habitude' => $habit->getObjectif(),
         ]);
 
         if (!$result['blocked']) {
