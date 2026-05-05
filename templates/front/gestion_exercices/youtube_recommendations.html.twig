@@ -56,6 +56,37 @@
             transform: translateY(-2px);
         }
         
+        .suggestions {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .suggestion-tag {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 30px;
+            text-decoration: none;
+            color: white;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .suggestion-tag:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .alert-danger {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc2626;
+        }
+        
         .videos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -154,7 +185,26 @@
                    value="{{ search }}">
             <button type="submit" class="search-btn">🔍 Recommander</button>
         </form>
+        
+        <!-- SECTION MOTS-CLÉS SUGGÉRÉS -->
+        {% if suggested_keywords is defined and suggested_keywords|length > 0 %}
+        <div class="suggestions">
+            {% for keyword, emoji in suggested_keywords %}
+                <a href="{{ path('front_youtube_recommendations', {'search': keyword}) }}" 
+                   class="suggestion-tag">
+                    {{ emoji }} {{ keyword }}
+                </a>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
+    
+    <!-- AFFICHAGE DES ERREURS -->
+    {% if error is defined and error %}
+        <div class="alert-danger">
+            ⚠️ {{ error }}
+        </div>
+    {% endif %}
     
     {% if search %}
         <h2>📺 Résultats pour "{{ search }}"</h2>
@@ -162,28 +212,41 @@
         <h2>🎯 Recommandations du moment</h2>
     {% endif %}
     
-    <div class="videos-grid">
-        {% for video in recommendations %}
-            <a href="{{ video.url }}" target="_blank" class="video-card">
-                {% if video.thumbnail %}
-                    <img src="{{ video.thumbnail }}" alt="{{ video.title }}" class="video-thumbnail">
-                {% endif %}
-                <div class="video-info">
-                    <div class="video-title">{{ video.title }}</div>
-                    {% if video.channel %}
-                        <div class="video-channel">📺 {{ video.channel }}</div>
-                    {% endif %}
-                    {% if video.similarity_score is defined %}
-                        <div class="similarity-badge">🎯 {{ video.similarity_score }}% pertinent</div>
-                    {% endif %}
-                </div>
-            </a>
-        {% else %}
-            <div class="empty-state">
-                <div style="font-size: 3rem; margin-bottom: 16px;">🎬</div>
-                <p>Aucune vidéo trouvée. Essayez une autre recherche !</p>
-            </div>
-        {% endfor %}
-    </div>
+    <!-- AFFICHAGE QUAND AUCUN RÉSULTAT -->
+    {% if search and recommendations is empty and error is not defined %}
+        <div class="empty-state">
+            <div style="font-size: 3rem; margin-bottom: 16px;">🔍</div>
+            <p>Aucune vidéo trouvée pour "{{ search }}". Essayez un autre mot-clé !</p>
+            <p style="margin-top: 16px;">
+                <a href="{{ path('front_youtube_recommendations') }}" class="btn-admin-secondary">Voir les recommandations</a>
+            </p>
+        </div>
+    {% endif %}
+    
+    <!-- AFFICHAGE DES VIDÉOS -->
+    {% if recommendations is not empty %}
+        <div class="videos-grid">
+            {% for video in recommendations %}
+                <a href="{{ video.url }}" target="_blank" class="video-card">
+                    <img src="{{ video.thumbnail }}" alt="{{ video.title }}" class="video-thumbnail"
+                         onerror="this.src='https://via.placeholder.com/320x180?text=Video'">
+                    <div class="video-info">
+                        <div class="video-title">{{ video.title }}</div>
+                        {% if video.channel is defined and video.channel %}
+                            <div class="video-channel">📺 {{ video.channel }}</div>
+                        {% endif %}
+                        {% if video.similarity_score is defined %}
+                            <div class="similarity-badge">🎯 {{ video.similarity_score }}% pertinent</div>
+                        {% endif %}
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% elseif search is empty %}
+        <div class="empty-state">
+            <div style="font-size: 3rem; margin-bottom: 16px;">🎬</div>
+            <p>Effectuez une recherche pour trouver des vidéos qui vous correspondent !</p>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
