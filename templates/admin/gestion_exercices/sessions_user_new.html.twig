@@ -1,0 +1,133 @@
+{% extends 'layouts/admin_base_new.html.twig' %}
+
+{% block page_title %}Sessions de {{ user.nomU }} {{ user.prenomU }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+
+    <!-- Header -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: var(--text-3xl); font-weight: 700; margin: 0;">
+                    <i class="bi bi-person-lines-fill" style="color: var(--brand-500);"></i>
+                    Sessions de {{ user.nomU }} {{ user.prenomU }}
+                </h1>
+                <p style="font-size: var(--text-base); color: var(--text-secondary); margin: 0.5rem 0 0 0;">
+                    <i class="bi bi-envelope"></i> {{ user.emailU }}
+                    &nbsp;·&nbsp;
+                    <i class="bi bi-person-badge"></i> {{ user.roleU }}
+                    &nbsp;·&nbsp;
+                    {{ user.ageU }} ans
+                </p>
+            </div>
+            <a href="{{ path('admin_sessions_index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i>
+                Toutes les sessions
+            </a>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    {% set totalTime = 0 %}
+    {% set totalProgress = 0 %}
+    {% for s in sessions %}
+        {% set totalTime = totalTime + (s.dureeReelle|default(0)) %}
+        {% set totalProgress = totalProgress + s.progress %}
+    {% endfor %}
+    {% set avgProgress = sessions|length > 0 ? (totalProgress / sessions|length)|round : 0 %}
+    {% set terminees = sessions|filter(s => s.terminee)|length %}
+    {% set encours = sessions|filter(s => not s.terminee)|length %}
+
+    <section style="margin-bottom: 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.25rem;">
+            {% include 'components/ui/StatCard.html.twig' with { value: sessions|length, label: 'Total sessions', icon: 'bi-play-circle', icon_variant: 'primary' } %}
+            {% include 'components/ui/StatCard.html.twig' with { value: terminees, label: 'Terminées', icon: 'bi-check-circle', icon_variant: 'success' } %}
+            {% include 'components/ui/StatCard.html.twig' with { value: encours, label: 'En cours', icon: 'bi-clock', icon_variant: 'warning' } %}
+            {% include 'components/ui/StatCard.html.twig' with { value: (totalTime / 60)|round ~ ' min', label: 'Temps total', icon: 'bi-hourglass-split', icon_variant: 'primary' } %}
+            {% include 'components/ui/StatCard.html.twig' with { value: avgProgress ~ '%', label: 'Progression moy.', icon: 'bi-graph-up', icon_variant: 'success' } %}
+        </div>
+    </section>
+
+    <!-- Table -->
+    <section>
+        <div class="card">
+            <div class="card-header">
+                <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="bi bi-list-ul" style="color: var(--brand-500);"></i>
+                    Historique des sessions
+                </h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                {% if sessions|length > 0 %}
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Exercice</th>
+                                <th>Date début</th>
+                                <th>Date fin</th>
+                                <th>Durée</th>
+                                <th>Progression</th>
+                                <th>Statut</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in sessions %}
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 600; color: var(--text-primary); font-size: var(--text-sm);">{{ session.exercice.nom }}</div>
+                                    <div style="font-size: var(--text-xs); color: var(--text-muted);">{{ session.exercice.type }}
+                                        &nbsp;·&nbsp;
+                                        {% if session.exercice.difficulte == 'FACILE' %}<span class="badge badge-success" style="font-size: 0.65rem; padding: 0.1rem 0.5rem;">Facile</span>
+                                        {% elseif session.exercice.difficulte == 'MOYEN' %}<span class="badge badge-warning" style="font-size: 0.65rem; padding: 0.1rem 0.5rem;">Moyen</span>
+                                        {% else %}<span class="badge badge-error" style="font-size: 0.65rem; padding: 0.1rem 0.5rem;">Difficile</span>{% endif %}
+                                    </div>
+                                </td>
+                                <td style="color: var(--text-muted); font-size: var(--text-sm);">{{ session.dateDebut|date('d/m/Y H:i') }}</td>
+                                <td style="color: var(--text-muted); font-size: var(--text-sm);">
+                                    {% if session.dateFin %}{{ session.dateFin|date('d/m/Y H:i') }}
+                                    {% else %}<span class="badge badge-warning">En cours</span>{% endif %}
+                                </td>
+                                <td style="color: var(--text-secondary); font-size: var(--text-sm);">
+                                    {% if session.dureeReelle %}{{ (session.dureeReelle / 60)|round }} min{% else %}—{% endif %}
+                                </td>
+                                <td style="min-width: 140px;">
+                                    {% include 'components/ui/ProgressBar.html.twig' with { value: session.progress|default(0), show_label: true, size: 'sm' } %}
+                                </td>
+                                <td>
+                                    {% if session.terminee %}
+                                    <span class="badge badge-success"><i class="bi bi-check-circle"></i> Terminée</span>
+                                    {% else %}
+                                    <span class="badge badge-warning"><i class="bi bi-clock"></i> En cours</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="display: flex; justify-content: flex-end;">
+                                        <a href="{{ path('admin_sessions_show', {'idSession': session.idSession}) }}"
+                                           class="btn btn-ghost btn-sm" title="Voir le détail">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div style="padding: 1.5rem;">
+                    {% include 'components/ui/EmptyState.html.twig' with {
+                        icon: 'bi-play-circle',
+                        title: 'Aucune session',
+                        message: 'Cet utilisateur n\'a pas encore de sessions enregistrées.'
+                    } %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

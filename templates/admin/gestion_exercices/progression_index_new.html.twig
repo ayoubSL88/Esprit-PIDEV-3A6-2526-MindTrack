@@ -1,0 +1,285 @@
+{% extends 'layouts/admin_base_new.html.twig' %}
+
+{% block page_title %}Progression des utilisateurs{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+
+    <!-- Header -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <h1 style="font-size: var(--text-3xl); font-weight: 700; margin: 0;">
+                    <i class="bi bi-graph-up-arrow" style="color: var(--brand-500);"></i>
+                    Progression des utilisateurs
+                </h1>
+                <p style="font-size: var(--text-base); color: var(--text-secondary); margin: 0.5rem 0 0 0;">
+                    Suivi et analyse de la progression sur les exercices terminés
+                </p>
+            </div>
+            <a href="{{ path('admin_gestion_exercices_home') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i>
+                Dashboard
+            </a>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem;">
+            {% include 'components/ui/StatCard.html.twig' with { value: global_progression.sessionsTerminees, label: 'Sessions terminées', icon: 'bi-check-circle', icon_variant: 'success' } %}
+            {% include 'components/ui/StatCard.html.twig' with { value: global_progression.tempsTotal ~ ' min', label: 'Temps total', icon: 'bi-clock', icon_variant: 'warning' } %}
+            {% include 'components/ui/StatCard.html.twig' with { value: global_progression.moyenne ~ '%', label: 'Progression moyenne', icon: 'bi-graph-up', icon_variant: 'primary' } %}
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section style="margin-bottom: 1.5rem;">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+                    <div style="min-width: 180px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Utilisateur</label>
+                        <select name="user_id" class="select">
+                            <option value="">Tous</option>
+                            {% for user in all_users %}
+                            <option value="{{ user.idU }}" {% if selected_user_id == user.idU %}selected{% endif %}>
+                                {{ user.prenomU }} {{ user.nomU }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="min-width: 180px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Exercice</label>
+                        <select name="exercice_id" class="select">
+                            <option value="">Tous</option>
+                            {% for exercice in all_exercices %}
+                            <option value="{{ exercice.idEx }}" {% if selected_exercice_id == exercice.idEx %}selected{% endif %}>
+                                {{ exercice.nom }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="min-width: 160px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Période</label>
+                        <select name="periode" class="select">
+                            <option value="all" {% if periode == 'all' %}selected{% endif %}>Tout</option>
+                            <option value="week" {% if periode == 'week' %}selected{% endif %}>7 jours</option>
+                            <option value="month" {% if periode == 'month' %}selected{% endif %}>30 jours</option>
+                            <option value="year" {% if periode == 'year' %}selected{% endif %}>1 an</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i> Appliquer
+                        </button>
+                        <a href="{{ path('admin_progression_index') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Charts -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+            <!-- Evolution chart -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-bar-chart-line" style="color: var(--brand-500);"></i>
+                        Sessions (7 derniers jours)
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="evolutionChart" style="max-height: 220px;"></canvas>
+                </div>
+            </div>
+
+            {% if chronological_progress is defined and chronological_progress.labels is defined and chronological_progress.labels|length > 0 %}
+            <!-- Chronological chart for selected user -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-graph-up" style="color: var(--success-500);"></i>
+                        Progression chronologique
+                        {% if selected_user %}— {{ selected_user.prenomU }} {{ selected_user.nomU }}{% endif %}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="chronoChart" style="max-height: 220px;"></canvas>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Progression par exercice -->
+    {% if sessions_by_exercice|length > 0 %}
+    <section style="margin-bottom: 2rem;">
+        <div class="card">
+            <div class="card-header">
+                <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="bi bi-journal-text" style="color: var(--brand-500);"></i>
+                    Progression par exercice
+                </h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Exercice</th>
+                                <th>Type</th>
+                                <th>Sessions</th>
+                                <th>Progression moyenne</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in sessions_by_exercice %}
+                            <tr>
+                                <td style="font-weight: 600; color: var(--text-primary);">{{ item.exercice.nom }}</td>
+                                <td style="color: var(--text-secondary);">{{ item.exercice.type }}</td>
+                                <td>
+                                    <span class="badge badge-primary">{{ item.total_sessions }}</span>
+                                </td>
+                                <td style="min-width: 180px;">
+                                    {% include 'components/ui/ProgressBar.html.twig' with {
+                                        value: item.moyenne_progression,
+                                        show_label: true,
+                                        size: 'sm'
+                                    } %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Top exercices pour l'utilisateur sélectionné -->
+    {% if selected_user_id and selected_user is not null and top_exercices_for_user|length > 0 %}
+    <section>
+        <div class="card">
+            <div class="card-header">
+                <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="bi bi-star" style="color: var(--warning-500);"></i>
+                    Top exercices — {{ selected_user.prenomU }} {{ selected_user.nomU }}
+                </h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Exercice</th>
+                                <th>Sessions</th>
+                                <th>Progression moyenne</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in top_exercices_for_user %}
+                            <tr>
+                                <td style="font-weight: 600; color: var(--text-primary);">{{ item.exercice.nom }}</td>
+                                <td><span class="badge badge-primary">{{ item.count }}</span></td>
+                                <td style="min-width: 180px;">
+                                    {% include 'components/ui/ProgressBar.html.twig' with {
+                                        value: item.avg_progress,
+                                        show_label: true,
+                                        size: 'sm'
+                                    } %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    {% if sessions_by_exercice|length == 0 and not (selected_user_id and top_exercices_for_user|length > 0) %}
+    {% include 'components/ui/EmptyState.html.twig' with {
+        icon: 'bi-graph-up-arrow',
+        title: 'Aucune donnée de progression',
+        message: 'Les données de progression apparaîtront ici dès que des sessions seront terminées.'
+    } %}
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+
+    {% if evolution is defined and evolution.labels is defined and evolution.labels is not empty %}
+    const evolutionCtx = document.getElementById('evolutionChart');
+    if (evolutionCtx) {
+        new Chart(evolutionCtx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: {{ evolution.labels|json_encode|raw }},
+                datasets: [{
+                    label: 'Sessions',
+                    data: {{ evolution.data|json_encode|raw }},
+                    backgroundColor: 'rgba(99,102,241,0.7)',
+                    borderColor: '#6366f1',
+                    borderWidth: 2,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1, color: textColor }, grid: { color: gridColor } },
+                    x: { ticks: { color: textColor }, grid: { display: false } }
+                }
+            }
+        });
+    }
+    {% endif %}
+
+    {% if chronological_progress is defined and chronological_progress.labels is defined and chronological_progress.labels|length > 0 %}
+    const chronoCtx = document.getElementById('chronoChart');
+    if (chronoCtx) {
+        new Chart(chronoCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: {{ chronological_progress.labels|json_encode|raw }},
+                datasets: [{
+                    label: 'Progression (%)',
+                    data: {{ chronological_progress.data|json_encode|raw }},
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16,185,129,0.1)',
+                    tension: 0.3, fill: true,
+                    pointBackgroundColor: '#10b981',
+                    pointBorderColor: 'white', pointBorderWidth: 2, pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { min: 0, max: 100, ticks: { color: textColor }, grid: { color: gridColor } },
+                    x: { ticks: { color: textColor }, grid: { display: false } }
+                }
+            }
+        });
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}

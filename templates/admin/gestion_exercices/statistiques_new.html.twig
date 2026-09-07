@@ -1,0 +1,282 @@
+{% extends 'layouts/admin_base_new.html.twig' %}
+
+{% block page_title %}Statistiques avancées{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+
+    <!-- Header -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <h1 style="font-size: var(--text-3xl); font-weight: 700; margin: 0;">
+                    <i class="bi bi-bar-chart-line" style="color: var(--brand-500);"></i>
+                    Statistiques avancées
+                </h1>
+                <p style="font-size: var(--text-base); color: var(--text-secondary); margin: 0.5rem 0 0 0;">
+                    Analyses détaillées de l'activité de la plateforme
+                </p>
+            </div>
+            <a href="{{ path('admin_gestion_exercices_home') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i>
+                Dashboard
+            </a>
+        </div>
+    </section>
+
+    <!-- Stats globales -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem;">
+            {% include 'components/ui/StatCard.html.twig' with { value: total_sessions, label: 'Sessions totales', icon: 'bi-play-circle', icon_variant: 'primary' } %}
+            {% include 'components/ui/StatCard.html.twig' with { value: total_temps ~ ' min', label: 'Temps total', icon: 'bi-clock', icon_variant: 'warning' } %}
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section style="margin-bottom: 1.5rem;">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Utilisateur</label>
+                        <select name="user_id" class="select">
+                            <option value="">Tous les utilisateurs</option>
+                            {% for user in all_users %}
+                            <option value="{{ user.idU }}" {% if selected_user_id == user.idU %}selected{% endif %}>
+                                {{ user.prenomU }} {{ user.nomU }} ({{ user.emailU }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Exercice</label>
+                        <select name="exercice_id" class="select">
+                            <option value="">Tous les exercices</option>
+                            {% for exercice in all_exercices %}
+                            <option value="{{ exercice.idEx }}" {% if selected_exercice_id == exercice.idEx %}selected{% endif %}>
+                                {{ exercice.nom }} ({{ exercice.type }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="min-width: 150px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Date début</label>
+                        <input type="date" name="date_debut" value="{{ date_debut }}" class="input">
+                    </div>
+                    <div style="min-width: 150px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Date fin</label>
+                        <input type="date" name="date_fin" value="{{ date_fin }}" class="input">
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i> Appliquer
+                        </button>
+                        <a href="{{ path('admin_gestion_exercices_statistiques') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Charts -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+            <!-- Monthly evolution -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-graph-up" style="color: var(--brand-500);"></i>
+                        Évolution mensuelle des sessions
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyChart" style="max-height: 240px;"></canvas>
+                </div>
+            </div>
+
+            <!-- Distribution par difficulté -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-pie-chart" style="color: var(--warning-500);"></i>
+                        Distribution par difficulté
+                    </h3>
+                </div>
+                <div class="card-body" style="display: flex; align-items: center; justify-content: center;">
+                    <canvas id="difficulteChart" style="max-height: 240px; max-width: 240px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Top utilisateurs -->
+    <section style="margin-bottom: 2rem;">
+        <div class="card">
+            <div class="card-header">
+                <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="bi bi-trophy" style="color: var(--warning-500);"></i>
+                    Top 10 utilisateurs les plus actifs
+                </h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                {% if top_users|length > 0 %}
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Utilisateur</th>
+                                <th>Sessions</th>
+                                <th>Temps total</th>
+                                <th>Progression moyenne</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in top_users %}
+                            <tr>
+                                <td>
+                                    <span style="font-size: var(--text-sm); font-weight: 700; color: {% if loop.index == 1 %}var(--warning-500){% elseif loop.index == 2 %}var(--text-muted){% elseif loop.index == 3 %}#cd7f32{% else %}var(--text-muted){% endif %};">
+                                        #{{ loop.index }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 600; color: var(--text-primary); font-size: var(--text-sm);">{{ user.user.prenomU }} {{ user.user.nomU }}</div>
+                                    <div style="font-size: var(--text-xs); color: var(--text-muted);">{{ user.user.emailU }}</div>
+                                </td>
+                                <td><span class="badge badge-primary">{{ user.sessions }}</span></td>
+                                <td style="color: var(--text-secondary); font-size: var(--text-sm);">{{ user.temps_minutes }} min</td>
+                                <td style="min-width: 160px;">
+                                    {% include 'components/ui/ProgressBar.html.twig' with {
+                                        value: user.progress_moyen,
+                                        show_label: true,
+                                        size: 'sm'
+                                    } %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div style="padding: 1.5rem;">
+                    {% include 'components/ui/EmptyState.html.twig' with { icon: 'bi-people', title: 'Aucune donnée', size: 'sm' } %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Top exercices pour l'utilisateur sélectionné -->
+    {% if selected_user_id and top_exercices_for_user is defined and top_exercices_for_user|length > 0 %}
+    <section>
+        <div class="card">
+            <div class="card-header">
+                <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="bi bi-star" style="color: var(--warning-500);"></i>
+                    Top exercices — {{ selected_user.prenomU }} {{ selected_user.nomU }}
+                </h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Exercice</th>
+                                <th>Type</th>
+                                <th>Sessions</th>
+                                <th>Progression moy.</th>
+                                <th>Temps moyen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in top_exercices_for_user %}
+                            <tr>
+                                <td style="font-weight: 600; color: var(--text-primary);">{{ item.exercice.nom }}</td>
+                                <td style="color: var(--text-secondary);">{{ item.exercice.type }}</td>
+                                <td><span class="badge badge-primary">{{ item.count }}</span></td>
+                                <td style="min-width: 160px;">
+                                    {% include 'components/ui/ProgressBar.html.twig' with {
+                                        value: item.avg_progress,
+                                        show_label: true,
+                                        size: 'sm'
+                                    } %}
+                                </td>
+                                <td style="color: var(--text-secondary);">{{ item.avg_temps }} min</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+
+    // Graphique mensuel
+    const monthlyCtx = document.getElementById('monthlyChart');
+    if (monthlyCtx) {
+        new Chart(monthlyCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: {{ evolution_mensuelle|map(e => e.label)|json_encode|raw }},
+                datasets: [{
+                    label: 'Sessions',
+                    data: {{ evolution_mensuelle|map(e => e.sessions)|json_encode|raw }},
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99,102,241,0.1)',
+                    borderWidth: 3, tension: 0.3, fill: true,
+                    pointBackgroundColor: '#6366f1',
+                    pointBorderColor: 'white', pointBorderWidth: 2, pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: textColor }, grid: { color: gridColor } },
+                    x: { ticks: { color: textColor, maxRotation: 45 }, grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // Graphique difficulté
+    const difficulteCtx = document.getElementById('difficulteChart');
+    if (difficulteCtx) {
+        new Chart(difficulteCtx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Facile', 'Moyen', 'Difficile'],
+                datasets: [{
+                    data: [{{ difficulte_stats.FACILE }}, {{ difficulte_stats.MOYEN }}, {{ difficulte_stats.DIFFICILE }}],
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 3,
+                    borderColor: isDark ? '#1e293b' : '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: textColor, padding: 16, font: { size: 13 } } }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

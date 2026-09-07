@@ -1,0 +1,250 @@
+{% extends 'layouts/front_base_new.html.twig' %}
+
+{% block page_title %}Espace Exercices{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    
+    <!-- Hero Section -->
+    <section style="margin-bottom: 3rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <h1 style="font-size: var(--text-3xl); font-weight: 700; margin: 0 0 0.5rem 0;">
+                    <i class="bi bi-journal-text" style="color: var(--brand-500);"></i>
+                    Espace Exercices
+                </h1>
+                <p style="font-size: var(--text-base); color: var(--text-secondary); margin: 0;">
+                    Développement personnel et bien-être — Progressez à votre rythme
+                </p>
+            </div>
+            <a href="{{ path('front_gestion_exercices_index') }}" class="btn btn-primary">
+                <i class="bi bi-list-ul"></i>
+                Voir tous les exercices
+            </a>
+        </div>
+    </section>
+    
+    <!-- AI Suggestions Card -->
+    <section style="margin-bottom: 2.5rem;">
+        <div style="background: linear-gradient(135deg, var(--brand-500), var(--brand-600)); border-radius: var(--radius-2xl); padding: 2rem; color: white; position: relative; overflow: hidden;">
+            <!-- Background decoration -->
+            <div style="position: absolute; right: -2rem; bottom: -2rem; opacity: 0.1; font-size: 8rem; pointer-events: none;">
+                <i class="bi bi-stars"></i>
+            </div>
+            
+            <div style="position: relative; z-index: 1;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    <i class="bi bi-cpu" style="font-size: 1.5rem;"></i>
+                    <h2 style="font-size: var(--text-xl); font-weight: 600; margin: 0;">Suggestions IA personnalisées</h2>
+                </div>
+                <p style="font-size: var(--text-sm); opacity: 0.9; margin: 0 0 2rem 0;">
+                    Basé sur votre humeur et votre historique d'exercices
+                </p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                    <!-- Personal Recommendation -->
+                    <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: var(--radius-xl); padding: 1.5rem; text-align: center;">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">
+                            <i class="bi bi-lightbulb"></i>
+                        </div>
+                        <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0 0 0.5rem 0;">Recommandé pour vous</h3>
+                        <p style="font-size: var(--text-sm); opacity: 0.9; margin: 0 0 1rem 0;">
+                            Basée sur votre historique et progression
+                        </p>
+                        <a href="{{ path('front_suggestion_for_you') }}" class="btn btn-primary" style="background: white; color: var(--brand-600);">
+                            <i class="bi bi-robot"></i>
+                            Exercice recommandé
+                        </a>
+                    </div>
+                    
+                    <!-- Mood-based Recommendation -->
+                    <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: var(--radius-xl); padding: 1.5rem; text-align: center;">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">
+                            <i class="bi bi-emoji-smile"></i>
+                        </div>
+                        <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0 0 0.5rem 0;">Selon votre humeur</h3>
+                        <p style="font-size: var(--text-sm); opacity: 0.9; margin: 0 0 1rem 0;">
+                            Comment vous sentez-vous aujourd'hui ?
+                        </p>
+                        
+                        <!-- Mood Selector -->
+                        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            {% for mood in 1..10 %}
+                                <a href="{{ path('front_suggestion_by_mood', {'mood': mood}) }}" 
+                                   class="btn {% if mood <= 3 %}btn-danger{% elseif mood <= 6 %}btn-warning{% else %}btn-success{% endif %}"
+                                   style="padding: 0.5rem 0.75rem; font-size: var(--text-xs); min-width: 2.5rem;"
+                                   title="Humeur: {{ mood }}/10">
+                                    {{ mood }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                        
+                        <div style="display: flex; justify-content: center; gap: 1.5rem; font-size: var(--text-xs);">
+                            <span style="display: flex; align-items: center; gap: 0.25rem;">
+                                <span style="width: 0.75rem; height: 0.75rem; border-radius: 50%; background: var(--danger-500);"></span>
+                                Très basse
+                            </span>
+                            <span style="display: flex; align-items: center; gap: 0.25rem;">
+                                <span style="width: 0.75rem; height: 0.75rem; border-radius: 50%; background: var(--warning-500);"></span>
+                                Normale
+                            </span>
+                            <span style="display: flex; align-items: center; gap: 0.25rem;">
+                                <span style="width: 0.75rem; height: 0.75rem; border-radius: 50%; background: var(--success-500);"></span>
+                                Excellente
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Stats Grid -->
+    <section style="margin-bottom: 2.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
+            {% include 'components/ui/StatCard.html.twig' with {
+                value: stats.total|default(0),
+                label: 'Exercices terminés',
+                icon: 'bi-check-circle',
+                icon_variant: 'success'
+            } %}
+            
+            {% include 'components/ui/StatCard.html.twig' with {
+                value: stats.temps|default(0) ~ ' min',
+                label: 'Temps total passé',
+                icon: 'bi-clock-history',
+                icon_variant: 'primary'
+            } %}
+            
+            {% include 'components/ui/StatCard.html.twig' with {
+                value: stats.moyenne|default(0) ~ '%',
+                label: 'Progression moyenne',
+                icon: 'bi-graph-up-arrow',
+                icon_variant: 'warning'
+            } %}
+        </div>
+    </section>
+    
+    <!-- Quick Access -->
+    <section style="margin-bottom: 2.5rem;">
+        <h2 style="font-size: var(--text-xl); font-weight: 600; margin: 0 0 1.5rem 0;">
+            <i class="bi bi-lightning" style="color: var(--brand-500);"></i>
+            Accès rapide
+        </h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem;">
+            <a href="{{ path('front_gestion_exercices_index') }}" class="card card-interactive" style="text-decoration: none;">
+                <div class="card-body" style="text-align: center;">
+                    <div style="font-size: 2.5rem; color: var(--brand-500); margin-bottom: 1rem;">
+                        <i class="bi bi-journal-text"></i>
+                    </div>
+                    <h3 style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin: 0 0 0.5rem 0;">Tous les exercices</h3>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); margin: 0;">Découvrez notre catalogue d'exercices</p>
+                </div>
+            </a>
+            
+            <a href="{{ path('front_historique_index') }}" class="card card-interactive" style="text-decoration: none;">
+                <div class="card-body" style="text-align: center;">
+                    <div style="font-size: 2.5rem; color: var(--success-500); margin-bottom: 1rem;">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <h3 style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin: 0 0 0.5rem 0;">Mon historique</h3>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); margin: 0;">Consultez vos séances passées</p>
+                </div>
+            </a>
+            
+            <a href="{{ path('front_progression_index') }}" class="card card-interactive" style="text-decoration: none;">
+                <div class="card-body" style="text-align: center;">
+                    <div style="font-size: 2.5rem; color: var(--warning-500); margin-bottom: 1rem;">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <h3 style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin: 0 0 0.5rem 0;">Ma progression</h3>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); margin: 0;">Suivez votre évolution</p>
+                </div>
+            </a>
+            
+            <a href="{{ path('front_youtube_recommendations') }}" class="card card-interactive" style="text-decoration: none;">
+                <div class="card-body" style="text-align: center;">
+                    <div style="font-size: 2.5rem; color: var(--danger-500); margin-bottom: 1rem;">
+                        <i class="bi bi-youtube"></i>
+                    </div>
+                    <h3 style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin: 0 0 0.5rem 0;">Vidéos recommandées</h3>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); margin: 0;">Ressources vidéo sélectionnées</p>
+                </div>
+            </a>
+        </div>
+    </section>
+    
+    <!-- Recent Sessions -->
+    {% if stats.recent_sessions is defined and stats.recent_sessions|length > 0 %}
+    <section style="margin-bottom: 2.5rem;">
+        <h2 style="font-size: var(--text-xl); font-weight: 600; margin: 0 0 1.5rem 0;">
+            <i class="bi bi-clock" style="color: var(--brand-500);"></i>
+            Dernières séances
+        </h2>
+        
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Exercice</th>
+                        <th>Date</th>
+                        <th>Progression</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in stats.recent_sessions %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 500; color: var(--text-primary);">{{ session.exercice.nom }}</div>
+                            <div style="font-size: var(--text-xs); color: var(--text-muted);">{{ session.exercice.type }}</div>
+                        </td>
+                        <td>{{ session.dateFin|date('d/m/Y H:i') }}</td>
+                        <td style="width: 200px;">
+                            {% include 'components/ui/ProgressBar.html.twig' with {
+                                value: session.progress,
+                                show_label: true,
+                                size: 'sm'
+                            } %}
+                        </td>
+                        <td>
+                            <a href="{{ path('front_historique_show', {'idSession': session.idSession}) }}" class="btn btn-ghost btn-sm">
+                                <i class="bi bi-eye"></i>
+                                Détail
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+    
+    <!-- Recent Exercises -->
+    <section>
+        <h2 style="font-size: var(--text-xl); font-weight: 600; margin: 0 0 1.5rem 0;">
+            <i class="bi bi-star" style="color: var(--brand-500);"></i>
+            Découvrez nos exercices
+        </h2>
+        
+        {% if recent_exercices is defined and recent_exercices|length > 0 %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+            {% for exercice in recent_exercices %}
+                {% include 'components/exercises/ExerciseCard.html.twig' with { exercice: exercice } %}
+            {% endfor %}
+        </div>
+        {% else %}
+            {% include 'components/ui/EmptyState.html.twig' with {
+                icon: 'bi-inbox',
+                title: 'Aucun exercice disponible',
+                message: 'Les exercices apparaîtront ici une fois ajoutés.',
+                action_label: 'Explorer les exercices',
+                action_href: path('front_gestion_exercices_index')
+            } %}
+        {% endif %}
+    </section>
+    
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{#
+    Card Component
+    
+    Usage:
+    {% include 'components/ui/Card.html.twig' with {
+        title: 'Card Title',
+        subtitle: 'Card Subtitle',
+        icon: 'bi-journal-text',
+        variant: 'default'|'elevated'|'interactive',
+        class: 'additional-classes'
+    } %}
+        Card content goes here
+        
+        {% block footer %}
+            Footer content
+        {% endblock %}
+    {% endinclude %}
+#}
+
+{% set variant = variant|default('default') %}
+{% set class = class|default('') %}
+{% set title = title|default(null) %}
+{% set subtitle = subtitle|default(null) %}
+{% set icon = icon|default(null) %}
+
+{% set base_classes = 'card' %}
+
+{% set variant_classes = {
+    'default': '',
+    'elevated': 'card-elevated',
+    'interactive': 'card-interactive'
+} %}
+
+{% set classes = base_classes ~ ' ' ~ variant_classes[variant] %}
+
+{% if class %}
+    {% set classes = classes ~ ' ' ~ class %}
+{% endif %}
+
+<div class="{{ classes }}">
+    {% if title or block('header') is defined %}
+    <div class="card-header">
+        {% if icon %}
+            <i class="bi {{ icon }}" style="font-size: 1.25rem; color: var(--brand-500);"></i>
+        {% endif %}
+        {% if title %}
+            <h3 class="mt-0 mb-1" style="font-size: var(--text-lg); font-weight: 600;">{{ title }}</h3>
+        {% endif %}
+        {% if subtitle %}
+            <p style="font-size: var(--text-sm); color: var(--text-muted); margin: 0;">{{ subtitle }}</p>
+        {% endif %}
+        {% block header %}{% endblock %}
+    </div>
+    {% endif %}
+    
+    <div class="card-body">
+        {% block content %}{% endblock %}
+    </div>
+    
+    {% if block('footer') is defined and block('footer')|trim is not empty %}
+    <div class="card-footer">
+        {% block footer %}{% endblock %}
+    </div>
+    {% endif %}
+</div>

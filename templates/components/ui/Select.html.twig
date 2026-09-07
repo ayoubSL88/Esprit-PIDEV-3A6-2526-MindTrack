@@ -1,0 +1,53 @@
+{#
+    Select Component
+    
+    Usage:
+    {% include 'components/ui/Select.html.twig' with {
+        name: 'category',
+        label: 'Category',
+        options: [
+            { value: '', label: 'Select a category' },
+            { value: '1', label: 'Category 1' },
+            { value: '2', label: 'Category 2' }
+        ],
+        selected: '1',
+        required: false,
+        error: 'Please select a category',
+        class: 'additional-classes'
+    } %}
+#}
+
+{% set name = name|default('select') %}
+{% set label = label|default(null) %}
+{% set options = options|default([]) %}
+{% set selected = selected|default('') %}
+{% set required = required|default(false) %}
+{% set error = error|default(null) %}
+{% set class = class|default('') %}
+{% set id = id|default('select-' ~ name) %}
+
+<div class="form-group">
+    {% if label %}
+        <label for="{{ id }}" class="form-label {% if required %}form-label-required{% endif %}">
+            {{ label }}
+        </label>
+    {% endif %}
+    
+    <select 
+        id="{{ id }}" 
+        name="{{ name }}" 
+        class="form-select {% if error %}form-input-error{% endif %} {% if class %}{{ class }}{% endif %}"
+        {% if required %}required{% endif %}
+        {% for attr, val in attributes|default({}) %} {{ attr }}="{{ val }}"{% endfor %}
+    >
+        {% for option in options %}
+            <option value="{{ option.value }}" {% if option.value == selected %}selected{% endif %}>
+                {{ option.label }}
+            </option>
+        {% endfor %}
+    </select>
+    
+    {% if error %}
+        <p class="form-error">{{ error }}</p>
+    {% endif %}
+</div>

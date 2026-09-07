@@ -1,0 +1,199 @@
+{#
+    Sidebar Component
+    
+    Usage:
+    {% include 'components/layout/Sidebar.html.twig' with {
+        office: 'front'|'admin',
+        collapsed: false
+    } %}
+#}
+
+{% set office = office|default('front') %}
+{% set collapsed = collapsed|default(false) %}
+{% set current_route = app.request.attributes.get('_route') %}
+
+<aside class="sidebar {% if collapsed %}sidebar-collapsed{% endif %}" id="sidebar">
+    <!-- Header -->
+    <div class="sidebar-header">
+        <a href="{{ path(office == 'admin' ? 'admin_dashboard' : 'front_home') }}" class="sidebar-brand">
+            <div class="sidebar-brand-mark">MT</div>
+            <span class="sidebar-brand-text {% if collapsed %}hidden{% endif %}">MindTrack</span>
+        </a>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+        {% if office == 'admin' %}
+            <!-- Admin Navigation -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title {% if collapsed %}hidden{% endif %}">Général</div>
+                
+                <a href="{{ path('admin_dashboard') }}" class="sidebar-link {{ current_route == 'admin_dashboard' ? 'active' : '' }}">
+                    <i class="bi bi-grid"></i>
+                    <span class="sidebar-link-text {% if collapsed %}hidden{% endif %}">Dashboard</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-section-title {% if collapsed %}hidden{% endif %}">Gestion</div>
+                
+                <a href="{{ path('admin_gestion_user_index') }}" class="sidebar-link {{ current_route starts with 'admin_gestion_user_' ? 'active' : '' }}">
+                    <i class="bi bi-people"></i>
+                    <span class="sidebar-link-text {% if collapsed %}hidden{% endif %}">Utilisateurs</span>
+                </a>
+                
+                {% set exercices_active = current_route starts with 'admin_gestion_exercices_'
+                    or current_route starts with 'admin_sessions_'
+                    or current_route starts with 'admin_historique_'
+                    or current_route starts with 'admin_progression_' %}
+
+                <a href="{{ path('admin_gestion_exercices_home') }}" class="sidebar-link {{ exercices_active ? 'active' : '' }}">
+                    <i class="bi bi-journal-text"></i>
+                    <span class="sidebar-link-text {% if collapsed %}hidden{% endif %}">Exercices</span>
+                </a>
+
+                {% if exercices_active and not collapsed %}
+                <div style="margin-left: 1rem; border-left: 2px solid var(--border-light); padding-left: 0.75rem; margin-bottom: 0.25rem;">
+                    <a href="{{ path('admin_gestion_exercices_index') }}" class="sidebar-link {{ current_route == 'admin_gestion_exercices_index' ? 'active' : '' }}" style="padding: 0.4rem 0.75rem; font-size: var(--text-xs);">
+                        <i class="bi bi-list-ul" style="font-size: 0.8rem;"></i>
+                        <span class="sidebar-link-text">Liste</span>
+                    </a>
+                    <a href="{{ path('admin_sessions_index') }}" class="sidebar-link {{ current_route starts with 'admin_sessions_' ? 'active' : '' }}" style="padding: 0.4rem 0.75rem; font-size: var(--text-xs);">
+                        <i class="bi bi-play-circle" style="font-size: 0.8rem;"></i>
+                        <span class="sidebar-link-text">Sessions</span>
+                    </a>
+                    <a href="{{ path('admin_historique_index') }}" class="sidebar-link {{ current_route starts with 'admin_historique_' ? 'active' : '' }}" style="padding: 0.4rem 0.75rem; font-size: var(--text-xs);">
+                        <i class="bi bi-clock-history" style="font-size: 0.8rem;"></i>
+                        <span class="sidebar-link-text">Historique</span>
+                    </a>
+                    <a href="{{ path('admin_progression_index') }}" class="sidebar-link {{ current_route starts with 'admin_progression_' ? 'active' : '' }}" style="padding: 0.4rem 0.75rem; font-size: var(--text-xs);">
+                        <i class="bi bi-graph-up-arrow" style="font-size: 0.8rem;"></i>
+                        <span class="sidebar-link-text">Progression</span>
+                    </a>
+                    <a href="{{ path('admin_gestion_exercices_statistiques') }}" class="sidebar-link {{ current_route == 'admin_gestion_exercices_statistiques' ? 'active' : '' }}" style="padding: 0.4rem 0.75rem; font-size: var(--text-xs);">
+                        <i class="bi bi-bar-chart-line" style="font-size: 0.8rem;"></i>
+                        <span class="sidebar-link-text">Statistiques</span>
+                    </a>
+                </div>
+                {% endif %}
+                
+                <a href="{{ path('admin_gestion_objectifs_personnelles_index') }}" class="sidebar-link {{ current_route starts with 'admin_gestion_objectifs_personnelles_' ? 'active' : '' }}">
+                    <i class="bi bi-bullseye"></i>
+                    <span class="sidebar-link-text {% if collapsed %}hidden{% endif %}">Objectifs</span>
+                </a>
+                
+                <a href="{{ path('admin_gestion_suivi_habitudes_index') }}" class="sidebar-link {{ current_route starts with 'admin_gestion_suivi_habitudes_' ? 'active' : '' }}">
+                    <i class="bi bi-calendar-check"></i>
+                    <span class="sidebar-link-text {% if collapsed %}hidden{% endif %}">Habitudes</span>
+                </a>
+                
+                <a href="{{ path('admin_gestion_humeur_index') }}" class="sidebar-link {{ current_route starts with 'admin_gestion_humeur_' ? 'active' : '' }}">
+                    <i class="bi bi-emoji-smile"></i>
+                    <span class="sidebar-link-text {% if collapsed %}hidden{% endif %}">Humeur</span>
+                </a>
+            </div>
+            
+        {% else %}
+            <!-- Front Navigation -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title {% if collapsed %}hidden{% endif %}">Principal</div>
+                
+                <a href="{{ path('front_home') }}" class="sidebar-link {{ current_route == 'front_home' ? 'active' : '' }}">
+                    <i class="bi bi-house"></i>
+                    <span class="sidebar-link-text {% if collapsed %}hidden{% endif %}">Accueil</span>
+                </a>
+                
+                <a href="{{ path('front_gestion_exercices_home') }}" class="sidebar-link {{ current_route starts with 'front_gestion_exercices_' ? 'active' : '' }}">
+                    <i class="bi bi-journal-text"></i>
+                    <span class="sidebar-link-text {% if collapsed %}hidden{% endif %}">Exercices</span>
+                </a>
+                
+                <a href="{{ path('front_gestion_objectifs_personnelles_index') }}" class="sidebar-link {{ current_route starts with 'front_gestion_objectifs_personnelles_' ? 'active' : '' }}">
+                    <i class="bi bi-bullseye"></i>
+                    <span class="sidebar-link-text {% if collapsed %}hidden{% endif %}">Objectifs</span>
+                </a>
+                
+                <a href="{{ path('front_gestion_suivi_habitudes_index') }}" class="sidebar-link {{ current_route starts with 'front_gestion_suivi_habitudes_' ? 'active' : '' }}">
+                    <i class="bi bi-calendar-check"></i>
+                    <span class="sidebar-link-text {% if collapsed %}hidden{% endif %}">Habitudes</span>
+                </a>
+                
+                <a href="{{ path('front_gestion_humeur_index') }}" class="sidebar-link {{ current_route starts with 'front_gestion_humeur_' ? 'active' : '' }}">
+                    <i class="bi bi-emoji-smile"></i>
+                    <span class="sidebar-link-text {% if collapsed %}hidden{% endif %}">Humeur</span>
+                </a>
+            </div>
+        {% endif %}
+    </nav>
+    
+    <!-- Footer -->
+    <div class="sidebar-footer">
+        <!-- Theme Toggle -->
+        <button class="sidebar-link" id="theme-toggle" aria-label="Changer le thème">
+            <i class="bi bi-sun" id="theme-icon-light"></i>
+            <i class="bi bi-moon" id="theme-icon-dark" style="display: none;"></i>
+            <span class="sidebar-link-text {% if collapsed %}hidden{% endif %}">Thème</span>
+        </button>
+        
+        {% if app.user %}
+            <a href="{{ path('app_logout') }}" class="sidebar-link">
+                <i class="bi bi-box-arrow-right"></i>
+                <span class="sidebar-link-text {% if collapsed %}hidden{% endif %}">Déconnexion</span>
+            </a>
+        {% endif %}
+    </div>
+</aside>
+
+<!-- Mobile Overlay -->
+<div class="sidebar-overlay" id="sidebar-overlay" style="display: none;"></div>
+
+<script>
+// Theme Toggle
+const themeToggle = document.getElementById('theme-toggle');
+const html = document.documentElement;
+const themeIconLight = document.getElementById('theme-icon-light');
+const themeIconDark = document.getElementById('theme-icon-dark');
+
+// Load saved theme
+const savedTheme = localStorage.getItem('theme') || 'light';
+if (savedTheme === 'dark') {
+    html.setAttribute('data-theme', 'dark');
+    themeIconLight.style.display = 'none';
+    themeIconDark.style.display = 'block';
+}
+
+themeToggle.addEventListener('click', () => {
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    if (newTheme === 'dark') {
+        themeIconLight.style.display = 'none';
+        themeIconDark.style.display = 'block';
+    } else {
+        themeIconLight.style.display = 'block';
+        themeIconDark.style.display = 'none';
+    }
+});
+
+// Mobile sidebar toggle
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+const sidebarToggle = document.getElementById('sidebar-toggle');
+
+if (sidebarToggle) {
+    sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        sidebarOverlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
+    });
+}
+
+if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        sidebarOverlay.style.display = 'none';
+    });
+}
+</script>

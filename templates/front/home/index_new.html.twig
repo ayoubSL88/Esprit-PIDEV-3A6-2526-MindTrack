@@ -1,0 +1,259 @@
+{% extends 'layouts/public_base.html.twig' %}
+
+{% block page_title %}Accueil{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+
+    <!-- Hero Section -->
+    <section style="margin-bottom: 4rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;">
+            <!-- Left: Content -->
+            <div>
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                    <span class="badge badge-primary">Daily Clarity</span>
+                    <span style="font-size: var(--text-xs); color: var(--text-muted);">Soft structure, clear focus</span>
+                </div>
+                
+                <h1 style="font-size: 2.5rem; font-weight: 700; line-height: 1.2; margin: 0 0 1.5rem 0; color: var(--text-primary);">
+                    Build a steadier routine around mood, habits, exercise, and personal goals.
+                </h1>
+                
+                <p style="font-size: var(--text-lg); color: var(--text-secondary); line-height: 1.7; margin: 0 0 2rem 0;">
+                    MindTrack helps you develop a consistent practice of self-improvement with AI-powered recommendations, progress tracking, and personalized exercises.
+                </p>
+                
+                <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                    {% if app.user %}
+                        <a href="{{ path('front_gestion_exercices_home') }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-play-fill"></i>
+                            Commencer les exercices
+                        </a>
+                        <a href="{{ path('front_gestion_objectifs_personnelles_index') }}" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-bullseye"></i>
+                            Mes objectifs
+                        </a>
+                    {% else %}
+                        <a href="{{ path('app_register') }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-person-plus"></i>
+                            Créer un compte
+                        </a>
+                        <a href="{{ path('app_login') }}" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            Se connecter
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Right: Visual -->
+            <div style="position: relative;">
+                <div style="background: linear-gradient(135deg, var(--brand-500), var(--brand-600)); border-radius: var(--radius-2xl); padding: 2.5rem; color: white; position: relative; overflow: hidden;">
+                    <div style="position: absolute; right: -2rem; top: -2rem; opacity: 0.1; font-size: 10rem;">
+                        <i class="bi bi-stars"></i>
+                    </div>
+                    
+                    <div style="position: relative; z-index: 1;">
+                        <h2 style="font-size: var(--text-xl); font-weight: 600; margin: 0 0 0.5rem 0;">
+                            <i class="bi bi-lightning"></i>
+                            Quick Start
+                        </h2>
+                        <p style="font-size: var(--text-sm); opacity: 0.9; margin: 0 0 1.5rem 0;">
+                            Choisissez une section pour commencer
+                        </p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <a href="{{ path('front_gestion_exercices_home') }}" style="background: rgba(255,255,255,0.15); border-radius: var(--radius-xl); padding: 1rem; text-align: center; text-decoration: none; color: white; transition: all 0.2s;">
+                                <i class="bi bi-journal-text" style="font-size: 1.5rem;"></i>
+                                <div style="font-size: var(--text-sm); font-weight: 500; margin-top: 0.5rem;">Exercices</div>
+                            </a>
+                            <a href="{{ path('front_gestion_objectifs_personnelles_index') }}" style="background: rgba(255,255,255,0.15); border-radius: var(--radius-xl); padding: 1rem; text-align: center; text-decoration: none; color: white; transition: all 0.2s;">
+                                <i class="bi bi-bullseye" style="font-size: 1.5rem;"></i>
+                                <div style="font-size: var(--text-sm); font-weight: 500; margin-top: 0.5rem;">Objectifs</div>
+                            </a>
+                            <a href="{{ path('front_gestion_suivi_habitudes_index') }}" style="background: rgba(255,255,255,0.15); border-radius: var(--radius-xl); padding: 1rem; text-align: center; text-decoration: none; color: white; transition: all 0.2s;">
+                                <i class="bi bi-calendar-check" style="font-size: 1.5rem;"></i>
+                                <div style="font-size: var(--text-sm); font-weight: 500; margin-top: 0.5rem;">Habitudes</div>
+                            </a>
+                            <a href="{{ path('front_gestion_humeur_index') }}" style="background: rgba(255,255,255,0.15); border-radius: var(--radius-xl); padding: 1rem; text-align: center; text-decoration: none; color: white; transition: all 0.2s;">
+                                <i class="bi bi-emoji-smile" style="font-size: 1.5rem;"></i>
+                                <div style="font-size: var(--text-sm); font-weight: 500; margin-top: 0.5rem;">Humeur</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section style="margin-bottom: 4rem;">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <h2 style="font-size: var(--text-3xl); font-weight: 700; margin: 0 0 1rem 0;">
+                <i class="bi bi-stars" style="color: var(--brand-500);"></i>
+                Fonctionnalités principales
+            </h2>
+            <p style="font-size: var(--text-lg); color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
+                Des outils complets pour votre développement personnel et votre bien-être mental
+            </p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+            <!-- Feature 1 -->
+            <div class="card card-interactive">
+                <div class="card-body" style="padding: 2rem;">
+                    <div style="width: 3.5rem; height: 3.5rem; background: var(--brand-100); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+                        <i class="bi bi-journal-text" style="font-size: 1.5rem; color: var(--brand-600);"></i>
+                    </div>
+                    <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0 0 0.75rem 0;">Exercices guidés</h3>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6; margin: 0;">
+                        Des exercices de développement personnel adaptés à votre niveau, avec des suggestions IA personnalisées.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Feature 2 -->
+            <div class="card card-interactive">
+                <div class="card-body" style="padding: 2rem;">
+                    <div style="width: 3.5rem; height: 3.5rem; background: var(--success-100); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+                        <i class="bi bi-bullseye" style="font-size: 1.5rem; color: var(--success-600);"></i>
+                    </div>
+                    <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0 0 0.75rem 0;">Objectifs personnels</h3>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6; margin: 0;">
+                        Définissez et suivez vos objectifs avec des jalons mesurables et une progression visuelle claire.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Feature 3 -->
+            <div class="card card-interactive">
+                <div class="card-body" style="padding: 2rem;">
+                    <div style="width: 3.5rem; height: 3.5rem; background: var(--warning-100); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+                        <i class="bi bi-calendar-check" style="font-size: 1.5rem; color: var(--warning-600);"></i>
+                    </div>
+                    <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0 0 0.75rem 0;">Suivi des habitudes</h3>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6; margin: 0;">
+                        Construisez des habitudes positives avec des rappels intelligents et un suivi de série.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Feature 4 -->
+            <div class="card card-interactive">
+                <div class="card-body" style="padding: 2rem;">
+                    <div style="width: 3.5rem; height: 3.5rem; background: var(--info-100); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+                        <i class="bi bi-emoji-smile" style="font-size: 1.5rem; color: var(--info-600);"></i>
+                    </div>
+                    <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0 0 0.75rem 0;">Journal de l'humeur</h3>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6; margin: 0;">
+                        Trackez votre humeur quotidienne et recevez des insights sur vos patterns émotionnels.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Feature 5 -->
+            <div class="card card-interactive">
+                <div class="card-body" style="padding: 2rem;">
+                    <div style="width: 3.5rem; height: 3.5rem; background: rgba(99, 102, 241, 0.1); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+                        <i class="bi bi-cpu" style="font-size: 1.5rem; color: var(--brand-500);"></i>
+                    </div>
+                    <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0 0 0.75rem 0;">Suggestions IA</h3>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6; margin: 0;">
+                        Des recommandations personnalisées basées sur votre humeur et votre historique d'activité.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Feature 6 -->
+            <div class="card card-interactive">
+                <div class="card-body" style="padding: 2rem;">
+                    <div style="width: 3.5rem; height: 3.5rem; background: var(--danger-100); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+                        <i class="bi bi-graph-up" style="font-size: 1.5rem; color: var(--danger-600);"></i>
+                    </div>
+                    <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0 0 0.75rem 0;">Statistiques détaillées</h3>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6; margin: 0;">
+                        Visualisez votre progression avec des graphiques et des métriques de performance.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section (if user logged in) -->
+    {% if app.user and stats is defined and stats.total > 0 %}
+    <section style="margin-bottom: 4rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
+            {% include 'components/ui/StatCard.html.twig' with {
+                value: stats.total,
+                label: 'Exercices terminés',
+                icon: 'bi-check-circle',
+                icon_variant: 'success'
+            } %}
+            
+            {% include 'components/ui/StatCard.html.twig' with {
+                value: stats.temps ~ ' min',
+                label: 'Temps total passé',
+                icon: 'bi-clock-history',
+                icon_variant: 'primary'
+            } %}
+            
+            {% include 'components/ui/StatCard.html.twig' with {
+                value: stats.moyenne ~ '%',
+                label: 'Progression moyenne',
+                icon: 'bi-graph-up-arrow',
+                icon_variant: 'warning'
+            } %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Recent Exercises -->
+    {% if recent_exercices is defined and recent_exercices|length > 0 %}
+    <section style="margin-bottom: 4rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <h2 style="font-size: var(--text-xl); font-weight: 600; margin: 0;">
+                <i class="bi bi-star" style="color: var(--brand-500);"></i>
+                Exercices récents
+            </h2>
+            <a href="{{ path('front_gestion_exercices_index') }}" class="btn btn-secondary">
+                Voir tout
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+            {% for exercice in recent_exercices|slice(0, 3) %}
+                {% include 'components/exercises/ExerciseCard.html.twig' with { exercice: exercice } %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- CTA Section -->
+    {% if not app.user %}
+    <section>
+        <div style="background: linear-gradient(135deg, var(--brand-500), var(--brand-600)); border-radius: var(--radius-2xl); padding: 3rem; text-align: center; color: white; position: relative; overflow: hidden;">
+            <div style="position: absolute; left: -3rem; top: -3rem; opacity: 0.1; font-size: 12rem;">
+                <i class="bi bi-rocket"></i>
+            </div>
+            
+            <div style="position: relative; z-index: 1;">
+                <h2 style="font-size: var(--text-2xl); font-weight: 700; margin: 0 0 1rem 0;">
+                    Prêt à commencer votre voyage ?
+                </h2>
+                <p style="font-size: var(--text-base); opacity: 0.9; max-width: 500px; margin: 0 auto 2rem auto;">
+                    Rejoignez MindTrack et commencez à construire une routine plus saine et équilibrée.
+                </p>
+                <div style="display: flex; justify-content: center; gap: 1rem;">
+                    <a href="{{ path('app_register') }}" class="btn btn-lg" style="background: white; color: var(--brand-600);">
+                        <i class="bi bi-person-plus"></i>
+                        Créer un compte gratuit
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+</div>
+{% endblock %}

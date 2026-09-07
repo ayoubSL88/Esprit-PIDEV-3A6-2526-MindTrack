@@ -6,7 +6,7 @@
                 <span>MindTrack</span>
             </a>
 
-            <nav class="app-nav" aria-label="Primary">
+            <nav class="app-nav" aria-label="Navigation principale">
                 <div class="app-nav-group">
             {% if office == 'admin' %}
                     <a class="app-nav-link {{ app.request.attributes.get('_route') == 'admin_dashboard' ? 'app-nav-link-active' : '' }}" href="{{ path('admin_dashboard') }}">Dashboard</a>
@@ -26,6 +26,11 @@
                 </div>
 
                 <div class="app-nav-group">
+                    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Activer le mode sombre">
+                        <i class="bi bi-sun-fill theme-toggle-light"></i>
+                        <i class="bi bi-moon-fill theme-toggle-dark"></i>
+                    </button>
+
                     {% if app.user %}
                         <span class="app-nav-meta">{{ app.user.userIdentifier }}</span>
                         <a class="app-nav-link" href="{{ path('app_logout') }}">Logout</a>

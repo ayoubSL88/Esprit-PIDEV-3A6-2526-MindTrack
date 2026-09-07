@@ -1,0 +1,36 @@
+{#
+    ExerciseGrid Component
+    
+    Usage:
+    {% include 'components/exercises/ExerciseGrid.html.twig' with {
+        exercices: exercices_collection,
+        show_progress: false,
+        empty_message: 'Aucun exercice disponible'
+    } %}
+#}
+
+{% set exercices = exercices|default([]) %}
+{% set show_progress = show_progress|default(false) %}
+{% set empty_message = empty_message|default('Aucun exercice disponible.') %}
+{% set empty_icon = empty_icon|default('bi-inbox') %}
+{% set empty_action_label = empty_action_label|default(null) %}
+{% set empty_action_path = empty_action_path|default(null) %}
+
+{% if exercices is empty %}
+    {% include 'components/ui/EmptyState.html.twig' with {
+        icon: empty_icon,
+        title: 'Aucun exercice trouvé',
+        message: empty_message,
+        action_label: empty_action_label,
+        action_href: empty_action_path ? path(empty_action_path) : null
+    } %}
+{% else %}
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+    {% for exercice in exercices %}
+        {% include 'components/exercises/ExerciseCard.html.twig' with {
+            exercice: exercice,
+            show_progress: show_progress
+        } %}
+    {% endfor %}
+</div>
+{% endif %}

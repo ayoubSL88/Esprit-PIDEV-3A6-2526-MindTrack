@@ -1,0 +1,65 @@
+{#
+    Input Component
+    
+    Usage:
+    {% include 'components/ui/Input.html.twig' with {
+        name: 'email',
+        type: 'text'|'email'|'password'|'number'|'date',
+        label: 'Email Address',
+        placeholder: 'Enter your email',
+        value: '',
+        required: false,
+        error: 'This field is required',
+        helper: 'We will never share your email',
+        size: 'sm'|'md'|'lg',
+        icon: 'bi-envelope',
+        class: 'additional-classes'
+    } %}
+#}
+
+{% set name = name|default('input') %}
+{% set type = type|default('text') %}
+{% set label = label|default(null) %}
+{% set placeholder = placeholder|default('') %}
+{% set value = value|default('') %}
+{% set required = required|default(false) %}
+{% set error = error|default(null) %}
+{% set helper = helper|default(null) %}
+{% set size = size|default('md') %}
+{% set icon = icon|default(null) %}
+{% set class = class|default('') %}
+{% set id = id|default('input-' ~ name) %}
+
+<div class="form-group">
+    {% if label %}
+        <label for="{{ id }}" class="form-label {% if required %}form-label-required{% endif %}">
+            {{ label }}
+        </label>
+    {% endif %}
+    
+    {% if icon %}
+        <div class="search-input-wrapper">
+            <i class="bi {{ icon }} search-icon"></i>
+    {% endif %}
+    
+    <input 
+        type="{{ type }}" 
+        id="{{ id }}" 
+        name="{{ name }}" 
+        class="form-input {% if size != 'md' %}form-input-{{ size }}{% endif %} {% if error %}form-input-error{% endif %} {% if class %}{{ class }}{% endif %}"
+        placeholder="{{ placeholder }}"
+        value="{{ value }}"
+        {% if required %}required{% endif %}
+        {% for attr, val in attributes|default({}) %} {{ attr }}="{{ val }}"{% endfor %}
+    >
+    
+    {% if icon %}
+        </div>
+    {% endif %}
+    
+    {% if error %}
+        <p class="form-error">{{ error }}</p>
+    {% elseif helper %}
+        <p class="form-helper">{{ helper }}</p>
+    {% endif %}
+</div>

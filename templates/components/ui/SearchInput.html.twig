@@ -1,0 +1,81 @@
+{#
+    SearchInput Component
+    
+    Usage:
+    {% include 'components/ui/SearchInput.html.twig' with {
+        name: 'search',
+        placeholder: 'Rechercher un exercice...',
+        value: '',
+        action: '/app/exercices/list',
+        method: 'GET',
+        filters: [
+            { name: 'difficulty', label: 'Difficulté', options: [
+                { value: '', label: 'Tous' },
+                { value: 'FACILE', label: 'Facile' },
+                { value: 'MOYEN', label: 'Moyen' },
+                { value: 'DIFFICILE', label: 'Difficile' }
+            ]}
+        ],
+        class: 'additional-classes'
+    } %}
+#}
+
+{% set name = name|default('search') %}
+{% set placeholder = placeholder|default('Rechercher...') %}
+{% set value = value|default('') %}
+{% set action = action|default('') %}
+{% set method = method|default('GET') %}
+{% set filters = filters|default([]) %}
+{% set class = class|default('') %}
+
+<div class="filter-bar {% if class %}{{ class }}{% endif %}">
+    <div class="filter-group" style="flex: 2;">
+        <label for="{{ name }}" class="form-label">
+            <i class="bi bi-search"></i> Recherche
+        </label>
+        <form method="{{ method }}" action="{{ action }}" style="display: flex; gap: 0.5rem;">
+            <div class="search-input-wrapper" style="flex: 1;">
+                <i class="bi bi-search search-icon"></i>
+                <input 
+                    type="text" 
+                    id="{{ name }}" 
+                    name="{{ name }}" 
+                    class="form-input"
+                    placeholder="{{ placeholder }}"
+                    value="{{ value }}"
+                >
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+    </div>
+    
+    {% for filter in filters %}
+        <div class="filter-group">
+            <label for="{{ filter.name }}" class="form-label">
+                <i class="bi bi-funnel"></i> {{ filter.label }}
+            </label>
+            <select id="{{ filter.name }}" name="{{ filter.name }}" class="form-select" onchange="window.location.href=this.value">
+                {% for option in filter.options %}
+                    {% set url = action ~ '?' ~ filter.name ~ '=' ~ option.value %}
+                    {% for key, val in app.request.query.all %}
+                        {% if key != filter.name %}
+                            {% set url = url ~ '&' ~ key ~ '=' ~ val %}
+                        {% endif %}
+                    {% endfor %}
+                    <option value="{{ url }}" {% if app.request.get(filter.name) == option.value %}selected{% endif %}>
+                        {{ option.label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    {% endfor %}
+    
+    <div class="filter-actions">
+        <a href="{{ action }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            Réinitialiser
+        </a>
+    </div>
+</div>

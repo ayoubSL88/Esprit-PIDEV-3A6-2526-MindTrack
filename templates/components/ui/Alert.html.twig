@@ -1,0 +1,46 @@
+{#
+    Alert Component
+    
+    Usage:
+    {% include 'components/ui/Alert.html.twig' with {
+        variant: 'info'|'success'|'warning'|'danger',
+        title: 'Information',
+        icon: 'bi-info-circle',
+        dismissible: false,
+        class: 'additional-classes'
+    } %}
+        Alert message content here
+    {% endinclude %}
+#}
+
+{% set variant = variant|default('info') %}
+{% set title = title|default(null) %}
+{% set icon = icon|default(null) %}
+{% set dismissible = dismissible|default(false) %}
+{% set class = class|default('') %}
+
+{% set icons = {
+    'info': 'bi-info-circle',
+    'success': 'bi-check-circle',
+    'warning': 'bi-exclamation-triangle',
+    'danger': 'bi-x-circle'
+} %}
+
+<div class="alert alert-{{ variant }} {% if dismissible %}alert-dismissible{% endif %} {% if class %}{{ class }}{% endif %}" role="alert">
+    <div class="alert-icon">
+        <i class="bi {{ icon|default(icons[variant]) }}"></i>
+    </div>
+    <div class="alert-content">
+        {% if title %}
+            <div class="alert-title">{{ title }}</div>
+        {% endif %}
+        <div class="alert-message">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    {% if dismissible %}
+        <button type="button" class="btn-close" data-dismiss="alert" aria-label="Close">
+            <i class="bi bi-x"></i>
+        </button>
+    {% endif %}
+</div>

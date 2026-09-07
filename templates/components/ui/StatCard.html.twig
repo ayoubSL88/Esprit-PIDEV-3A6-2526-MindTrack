@@ -1,0 +1,38 @@
+{#
+    StatCard Component
+    
+    Usage:
+    {% include 'components/ui/StatCard.html.twig' with {
+        value: '42',
+        label: 'Exercices terminés',
+        icon: 'bi-check-circle',
+        icon_variant: 'primary'|'success'|'warning'|'danger',
+        trend: '+12%',  # optional
+        trend_direction: 'up'|'down',
+        class: 'additional-classes'
+    } %}
+#}
+
+{% set value = value|default('0') %}
+{% set label = label|default('Statistique') %}
+{% set icon = icon|default('bi-graph-up') %}
+{% set icon_variant = icon_variant|default('primary') %}
+{% set trend = trend|default(null) %}
+{% set trend_direction = trend_direction|default('up') %}
+{% set class = class|default('') %}
+
+<div class="stat-card {% if class %}{{ class }}{% endif %}">
+    <div class="stat-card-header">
+        <div class="stat-card-icon stat-card-icon-{{ icon_variant }}">
+            <i class="bi {{ icon }}"></i>
+        </div>
+        {% if trend %}
+            <span class="badge {% if trend_direction == 'up' %}badge-success{% else %}badge-danger{% endif %}">
+                <i class="bi {% if trend_direction == 'up' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                {{ trend }}
+            </span>
+        {% endif %}
+    </div>
+    <div class="stat-card-value">{{ value }}</div>
+    <div class="stat-card-label">{{ label }}</div>
+</div>

@@ -36,7 +36,7 @@ final class HomeController extends AbstractController
             ];
         }
         
-        return $this->render('front/home/index.html.twig', [
+        return $this->render('front/home/index_new.html.twig', [
             'recent_exercices' => $recentExercices,
             'stats' => $stats
         ]);

@@ -42,7 +42,7 @@ final class DashboardController extends AbstractController
         // Dernières sessions
         $recentSessions = $sessionRepo->findBy([], ['dateDebut' => 'DESC'], 5);
         
-        return $this->render('admin/dashboard/index.html.twig', [
+        return $this->render('admin/dashboard/index_new.html.twig', [
             'exercices_count' => $exercicesCount,
             'sessions_count' => $sessionsCount,
             'users_count' => $usersCount,

@@ -1,422 +1,130 @@
 {% extends 'layouts/front_base.html.twig' %}
 
-{% block page_title %}Mes Exercices{% endblock %}
-
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        /* STYLE MODERNE - MÊME DESIGN QUE GESTION OBJECTIFS */
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-        
-        .page-header h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #1e293b, #475569);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 0;
-        }
-        
-        /* BARRE DE FILTRE MODERNE */
-        .filter-bar {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 32px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            align-items: flex-end;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-            border: 1px solid #f1f5f9;
-        }
-        
-        .filter-bar > div {
-            flex: 1;
-            min-width: 150px;
-        }
-        
-        .filter-bar label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #64748b;
-            margin-bottom: 6px;
-        }
-        
-        .filter-bar input, .filter-bar select {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            background: #f8fafc;
-            transition: all 0.2s;
-        }
-        
-        .filter-bar input:focus, .filter-bar select:focus {
-            border-color: #6366f1;
-            outline: none;
-            background: white;
-        }
-        
-        /* DROPDOWN FILTRE PERSONNALISÉ */
-        .dropdown-filter {
-            position: relative;
-        }
-        
-        .dropdown-filter-btn {
-            background: #f8fafc;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 10px 16px;
-            font-size: 0.9rem;
-            color: #1e293b;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-        
-        .dropdown-filter-btn:hover {
-            border-color: #6366f1;
-            background: white;
-        }
-        
-        .dropdown-filter-menu {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 8px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
-            border: 1px solid #f1f5f9;
-            overflow: hidden;
-            min-width: 150px;
-            z-index: 100;
-            display: none;
-        }
-        
-        .dropdown-filter-menu.show {
-            display: block;
-            animation: fadeInUp 0.2s ease-out;
-        }
-        
-        .dropdown-filter-menu a {
-            display: block;
-            padding: 12px 20px;
-            text-decoration: none;
-            color: #475569;
-            transition: all 0.2s;
-            font-size: 0.85rem;
-        }
-        
-        .dropdown-filter-menu a:hover {
-            background: #f1f5f9;
-            color: #6366f1;
-        }
-        
-        /* GRILLE DES EXERCICES */
-        .exercices-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-            gap: 28px;
-            margin-top: 24px;
-        }
-        
-        .exercice-card {
-            background: white;
-            border-radius: 24px;
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            border: 1px solid rgba(0,0,0,0.03);
-            position: relative;
-        }
-        
-        .exercice-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 25px 35px -12px rgba(0,0,0,0.15);
-        }
-        
-        /* ENTÊTE CARTE */
-        .exercice-header {
-            padding: 20px 20px 12px;
-            border-bottom: 2px solid #f1f5f9;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-        
-        .exercice-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin: 0;
-        }
-        
-        /* BADGES DIFFICULTÉ */
-        .badge-difficulte {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-        
-        .badge-facile {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        
-        .badge-moyen {
-            background: #fed7aa;
-            color: #9a3412;
-        }
-        
-        .badge-difficile {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-        
-        /* CORPS CARTE */
-        .exercice-body {
-            padding: 16px 20px;
-        }
-        
-        .exercice-type {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: #eef2ff;
-            color: #4f46e5;
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: 500;
-            margin-bottom: 12px;
-        }
-        
-        .exercice-description {
-            color: #64748b;
-            font-size: 0.85rem;
-            line-height: 1.5;
-            margin-bottom: 16px;
-        }
-        
-        .exercice-meta {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 16px;
-            font-size: 0.7rem;
-            color: #94a3b8;
-        }
-        
-        .exercice-meta span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        /* ACTIONS CARTE */
-        .exercice-actions {
-            padding: 16px 20px 20px;
-            border-top: 1px solid #f1f5f9;
-            background: #fafcff;
-        }
-        
-        .btn-front {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 40px;
-            text-decoration: none;
-            font-size: 0.8rem;
-            font-weight: 500;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-        
-        .btn-view {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: white;
-            width: 100%;
-            justify-content: center;
-        }
-        
-        .btn-view:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(99,102,241,0.3);
-        }
-        
-        .btn-outline {
-            background: #f1f5f9;
-            color: #475569;
-        }
-        
-        .btn-outline:hover {
-            background: #e2e8f0;
-            transform: translateY(-1px);
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 60px;
-            background: #f8fafc;
-            border-radius: 24px;
-            color: #94a3b8;
-            grid-column: 1 / -1;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .exercice-card {
-            animation: fadeInUp 0.4s ease-out forwards;
-            opacity: 0;
-        }
-        
-        .exercice-card:nth-child(1) { animation-delay: 0.05s; }
-        .exercice-card:nth-child(2) { animation-delay: 0.1s; }
-        .exercice-card:nth-child(3) { animation-delay: 0.15s; }
-        .exercice-card:nth-child(4) { animation-delay: 0.2s; }
-        .exercice-card:nth-child(5) { animation-delay: 0.25s; }
-        .exercice-card:nth-child(6) { animation-delay: 0.3s; }
-        
-        @media (max-width: 640px) {
-            .exercices-grid {
-                grid-template-columns: 1fr;
-            }
-            .filter-bar {
-                flex-direction: column;
-            }
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-    </style>
-{% endblock %}
+{% block page_title %}Exercices{% endblock %}
 
 {% block content %}
-    <div style="max-width: 1280px; margin: 0 auto; padding: 20px;">
-        <!-- EN-TÊTE -->
-        <section class="page-header">
+    <div class="mt-exercises-shell">
+        <header class="mt-page-header">
             <div>
-                <h1>📚 Mes Exercices</h1>
-                <p style="color: #64748b; margin-top: 8px;">Découvre et pratique des exercices adaptés à ton niveau</p>
+                <p class="mt-section-kicker">MindTrack / Exercices</p>
+                <h1>Exercices</h1>
             </div>
-            <div>
-                <a href="{{ path('front_gestion_exercices_home') }}" class="btn-front btn-outline">
-                    ← Retour à l'espace d'exercices
-                </a>
-            </div>
-        </section>
 
-        <!-- BARRE DE RECHERCHE ET FILTRES -->
-        <div class="filter-bar">
-            <div style="flex: 2;">
-                <label for="search">🔍 Recherche</label>
-                <form method="get" style="display: flex; gap: 8px;">
-                    <input type="text" name="search" id="search" value="{{ search }}" 
-                           placeholder="Nom ou type d'exercice..." style="flex: 1;">
-                    <button type="submit" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; border-radius: 12px; padding: 0 20px; cursor: pointer;">
-                        🔍
-                    </button>
-                </form>
-            </div>
-            <div>
-                <label for="difficulte">📊 Difficulté</label>
-                <select id="difficulte" name="difficulte" onchange="window.location.href=this.value">
-                    <option value="{{ path('front_gestion_exercices_index') }}" {% if not app.request.get('difficulte') %}selected{% endif %}>Tous</option>
-                    <option value="{{ path('front_gestion_exercices_index', {'difficulte': 'FACILE'}) }}" {% if app.request.get('difficulte') == 'FACILE' %}selected{% endif %}>🟢 Facile</option>
-                    <option value="{{ path('front_gestion_exercices_index', {'difficulte': 'MOYEN'}) }}" {% if app.request.get('difficulte') == 'MOYEN' %}selected{% endif %}>🟠 Moyen</option>
-                    <option value="{{ path('front_gestion_exercices_index', {'difficulte': 'DIFFICILE'}) }}" {% if app.request.get('difficulte') == 'DIFFICILE' %}selected{% endif %}>🔴 Difficile</option>
-                </select>
-            </div>
-            <div style="display: flex; align-items: flex-end;">
-                <a href="{{ path('front_gestion_exercices_index') }}" class="btn-front btn-outline" style="padding: 10px 20px;">
-                    Réinitialiser
+            <div class="mt-header-actions">
+                <div class="mt-count-badge">
+                    <i class="bi bi-journal-text"></i>
+                    {{ exercices|length }} exercices
+                </div>
+                <a href="{{ path('front_gestion_exercices_home') }}" class="mt-button mt-button-secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    Retour
                 </a>
+            </div>
+        </header>
+
+        <div class="mt-toolbar">
+            <form method="get" class="mt-search-form" role="search" aria-label="Recherche d'exercices">
+                <div class="mt-search-field">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <input type="search" name="search" value="{{ search }}" placeholder="Rechercher un exercice, une catégorie ou un thème..." aria-label="Recherche des exercices">
+                </div>
+                <button class="mt-submit-button" type="submit" aria-label="Lancer la recherche">
+                    Rechercher
+                </button>
+            </form>
+
+            <form method="get" class="mt-filter-form" aria-label="Filtrer les exercices">
+                {% if search %}
+                    <input type="hidden" name="search" value="{{ search }}">
+                {% endif %}
+                <div class="mt-filter-field">
+                    <label for="difficulte" class="sr-only">Difficulté</label>
+                    <select id="difficulte" name="difficulte" onchange="this.form.submit()" aria-label="Filtrer par difficulté">
+                        <option value="" {% if not difficulte %}selected{% endif %}>Toutes les difficultés</option>
+                        <option value="FACILE" {% if difficulte == 'FACILE' %}selected{% endif %}>Facile</option>
+                        <option value="MOYEN" {% if difficulte == 'MOYEN' %}selected{% endif %}>Moyen</option>
+                        <option value="DIFFICILE" {% if difficulte == 'DIFFICILE' %}selected{% endif %}>Difficile</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <div class="mt-summary-row">
+            <div class="mt-summary-card">
+                <div class="label"><i class="bi bi-collection"></i> Total</div>
+                <div class="value">{{ exercices.getTotalItemCount() ?? exercices|length }}</div>
+                <div class="meta">exercices disponibles</div>
+            </div>
+            <div class="mt-summary-card">
+                <div class="label"><i class="bi bi-check2-circle"></i> Faciles</div>
+                <div class="value">{{ exercices|filter(exercice => exercice.difficulte == 'FACILE')|length }}</div>
+                <div class="meta">niveau débutant</div>
+            </div>
+            <div class="mt-summary-card">
+                <div class="label"><i class="bi bi-activity"></i> Moyens</div>
+                <div class="value">{{ exercices|filter(exercice => exercice.difficulte == 'MOYEN')|length }}</div>
+                <div class="meta">niveau intermédiaire</div>
+            </div>
+            <div class="mt-summary-card">
+                <div class="label"><i class="bi bi-flame"></i> Difficiles</div>
+                <div class="value">{{ exercices|filter(exercice => exercice.difficulte == 'DIFFICILE')|length }}</div>
+                <div class="meta">niveau avancé</div>
             </div>
         </div>
 
-        <!-- GRILLE DES EXERCICES -->
-        <div class="exercices-grid">
-            {% if exercices is empty %}
-                <div class="empty-state">
-                    <div style="font-size: 3rem; margin-bottom: 16px;">📭</div>
-                    <h4>Aucun exercice trouvé</h4>
-                    <p>Essayez de modifier vos critères de recherche.</p>
-                    <a href="{{ path('front_gestion_exercices_index') }}" class="btn-front btn-view" style="display: inline-block; width: auto; margin-top: 16px;">
-                        Voir tous les exercices
-                    </a>
+        {% if exercices is empty %}
+            <div class="mt-empty-state">
+                <div>
+                    <div class="mt-empty-icon"><i class="bi bi-clipboard-x"></i></div>
+                    <h3>Aucun exercice trouvé</h3>
+                    <p>Essayez une autre recherche ou réinitialisez les filtres pour retrouver l'ensemble des exercices.</p>
+                    <a href="{{ path('front_gestion_exercices_index') }}" class="mt-button mt-button-primary">Voir tous les exercices</a>
                 </div>
-            {% else %}
+            </div>
+        {% else %}
+            <div class="mt-exercises-grid">
                 {% for exercice in exercices %}
-                    <div class="exercice-card">
-                        <div class="exercice-header">
-                            <h3 class="exercice-title">{{ exercice.nom }}</h3>
-                            <span class="badge-difficulte 
-                                {% if exercice.difficulte == 'FACILE' %}badge-facile
-                                {% elseif exercice.difficulte == 'MOYEN' %}badge-moyen
-                                {% else %}badge-difficile{% endif %}">
-                                {{ exercice.difficulte|capitalize }}
-                            </span>
+                    {% set difficultyClass = 'mt-badge-facile' %}
+                    {% if exercice.difficulte == 'MOYEN' %}
+                        {% set difficultyClass = 'mt-badge-moyen' %}
+                    {% elseif exercice.difficulte == 'DIFFICILE' %}
+                        {% set difficultyClass = 'mt-badge-difficile' %}
+                    {% endif %}
+
+                    <article class="mt-exercise-card">
+                        <div class="mt-card-top">
+                            <div class="mt-icon-badge"><i class="bi bi-journal-text"></i></div>
+                            <span class="mt-badge {{ difficultyClass }}">{{ exercice.difficulte|capitalize }}</span>
                         </div>
-                        <div class="exercice-body">
-                            <div class="exercice-type">
-                                <span>🏷️</span> {{ exercice.type }}
+
+                        <h2>{{ exercice.nom }}</h2>
+                        <p>{{ exercice.description|length > 125 ? exercice.description|slice(0, 125) ~ '...' : exercice.description }}</p>
+
+                        <div class="mt-card-tags">
+                            <span class="mt-tag"><i class="bi bi-tag"></i> {{ exercice.type }}</span>
+                            <span class="mt-tag"><i class="bi bi-calendar3"></i> {{ exercice.dateCreation ? exercice.dateCreation|date('d/m/Y') : 'N/A' }}</span>
+                        </div>
+
+                        <div class="mt-progress-box">
+                            <div class="mt-progress-meta">
+                                <span>Progression</span>
+                                <span>72%</span>
                             </div>
-                            <p class="exercice-description">
-                                {{ exercice.description|slice(0, 100) }}{% if exercice.description|length > 100 %}...{% endif %}
-                            </p>
-                            <div class="exercice-meta">
-                                <span>⏱️ {{ exercice.duree }} minutes</span>
-                                <span>📅 {{ exercice.dateCreation|date('d/m/Y') }}</span>
+                            <div class="mt-progress-track" aria-label="Progression de l'exercice">
+                                <span class="mt-progress-fill" style="width: 72%"></span>
                             </div>
                         </div>
-                        <div class="exercice-actions">
-                            <a href="{{ path('front_gestion_exercices_show', {'idEx': exercice.idEx}) }}" class="btn-front btn-view">
-                                👁️ Voir l'exercice
+
+                        <div class="mt-card-footer">
+                            <div class="mt-mini-meta"><i class="bi bi-clock-history"></i> {{ exercice.duree }} min</div>
+                            <a class="mt-button mt-button-primary" href="{{ path('front_gestion_exercices_show', {'idEx': exercice.idEx}) }}">
+                                Continuer
+                                <i class="bi bi-arrow-right"></i>
                             </a>
                         </div>
-                    </div>
+                    </article>
                 {% endfor %}
-            {% endif %}
-        </div>
+            </div>
+        {% endif %}
     </div>
-
-    <script>
-        // Fermeture du dropdown au clic extérieur
-        document.addEventListener('click', function(e) {
-            const dropdowns = document.querySelectorAll('.dropdown-filter-menu');
-            dropdowns.forEach(dropdown => {
-                if (!dropdown.parentElement.contains(e.target)) {
-                    dropdown.classList.remove('show');
-                }
-            });
-        });
-    </script>
 {% endblock %}

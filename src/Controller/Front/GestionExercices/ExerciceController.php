@@ -44,7 +44,7 @@ final class ExerciceController extends AbstractController
             ];
         }
         
-        return $this->render('front/gestion_exercices/home.html.twig', [
+        return $this->render('front/gestion_exercices/home_new.html.twig', [
             'recent_exercices' => $recentExercices,
             'stats' => $stats
         ]);
@@ -84,7 +84,7 @@ final class ExerciceController extends AbstractController
             12
         );
         
-        return $this->render('front/gestion_exercices/index.html.twig', [
+        return $this->render('front/gestion_exercices/index_new.html.twig', [
             'exercices' => $exercices,
             'search' => $search,
             'difficulte' => $difficulte,
@@ -96,7 +96,7 @@ final class ExerciceController extends AbstractController
     #[Route('/{idEx}', name: 'front_gestion_exercices_show', methods: ['GET'])]
     public function show(Exercice $exercice): Response
     {
-        return $this->render('front/gestion_exercices/show.html.twig', [
+        return $this->render('front/gestion_exercices/show_new.html.twig', [
             'exercice' => $exercice,
         ]);
     }

@@ -86,7 +86,7 @@ final class AdminHistoriqueController extends AbstractController
             'total_time' => round(($statsResult['totalTime'] ?? 0) / 60),
         ];
         
-        return $this->render('admin/gestion_exercices/historique_index.html.twig', [
+        return $this->render('admin/gestion_exercices/historique_index_new.html.twig', [
             'sessions' => $sessions,
             'stats' => $stats,
             'all_users' => $allUsers,
@@ -197,7 +197,7 @@ final class AdminHistoriqueController extends AbstractController
             throw $this->createNotFoundException('Session non trouvée');
         }
         
-        return $this->render('admin/gestion_exercices/historique_show.html.twig', [
+        return $this->render('admin/gestion_exercices/historique_show_new.html.twig', [
             'session' => $session
         ]);
     }

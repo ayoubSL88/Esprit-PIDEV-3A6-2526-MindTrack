@@ -1,0 +1,73 @@
+{#
+    ExerciseFilters Component
+    
+    Usage:
+    {% include 'components/exercises/ExerciseFilters.html.twig' with {
+        search_value: '',
+        difficulty_value: '',
+        action_path: 'front_gestion_exercices_index'
+    } %}
+#}
+
+{% set search_value = search_value|default('') %}
+{% set difficulty_value = difficulty_value|default('') %}
+{% set action_path = action_path|default('front_gestion_exercices_index') %}
+
+<div class="filter-bar">
+    <!-- Search -->
+    <div class="filter-group" style="flex: 2;">
+        <label for="search" class="form-label">
+            <i class="bi bi-search"></i> Recherche
+        </label>
+        <form method="GET" action="{{ path(action_path) }}" style="display: flex; gap: 0.5rem;">
+            <div class="search-input-wrapper" style="flex: 1;">
+                <i class="bi bi-search search-icon"></i>
+                <input 
+                    type="text" 
+                    id="search" 
+                    name="search" 
+                    class="form-input"
+                    placeholder="Rechercher un exercice..."
+                    value="{{ search_value }}"
+                >
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+    </div>
+    
+    <!-- Difficulty Filter -->
+    <div class="filter-group">
+        <label for="difficulty" class="form-label">
+            <i class="bi bi-bar-chart"></i> Difficulté
+        </label>
+        <select 
+            id="difficulty" 
+            name="difficulty" 
+            class="form-select"
+            onchange="window.location.href=this.value"
+        >
+            <option value="{{ path(action_path) }}" {% if not difficulty_value %}selected{% endif %}>
+                Tous les niveaux
+            </option>
+            <option value="{{ path(action_path, {'difficulte': 'FACILE'}) }}" {% if difficulty_value == 'FACILE' %}selected{% endif %}>
+                Facile
+            </option>
+            <option value="{{ path(action_path, {'difficulte': 'MOYEN'}) }}" {% if difficulty_value == 'MOYEN' %}selected{% endif %}>
+                Moyen
+            </option>
+            <option value="{{ path(action_path, {'difficulte': 'DIFFICILE'}) }}" {% if difficulty_value == 'DIFFICILE' %}selected{% endif %}>
+                Difficile
+            </option>
+        </select>
+    </div>
+    
+    <!-- Reset -->
+    <div class="filter-actions">
+        <a href="{{ path(action_path) }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            Réinitialiser
+        </a>
+    </div>
+</div>

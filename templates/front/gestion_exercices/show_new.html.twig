@@ -1,0 +1,148 @@
+{% extends 'layouts/front_base_new.html.twig' %}
+
+{% block page_title %}{{ exercice.nom }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    
+    <!-- Breadcrumb -->
+    <nav style="margin-bottom: 1.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: var(--text-sm);">
+            <a href="{{ path('front_gestion_exercices_home') }}" style="color: var(--brand-500); text-decoration: none;">
+                <i class="bi bi-house"></i>
+                Espace exercices
+            </a>
+            <i class="bi bi-chevron-right" style="color: var(--text-muted);"></i>
+            <a href="{{ path('front_gestion_exercices_index') }}" style="color: var(--brand-500); text-decoration: none;">
+                <i class="bi bi-journal-text"></i>
+                Mes exercices
+            </a>
+            <i class="bi bi-chevron-right" style="color: var(--text-muted);"></i>
+            <span style="color: var(--text-muted);">{{ exercice.nom }}</span>
+        </div>
+    </nav>
+    
+    <!-- Main Content Grid -->
+    <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem;">
+        
+        <!-- Left Column - Main Card -->
+        <div>
+            <div class="card" style="padding: 0;">
+                <div class="card-body" style="padding: 2rem;">
+                    
+                    <!-- Badges -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem;">
+                        <span class="badge badge-primary">
+                            <i class="bi bi-tag"></i>
+                            {{ exercice.type }}
+                        </span>
+                        <span class="badge {% if exercice.difficulte == 'FACILE' %}badge-easy{% elseif exercice.difficulte == 'MOYEN' %}badge-medium{% else %}badge-hard{% endif %}">
+                            <i class="bi bi-bar-chart"></i>
+                            {{ exercice.difficulte|capitalize }}
+                        </span>
+                        <span class="badge badge-default">
+                            <i class="bi bi-clock"></i>
+                            {{ exercice.duree }} minutes
+                        </span>
+                    </div>
+                    
+                    <!-- Title -->
+                    <h1 style="font-size: var(--text-2xl); font-weight: 700; margin: 0 0 1.5rem 0; color: var(--text-primary);">
+                        {{ exercice.nom }}
+                    </h1>
+                    
+                    <!-- Description -->
+                    <section style="margin-bottom: 2rem;">
+                        <h2 style="font-size: var(--text-lg); font-weight: 600; margin: 0 0 0.75rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="bi bi-file-text" style="color: var(--brand-500);"></i>
+                            Description
+                        </h2>
+                        <div style="color: var(--text-secondary); line-height: 1.7;">
+                            {{ exercice.description|nl2br }}
+                        </div>
+                    </section>
+                    
+                    <!-- Demarche -->
+                    <section>
+                        <h2 style="font-size: var(--text-lg); font-weight: 600; margin: 0 0 0.75rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="bi bi-list-check" style="color: var(--brand-500);"></i>
+                            Démarche à suivre
+                        </h2>
+                        <div style="background: var(--bg-secondary); border-radius: var(--radius-xl); padding: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
+                            {{ exercice.demarche|nl2br }}
+                        </div>
+                    </section>
+                    
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column - Info Card -->
+        <div>
+            <!-- Info Card -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-header" style="background: linear-gradient(135deg, var(--brand-500), var(--brand-600)); color: white; border: none;">
+                    <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-info-circle"></i>
+                        Informations
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <ul style="list-style: none; margin: 0; padding: 0;">
+                        <li style="display: flex; align-items: center; gap: 1rem; padding: 0.875rem 0; border-bottom: 1px solid var(--border-light);">
+                            <i class="bi bi-clock" style="color: var(--brand-500); font-size: 1.25rem;"></i>
+                            <div>
+                                <div style="font-size: var(--text-xs); color: var(--text-muted);">Durée estimée</div>
+                                <div style="font-weight: 500; color: var(--text-primary);">{{ exercice.duree }} minutes</div>
+                            </div>
+                        </li>
+                        <li style="display: flex; align-items: center; gap: 1rem; padding: 0.875rem 0; border-bottom: 1px solid var(--border-light);">
+                            <i class="bi bi-calendar" style="color: var(--brand-500); font-size: 1.25rem;"></i>
+                            <div>
+                                <div style="font-size: var(--text-xs); color: var(--text-muted);">Date de création</div>
+                                <div style="font-weight: 500; color: var(--text-primary);">{{ exercice.dateCreation|date('d/m/Y à H:i') }}</div>
+                            </div>
+                        </li>
+                        {% if exercice.dateModification %}
+                        <li style="display: flex; align-items: center; gap: 1rem; padding: 0.875rem 0;">
+                            <i class="bi bi-pencil" style="color: var(--brand-500); font-size: 1.25rem;"></i>
+                            <div>
+                                <div style="font-size: var(--text-xs); color: var(--text-muted);">Dernière modification</div>
+                                <div style="font-weight: 500; color: var(--text-primary);">{{ exercice.dateModification|date('d/m/Y à H:i') }}</div>
+                            </div>
+                        </li>
+                        {% endif %}
+                    </ul>
+                    
+                    <!-- Actions -->
+                    <div style="margin-top: 1.5rem;">
+                        <a href="{{ path('front_session_start', {'idEx': exercice.idEx}) }}" class="btn btn-success" style="width: 100%;">
+                            <i class="bi bi-play-fill"></i>
+                            Commencer l'exercice
+                        </a>
+                        <button onclick="window.print()" class="btn btn-secondary" style="width: 100%; margin-top: 0.75rem;">
+                            <i class="bi bi-printer"></i>
+                            Imprimer
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tips Card -->
+            <div class="alert alert-warning">
+                <div class="alert-icon">
+                    <i class="bi bi-lightbulb"></i>
+                </div>
+                <div class="alert-content">
+                    <div class="alert-title">Conseils</div>
+                    <div class="alert-message">
+                        Prenez votre temps, suivez la démarche étape par étape, et n'hésitez pas à prendre des notes pour suivre votre progression.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+</div>
+{% endblock %}

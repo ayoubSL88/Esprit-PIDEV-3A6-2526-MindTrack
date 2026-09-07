@@ -1,0 +1,172 @@
+{% extends 'layouts/admin_base_new.html.twig' %}
+
+{% block page_title %}Historique des sessions{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+
+    <!-- Header -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <h1 style="font-size: var(--text-3xl); font-weight: 700; margin: 0;">
+                    <i class="bi bi-clock-history" style="color: var(--brand-500);"></i>
+                    Historique des sessions
+                </h1>
+                <p style="font-size: var(--text-base); color: var(--text-secondary); margin: 0.5rem 0 0 0;">
+                    Toutes les sessions terminées par les utilisateurs
+                </p>
+            </div>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <a href="{{ path('admin_historique_export_pdf', {
+                    user_id: selected_user_id,
+                    search: search,
+                    date_debut: date_debut,
+                    date_fin: date_fin
+                }) }}" class="btn btn-danger" target="_blank">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    Exporter PDF
+                </a>
+                <a href="{{ path('admin_gestion_exercices_home') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    Dashboard
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem;">
+            {% include 'components/ui/StatCard.html.twig' with { value: stats.total, label: 'Sessions terminées', icon: 'bi-check-circle', icon_variant: 'success' } %}
+            {% include 'components/ui/StatCard.html.twig' with { value: stats.avg_progress ~ '%', label: 'Progression moyenne', icon: 'bi-graph-up', icon_variant: 'primary' } %}
+            {% include 'components/ui/StatCard.html.twig' with { value: stats.total_time ~ ' min', label: 'Temps total', icon: 'bi-clock', icon_variant: 'warning' } %}
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section style="margin-bottom: 1.5rem;">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+                    <div style="min-width: 180px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Utilisateur</label>
+                        <select name="user_id" class="select">
+                            <option value="">Tous les utilisateurs</option>
+                            {% for user in all_users %}
+                            <option value="{{ user.idU }}" {% if selected_user_id == user.idU %}selected{% endif %}>
+                                {{ user.prenomU }} {{ user.nomU }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Recherche</label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-search input-icon"></i>
+                            <input type="text" name="search" value="{{ search }}"
+                                   class="input input-with-icon" placeholder="Nom exercice ou utilisateur...">
+                        </div>
+                    </div>
+                    <div style="min-width: 150px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Date début</label>
+                        <input type="date" name="date_debut" value="{{ date_debut }}" class="input">
+                    </div>
+                    <div style="min-width: 150px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Date fin</label>
+                        <input type="date" name="date_fin" value="{{ date_fin }}" class="input">
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i> Filtrer
+                        </button>
+                        <a href="{{ path('admin_historique_index') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Table -->
+    <section>
+        <div class="card">
+            <div class="card-body" style="padding: 0;">
+                {% if sessions|length > 0 %}
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Exercice</th>
+                                <th>Date</th>
+                                <th>Durée</th>
+                                <th>Progression</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in sessions %}
+                            <tr>
+                                <td>
+                                    {% if session.user %}
+                                    <div style="font-weight: 600; color: var(--text-primary); font-size: var(--text-sm);">{{ session.user.prenomU }} {{ session.user.nomU }}</div>
+                                    {% else %}
+                                    <span class="badge badge-error">Utilisateur supprimé</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="font-size: var(--text-sm); color: var(--text-primary);">{{ session.exercice.nom }}</div>
+                                    <div style="font-size: var(--text-xs); color: var(--text-muted);">{{ session.exercice.type }}</div>
+                                </td>
+                                <td style="color: var(--text-muted); font-size: var(--text-sm);">
+                                    {{ session.dateFin|date('d/m/Y H:i') }}
+                                </td>
+                                <td style="color: var(--text-secondary); font-size: var(--text-sm);">
+                                    {% if session.dureeReelle %}
+                                    {{ (session.dureeReelle / 60)|round }} min
+                                    {% else %}—{% endif %}
+                                </td>
+                                <td style="min-width: 140px;">
+                                    {% include 'components/ui/ProgressBar.html.twig' with {
+                                        value: session.progress|default(0),
+                                        show_label: true,
+                                        size: 'sm'
+                                    } %}
+                                </td>
+                                <td>
+                                    <div style="display: flex; justify-content: flex-end;">
+                                        <a href="{{ path('admin_historique_show', {'idSession': session.idSession}) }}"
+                                           class="btn btn-ghost btn-sm" title="Voir le détail">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if sessions.pageCount is defined and sessions.pageCount > 1 %}
+                <div style="display: flex; justify-content: center; padding: 1.5rem; border-top: 1px solid var(--border-subtle);">
+                    {{ knp_pagination_render(sessions) }}
+                </div>
+                {% endif %}
+
+                {% else %}
+                <div style="padding: 1.5rem;">
+                    {% include 'components/ui/EmptyState.html.twig' with {
+                        icon: 'bi-clock-history',
+                        title: 'Aucune session dans l\'historique',
+                        message: 'Essayez de modifier vos filtres ou attendez que des utilisateurs terminent des sessions.'
+                    } %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

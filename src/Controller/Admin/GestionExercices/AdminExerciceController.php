@@ -44,7 +44,7 @@ final class AdminExerciceController extends AbstractController
         $exercices = $qb->getQuery()->getResult();
         
         // Retourner la vue avec les paramètres de filtrage pour pré-remplir le formulaire
-        return $this->render('admin/gestion_exercices/index.html.twig', [
+        return $this->render('admin/gestion_exercices/index_new.html.twig', [
             'exercices' => $exercices,
             'search' => $search,
             'difficulte' => $difficulte,
@@ -68,7 +68,7 @@ final class AdminExerciceController extends AbstractController
             return $this->redirectToRoute('admin_gestion_exercices_index');
         }
     
-        return $this->render('admin/gestion_exercices/new.html.twig', [
+        return $this->render('admin/gestion_exercices/new_new.html.twig', [
         'form' => $form->createView(),
      ]);
     }
@@ -76,7 +76,7 @@ final class AdminExerciceController extends AbstractController
     #[Route('/{idEx}', name: 'admin_gestion_exercices_show', methods: ['GET'])]
     public function show(Exercice $exercice): Response
     {
-        return $this->render('admin/gestion_exercices/show.html.twig', [
+        return $this->render('admin/gestion_exercices/show_new.html.twig', [
             'exercice' => $exercice,
         ]);
     }
@@ -99,7 +99,7 @@ final class AdminExerciceController extends AbstractController
             return $this->redirectToRoute('admin_gestion_exercices_index');
         }
         
-        return $this->render('admin/gestion_exercices/edit.html.twig', [
+        return $this->render('admin/gestion_exercices/edit_new.html.twig', [
             'form' => $form->createView(),
             'exercice' => $exercice,
         ]);

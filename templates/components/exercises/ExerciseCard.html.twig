@@ -1,0 +1,77 @@
+{#
+    ExerciseCard Component
+    
+    Usage:
+    {% include 'components/exercises/ExerciseCard.html.twig' with {
+        exercice: exercice_entity,
+        show_progress: true,
+        show_actions: true
+    } %}
+#}
+
+{% set exercice = exercice|default(null) %}
+{% set show_progress = show_progress|default(false) %}
+{% set show_actions = show_actions|default(true) %}
+
+{% if exercice %}
+<article class="exercise-card">
+    <!-- Header -->
+    <div class="exercise-card-header">
+        <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0; color: var(--text-primary);">
+            {{ exercice.nom }}
+        </h3>
+        <span class="badge {% if exercice.difficulte == 'FACILE' %}badge-easy{% elseif exercice.difficulte == 'MOYEN' %}badge-medium{% else %}badge-hard{% endif %}">
+            {{ exercice.difficulte|capitalize }}
+        </span>
+    </div>
+    
+    <!-- Body -->
+    <div class="exercise-card-body">
+        <!-- Type Badge -->
+        <div style="margin-bottom: 0.75rem;">
+            <span class="badge badge-primary">
+                <i class="bi bi-tag"></i>
+                {{ exercice.type }}
+            </span>
+        </div>
+        
+        <!-- Description -->
+        <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5; margin: 0 0 1rem 0;">
+            {{ exercice.description|slice(0, 120) }}{% if exercice.description|length > 120 %}...{% endif %}
+        </p>
+        
+        <!-- Meta Info -->
+        <div style="display: flex; gap: 1rem; font-size: var(--text-xs); color: var(--text-muted);">
+            <span style="display: flex; align-items: center; gap: 0.25rem;">
+                <i class="bi bi-clock"></i>
+                {{ exercice.duree }} min
+            </span>
+            <span style="display: flex; align-items: center; gap: 0.25rem;">
+                <i class="bi bi-calendar"></i>
+                {{ exercice.dateCreation|date('d/m/Y') }}
+            </span>
+        </div>
+        
+        <!-- Progress (optional) -->
+        {% if show_progress and exercice.progress is defined %}
+        <div style="margin-top: 1rem;">
+            {% include 'components/ui/ProgressBar.html.twig' with {
+                value: exercice.progress,
+                show_label: true,
+                size: 'sm'
+            } %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Footer -->
+    {% if show_actions %}
+    <div class="exercise-card-footer">
+        <a href="{{ path('front_gestion_exercices_show', {'idEx': exercice.idEx}) }}" class="btn btn-primary" style="width: 100%;">
+            <i class="bi bi-eye"></i>
+            Voir l'exercice
+        </a>
+    </div>
+    {% endif %}
+</article>
+{% endif %}

@@ -67,7 +67,7 @@ final class RegisterController extends AbstractController
             if ($validated['errors'] !== []) {
                 $fieldErrors = $validated['fieldErrors'];
 
-                return $this->render('security/register.html.twig', [
+                return $this->render('security/register_new.html.twig', [
                     'form' => $formData,
                     'fieldErrors' => $fieldErrors,
                     'formSubmitted' => $formSubmitted,
@@ -81,7 +81,7 @@ final class RegisterController extends AbstractController
             $existing = $entityManager->getRepository(Utilisateur::class)->findOneBy(['emailU' => $formData['email']]);
             if ($existing !== null) {
                 $fieldErrors['email'] = 'This email is already used.';
-                return $this->render('security/register.html.twig', [
+                return $this->render('security/register_new.html.twig', [
                     'form' => $formData,
                     'fieldErrors' => $fieldErrors,
                     'formSubmitted' => $formSubmitted,
@@ -102,7 +102,7 @@ final class RegisterController extends AbstractController
                 if ($faceCapture === '') {
                     $fieldErrors['face_capture'] = 'Capture your face before enabling Face ID.';
 
-                    return $this->render('security/register.html.twig', [
+                    return $this->render('security/register_new.html.twig', [
                         'form' => $formData,
                         'fieldErrors' => $fieldErrors,
                         'formSubmitted' => $formSubmitted,
@@ -115,7 +115,7 @@ final class RegisterController extends AbstractController
                 } catch (FaceAuthenticationException $exception) {
                     $fieldErrors['face_capture'] = $exception->getMessage();
 
-                    return $this->render('security/register.html.twig', [
+                    return $this->render('security/register_new.html.twig', [
                         'form' => $formData,
                         'fieldErrors' => $fieldErrors,
                         'formSubmitted' => $formSubmitted,
@@ -149,7 +149,7 @@ final class RegisterController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        return $this->render('security/register.html.twig', [
+        return $this->render('security/register_new.html.twig', [
             'form' => $formData,
             'fieldErrors' => $fieldErrors,
             'formSubmitted' => $formSubmitted,

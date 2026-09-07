@@ -1,0 +1,51 @@
+{#
+    Mobile Navigation Component
+    
+    Usage:
+    {% include 'components/layout/MobileNav.html.twig' with {
+        office: 'front'|'admin'
+    } %}
+#}
+
+{% set office = office|default('front') %}
+{% set current_route = app.request.attributes.get('_route') %}
+
+<nav class="mobile-nav" id="mobile-nav">
+    <div class="mobile-nav-inner">
+        {% if office == 'admin' %}
+            <a href="{{ path('admin_dashboard') }}" class="mobile-nav-link {{ current_route == 'admin_dashboard' ? 'active' : '' }}">
+                <i class="bi bi-grid"></i>
+                <span class="mobile-nav-link-text">Dashboard</span>
+            </a>
+            <a href="{{ path('admin_gestion_user_index') }}" class="mobile-nav-link {{ current_route starts with 'admin_gestion_user_' ? 'active' : '' }}">
+                <i class="bi bi-people"></i>
+                <span class="mobile-nav-link-text">Users</span>
+            </a>
+            <a href="{{ path('admin_gestion_exercices_home') }}" class="mobile-nav-link {{ current_route starts with 'admin_gestion_exercices_' ? 'active' : '' }}">
+                <i class="bi bi-journal-text"></i>
+                <span class="mobile-nav-link-text">Exercices</span>
+            </a>
+            <a href="{{ path('app_logout') }}" class="mobile-nav-link">
+                <i class="bi bi-box-arrow-right"></i>
+                <span class="mobile-nav-link-text">Logout</span>
+            </a>
+        {% else %}
+            <a href="{{ path('front_home') }}" class="mobile-nav-link {{ current_route == 'front_home' ? 'active' : '' }}">
+                <i class="bi bi-house"></i>
+                <span class="mobile-nav-link-text">Accueil</span>
+            </a>
+            <a href="{{ path('front_gestion_exercices_home') }}" class="mobile-nav-link {{ current_route starts with 'front_gestion_exercices_' ? 'active' : '' }}">
+                <i class="bi bi-journal-text"></i>
+                <span class="mobile-nav-link-text">Exercices</span>
+            </a>
+            <a href="{{ path('front_gestion_objectifs_personnelles_index') }}" class="mobile-nav-link {{ current_route starts with 'front_gestion_objectifs_personnelles_' ? 'active' : '' }}">
+                <i class="bi bi-bullseye"></i>
+                <span class="mobile-nav-link-text">Objectifs</span>
+            </a>
+            <a href="{{ path('front_gestion_user_index') }}" class="mobile-nav-link {{ current_route starts with 'front_gestion_user_' ? 'active' : '' }}">
+                <i class="bi bi-person-circle"></i>
+                <span class="mobile-nav-link-text">Profil</span>
+            </a>
+        {% endif %}
+    </div>
+</nav>

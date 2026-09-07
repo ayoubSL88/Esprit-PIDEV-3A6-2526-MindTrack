@@ -1,0 +1,33 @@
+{#
+    EmptyState Component
+    
+    Usage:
+    {% include 'components/ui/EmptyState.html.twig' with {
+        icon: 'bi-inbox',
+        title: 'Aucun exercice trouvé',
+        message: 'Essayez de modifier vos critères de recherche.',
+        action_label: 'Voir tous les exercices',
+        action_href: '/app/exercices',
+        class: 'additional-classes'
+    } %}
+#}
+
+{% set icon = icon|default('bi-inbox') %}
+{% set title = title|default('Aucune donnée') %}
+{% set message = message|default('Aucune donnée disponible.') %}
+{% set action_label = action_label|default(null) %}
+{% set action_href = action_href|default(null) %}
+{% set class = class|default('') %}
+
+<div class="empty-state {% if class %}{{ class }}{% endif %}">
+    <div class="empty-state-icon">
+        <i class="bi {{ icon }}"></i>
+    </div>
+    <h3 class="empty-state-title">{{ title }}</h3>
+    <p class="empty-state-message">{{ message }}</p>
+    {% if action_label and action_href %}
+        <a href="{{ action_href }}" class="btn btn-primary">
+            {{ action_label }}
+        </a>
+    {% endif %}
+</div>

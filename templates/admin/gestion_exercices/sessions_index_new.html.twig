@@ -1,0 +1,208 @@
+{% extends 'layouts/admin_base_new.html.twig' %}
+
+{% block page_title %}Sessions d'exercices{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+
+    <!-- Header -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <h1 style="font-size: var(--text-3xl); font-weight: 700; margin: 0;">
+                    <i class="bi bi-play-circle" style="color: var(--brand-500);"></i>
+                    Sessions d'exercices
+                </h1>
+                <p style="font-size: var(--text-base); color: var(--text-secondary); margin: 0.5rem 0 0 0;">
+                    Toutes les sessions utilisateurs de la plateforme
+                </p>
+            </div>
+            <a href="{{ path('admin_gestion_exercices_home') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i>
+                Dashboard exercices
+            </a>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    {% set total = sessions|length %}
+    {% set terminees = sessions|filter(s => s.terminee)|length %}
+    {% set encours = sessions|filter(s => not s.terminee)|length %}
+    {% set avgProgression = 0 %}
+    {% for s in sessions %}{% set avgProgression = avgProgression + s.progress %}{% endfor %}
+    {% set avgProgression = total > 0 ? (avgProgression / total)|round : 0 %}
+
+    <section style="margin-bottom: 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem;">
+            {% include 'components/ui/StatCard.html.twig' with { value: total, label: 'Total sessions', icon: 'bi-play-circle', icon_variant: 'primary' } %}
+            {% include 'components/ui/StatCard.html.twig' with { value: terminees, label: 'Terminées', icon: 'bi-check-circle', icon_variant: 'success' } %}
+            {% include 'components/ui/StatCard.html.twig' with { value: encours, label: 'En cours', icon: 'bi-clock', icon_variant: 'warning' } %}
+            {% include 'components/ui/StatCard.html.twig' with { value: avgProgression ~ '%', label: 'Progression moy.', icon: 'bi-graph-up', icon_variant: 'primary' } %}
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section style="margin-bottom: 1.5rem;">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" id="filterForm" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+                    <div style="flex: 2; min-width: 220px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Recherche</label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-search input-icon"></i>
+                            <input type="text" name="search" id="searchInput"
+                                   value="{{ app.request.query.get('search') }}"
+                                   class="input input-with-icon" placeholder="Utilisateur ou exercice...">
+                        </div>
+                    </div>
+                    <div style="min-width: 160px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Statut</label>
+                        <select name="statut" class="select">
+                            <option value="">Tous</option>
+                            <option value="terminee" {% if app.request.query.get('statut') == 'terminee' %}selected{% endif %}>Terminées</option>
+                            <option value="encours" {% if app.request.query.get('statut') == 'encours' %}selected{% endif %}>En cours</option>
+                        </select>
+                    </div>
+                    <div style="min-width: 160px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Date début</label>
+                        <input type="date" name="date_debut" class="input"
+                               value="{{ app.request.query.get('date_debut') }}">
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i> Filtrer
+                        </button>
+                        <a href="{{ path('admin_sessions_index') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Table -->
+    <section>
+        <div class="card">
+            <div class="card-body" style="padding: 0;">
+                {% if sessions|length > 0 %}
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Exercice</th>
+                                <th>Date début</th>
+                                <th>Durée</th>
+                                <th>Progression</th>
+                                <th>Statut</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in sessions %}
+                            <tr>
+                                <td>
+                                    {% if session.user %}
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <div style="width: 2.25rem; height: 2.25rem; background: var(--brand-100); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="bi bi-person" style="color: var(--brand-600);"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 600; color: var(--text-primary); font-size: var(--text-sm);">{{ session.user.nomU }} {{ session.user.prenomU }}</div>
+                                            <div style="font-size: var(--text-xs); color: var(--text-muted);">{{ session.user.emailU }}</div>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <span class="badge badge-error">Utilisateur supprimé</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if session.exercice %}
+                                    <div>
+                                        <div style="font-weight: 500; color: var(--text-primary); font-size: var(--text-sm);">{{ session.exercice.nom }}</div>
+                                        <div style="font-size: var(--text-xs); color: var(--text-muted);">{{ session.exercice.type }}</div>
+                                    </div>
+                                    {% else %}
+                                    <span class="badge badge-error">Exercice supprimé</span>
+                                    {% endif %}
+                                </td>
+                                <td style="color: var(--text-muted); font-size: var(--text-sm);">
+                                    {{ session.dateDebut|date('d/m/Y') }}<br>
+                                    <span style="font-size: var(--text-xs);">{{ session.dateDebut|date('H:i') }}</span>
+                                </td>
+                                <td style="color: var(--text-secondary); font-size: var(--text-sm);">
+                                    {% if session.dureeReelle %}
+                                    <i class="bi bi-clock" style="color: var(--text-muted);"></i>
+                                    {{ (session.dureeReelle / 60)|round }} min
+                                    {% else %}
+                                    <span style="color: var(--text-muted);">—</span>
+                                    {% endif %}
+                                </td>
+                                <td style="min-width: 140px;">
+                                    {% include 'components/ui/ProgressBar.html.twig' with {
+                                        value: session.progress|default(0),
+                                        show_label: true,
+                                        size: 'sm'
+                                    } %}
+                                </td>
+                                <td>
+                                    {% if session.terminee %}
+                                    <span class="badge badge-success"><i class="bi bi-check-circle"></i> Terminée</span>
+                                    {% else %}
+                                    <span class="badge badge-warning"><i class="bi bi-clock"></i> En cours</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                                        <a href="{{ path('admin_sessions_show', {'idSession': session.idSession}) }}"
+                                           class="btn btn-ghost btn-sm" title="Voir le détail">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        {% if session.user %}
+                                        <a href="{{ path('admin_sessions_user', {'idU': session.user.idU}) }}"
+                                           class="btn btn-secondary btn-sm" title="Sessions de l'utilisateur">
+                                            <i class="bi bi-person"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if sessions.pageCount is defined and sessions.pageCount > 1 %}
+                <div style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; padding: 1.5rem; border-top: 1px solid var(--border-subtle);">
+                    {{ knp_pagination_render(sessions) }}
+                </div>
+                {% endif %}
+
+                {% else %}
+                <div style="padding: 1.5rem;">
+                    {% include 'components/ui/EmptyState.html.twig' with {
+                        icon: 'bi-play-circle',
+                        title: 'Aucune session trouvée',
+                        message: 'Les sessions apparaîtront ici dès que les utilisateurs commenceront à pratiquer.'
+                    } %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+let timeout = null;
+const searchInput = document.getElementById('searchInput');
+if (searchInput) {
+    searchInput.addEventListener('input', function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => document.getElementById('filterForm').submit(), 400);
+    });
+}
+</script>
+{% endblock %}

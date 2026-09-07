@@ -52,7 +52,7 @@ final class LoginController extends AbstractController
 
         $session = $request->getSession();
 
-        return $this->render('security/login.html.twig', [
+        return $this->render('security/login_new.html.twig', [
             'last_username' => (string) $session->get('last_login_email', $authenticationUtils->getLastUsername()),
             'error' => $authenticationUtils->getLastAuthenticationError(),
             'captcha_verified' => $captchaService->isVerified($session, 'login'),

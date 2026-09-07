@@ -1,0 +1,154 @@
+{% extends 'layouts/admin_base_new.html.twig' %}
+
+{% block page_title %}Gestion des exercices{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+
+    <!-- Page Header -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <h1 style="font-size: var(--text-3xl); font-weight: 700; margin: 0;">
+                    <i class="bi bi-journal-text" style="color: var(--brand-500);"></i>
+                    Exercices
+                </h1>
+                <p style="font-size: var(--text-base); color: var(--text-secondary); margin: 0.5rem 0 0 0;">
+                    Créer, modifier et supprimer les exercices de la plateforme
+                </p>
+            </div>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <a href="{{ path('admin_gestion_exercices_home') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    Dashboard
+                </a>
+                <a href="{{ path('admin_gestion_exercices_new') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i>
+                    Nouvel exercice
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section style="margin-bottom: 1.5rem;">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+                    <div style="flex: 1; min-width: 220px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+                            <i class="bi bi-search"></i> Recherche
+                        </label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-search input-icon"></i>
+                            <input type="text" name="search" value="{{ app.request.query.get('search') }}"
+                                   class="input input-with-icon" placeholder="Nom ou type d'exercice...">
+                        </div>
+                    </div>
+                    <div style="min-width: 180px;">
+                        <label style="display: block; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+                            <i class="bi bi-bar-chart"></i> Difficulté
+                        </label>
+                        <select name="difficulte" class="select">
+                            <option value="">Tous les niveaux</option>
+                            <option value="FACILE" {% if app.request.query.get('difficulte') == 'FACILE' %}selected{% endif %}>Facile</option>
+                            <option value="MOYEN" {% if app.request.query.get('difficulte') == 'MOYEN' %}selected{% endif %}>Moyen</option>
+                            <option value="DIFFICILE" {% if app.request.query.get('difficulte') == 'DIFFICILE' %}selected{% endif %}>Difficile</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i>
+                            Filtrer
+                        </button>
+                        <a href="{{ path('admin_gestion_exercices_index') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i>
+                            Réinitialiser
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Table -->
+    <section>
+        <div class="card">
+            <div class="card-body" style="padding: 0;">
+                {% if exercices|length > 0 %}
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Exercice</th>
+                                <th>Type</th>
+                                <th>Durée</th>
+                                <th>Difficulté</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exercice in exercices %}
+                            <tr>
+                                <td>
+                                    <span style="font-weight: 600; color: var(--text-primary);">{{ exercice.nom }}</span>
+                                </td>
+                                <td>
+                                    <span style="color: var(--text-secondary);">{{ exercice.type }}</span>
+                                </td>
+                                <td>
+                                    <span style="display: flex; align-items: center; gap: 0.4rem; color: var(--text-secondary);">
+                                        <i class="bi bi-clock"></i>
+                                        {{ exercice.duree }} min
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if exercice.difficulte == 'FACILE' %}
+                                        <span class="badge badge-success">Facile</span>
+                                    {% elseif exercice.difficulte == 'MOYEN' %}
+                                        <span class="badge badge-warning">Moyen</span>
+                                    {% else %}
+                                        <span class="badge badge-error">Difficile</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                                        <a href="{{ path('admin_gestion_exercices_show', {'idEx': exercice.idEx}) }}"
+                                           class="btn btn-ghost btn-sm" title="Voir">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ path('admin_gestion_exercices_edit', {'idEx': exercice.idEx}) }}"
+                                           class="btn btn-secondary btn-sm" title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('admin_gestion_exercices_delete', {'idEx': exercice.idEx}) }}" style="display: inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ exercice.idEx) }}">
+                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                    onclick="return confirm('Supprimer définitivement cet exercice ?')" title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div style="padding: 1.5rem;">
+                    {% include 'components/ui/EmptyState.html.twig' with {
+                        icon: 'bi-journal-x',
+                        title: 'Aucun exercice trouvé',
+                        message: 'Essayez de modifier vos filtres ou créez un nouvel exercice.',
+                        action_label: 'Créer un exercice',
+                        action_url: path('admin_gestion_exercices_new')
+                    } %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

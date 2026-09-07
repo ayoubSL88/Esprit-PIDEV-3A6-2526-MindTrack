@@ -1,0 +1,46 @@
+{#
+    ProgressBar Component
+    
+    Usage:
+    {% include 'components/ui/ProgressBar.html.twig' with {
+        value: 75,
+        max: 100,
+        variant: 'primary'|'success'|'warning'|'danger',
+        size: 'sm'|'md'|'lg',
+        show_label: true,
+        label: '75%',
+        animated: false,
+        class: 'additional-classes'
+    } %}
+#}
+
+{% set value = value|default(0) %}
+{% set max = max|default(100) %}
+{% set variant = variant|default('primary') %}
+{% set size = size|default('md') %}
+{% set show_label = show_label|default(false) %}
+{% set label = label|default(value ~ '%') %}
+{% set animated = animated|default(false) %}
+{% set class = class|default('') %}
+
+{% set percentage = (value / max * 100)|round %}
+
+{% if show_label %}
+<div class="progress-labeled">
+{% endif %}
+
+<div class="progress {% if size == 'sm' %}progress-sm{% elseif size == 'lg' %}progress-lg{% endif %} {% if class %}{{ class }}{% endif %}">
+    <div 
+        class="progress-bar {% if variant != 'primary' %}progress-bar-{{ variant }}{% endif %} {% if animated %}progress-bar-animated{% endif %}" 
+        role="progressbar" 
+        style="width: {{ percentage }}%" 
+        aria-valuenow="{{ value }}" 
+        aria-valuemin="0" 
+        aria-valuemax="{{ max }}"
+    ></div>
+</div>
+
+{% if show_label %}
+    <span class="progress-label">{{ label }}</span>
+</div>
+{% endif %}

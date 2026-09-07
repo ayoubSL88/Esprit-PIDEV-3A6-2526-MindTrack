@@ -1,0 +1,49 @@
+{#
+    Badge Component
+    
+    Usage:
+    {% include 'components/ui/Badge.html.twig' with {
+        variant: 'default'|'primary'|'success'|'warning'|'danger'|'info'|'easy'|'medium'|'hard',
+        size: 'sm'|'md'|'lg',
+        icon: 'bi-check',
+        class: 'additional-classes'
+    } %}
+    Badge Text
+    {% endinclude %}
+#}
+
+{% set variant = variant|default('default') %}
+{% set size = size|default('md') %}
+{% set icon = icon|default(null) %}
+{% set class = class|default('') %}
+
+{% set variant_classes = {
+    'default': 'badge-default',
+    'primary': 'badge-primary',
+    'success': 'badge-success',
+    'warning': 'badge-warning',
+    'danger': 'badge-danger',
+    'info': 'badge-info',
+    'easy': 'badge-easy',
+    'medium': 'badge-medium',
+    'hard': 'badge-hard'
+} %}
+
+{% set size_classes = {
+    'sm': 'badge-sm',
+    'md': '',
+    'lg': 'badge-lg'
+} %}
+
+{% set classes = 'badge ' ~ variant_classes[variant] ~ ' ' ~ size_classes[size] %}
+
+{% if class %}
+    {% set classes = classes ~ ' ' ~ class %}
+{% endif %}
+
+<span class="{{ classes }}">
+    {% if icon %}
+        <i class="bi {{ icon }}"></i>
+    {% endif %}
+    {% block content %}{% endblock %}
+</span>

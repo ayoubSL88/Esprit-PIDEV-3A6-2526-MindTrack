@@ -1,0 +1,164 @@
+{% extends 'layouts/admin_base_new.html.twig' %}
+
+{% block page_title %}{{ exercice.nom }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+
+    <!-- Header -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    {% if exercice.difficulte == 'FACILE' %}
+                        <span class="badge badge-success">Facile</span>
+                    {% elseif exercice.difficulte == 'MOYEN' %}
+                        <span class="badge badge-warning">Moyen</span>
+                    {% else %}
+                        <span class="badge badge-error">Difficile</span>
+                    {% endif %}
+                    <span style="font-size: var(--text-sm); color: var(--text-muted);">{{ exercice.type }}</span>
+                </div>
+                <h1 style="font-size: var(--text-3xl); font-weight: 700; margin: 0;">
+                    <i class="bi bi-journal-text" style="color: var(--brand-500);"></i>
+                    {{ exercice.nom }}
+                </h1>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <a href="{{ path('admin_gestion_exercices_index') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    Retour
+                </a>
+                <a href="{{ path('admin_gestion_exercices_edit', {'idEx': exercice.idEx}) }}" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i>
+                    Modifier
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Details Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem;">
+
+        <!-- Info card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="bi bi-info-circle" style="color: var(--brand-500);"></i>
+                    Informations générales
+                </h3>
+            </div>
+            <div class="card-body">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 0.875rem 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary); width: 40%;">
+                            <i class="bi bi-tag"></i> Nom
+                        </td>
+                        <td style="padding: 0.875rem 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-sm); color: var(--text-primary); font-weight: 500;">
+                            {{ exercice.nom }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.875rem 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary);">
+                            <i class="bi bi-grid"></i> Type
+                        </td>
+                        <td style="padding: 0.875rem 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-sm); color: var(--text-primary);">
+                            {{ exercice.type }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.875rem 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary);">
+                            <i class="bi bi-clock"></i> Durée
+                        </td>
+                        <td style="padding: 0.875rem 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-sm); color: var(--text-primary);">
+                            {{ exercice.duree }} minutes
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.875rem 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary);">
+                            <i class="bi bi-bar-chart"></i> Difficulté
+                        </td>
+                        <td style="padding: 0.875rem 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-sm);">
+                            {% if exercice.difficulte == 'FACILE' %}
+                                <span class="badge badge-success">Facile</span>
+                            {% elseif exercice.difficulte == 'MOYEN' %}
+                                <span class="badge badge-warning">Moyen</span>
+                            {% else %}
+                                <span class="badge badge-error">Difficile</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.875rem 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary);">
+                            <i class="bi bi-calendar-plus"></i> Créé le
+                        </td>
+                        <td style="padding: 0.875rem 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-sm); color: var(--text-muted);">
+                            {{ exercice.dateCreation|date('d/m/Y H:i') }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.875rem 0; font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary);">
+                            <i class="bi bi-calendar-check"></i> Modifié le
+                        </td>
+                        <td style="padding: 0.875rem 0; font-size: var(--text-sm); color: var(--text-muted);">
+                            {{ exercice.dateModification|date('d/m/Y H:i') }}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Description & Demarche -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-text-paragraph" style="color: var(--brand-500);"></i>
+                        Description
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if exercice.description %}
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.7; margin: 0;">
+                        {{ exercice.description|nl2br }}
+                    </p>
+                    {% else %}
+                    <p style="font-size: var(--text-sm); color: var(--text-muted); font-style: italic;">Aucune description</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-list-check" style="color: var(--success-500);"></i>
+                        Démarche
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if exercice.demarche %}
+                    <div style="background: var(--bg-secondary); border-radius: var(--radius-lg); padding: 1rem; font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.7;">
+                        {{ exercice.demarche|nl2br }}
+                    </div>
+                    {% else %}
+                    <p style="font-size: var(--text-sm); color: var(--text-muted); font-style: italic;">Aucune démarche définie</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete action -->
+    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end;">
+        <form method="post" action="{{ path('admin_gestion_exercices_delete', {'idEx': exercice.idEx}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ exercice.idEx) }}">
+            <button type="submit" class="btn btn-danger"
+                    onclick="return confirm('Supprimer définitivement cet exercice ? Cette action est irréversible.')">
+                <i class="bi bi-trash"></i>
+                Supprimer l'exercice
+            </button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

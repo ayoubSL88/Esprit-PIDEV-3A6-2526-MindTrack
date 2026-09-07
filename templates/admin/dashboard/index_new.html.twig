@@ -1,0 +1,288 @@
+{% extends 'layouts/admin_base_new.html.twig' %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+
+    <!-- Page Header -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    <span class="badge badge-primary">Backoffice</span>
+                </div>
+                <h1 style="font-size: var(--text-3xl); font-weight: 700; margin: 0;">
+                    <i class="bi bi-speedometer2" style="color: var(--brand-500);"></i>
+                    Dashboard Administrateur
+                </h1>
+                <p style="font-size: var(--text-base); color: var(--text-secondary); margin: 0.5rem 0 0 0;">
+                    Vue d'ensemble de la plateforme MindTrack
+                </p>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <a href="{{ path('admin_gestion_user_index') }}" class="btn btn-secondary">
+                    <i class="bi bi-people"></i>
+                    Utilisateurs
+                </a>
+                <a href="{{ path('admin_gestion_exercices_home') }}" class="btn btn-primary">
+                    <i class="bi bi-journal-text"></i>
+                    Exercices
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Stats Cards -->
+    <section style="margin-bottom: 2.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
+            {% include 'components/ui/StatCard.html.twig' with {
+                value: users_count|default(0),
+                label: 'Utilisateurs',
+                icon: 'bi-people',
+                icon_variant: 'primary'
+            } %}
+            
+            {% include 'components/ui/StatCard.html.twig' with {
+                value: exercices_count|default(0),
+                label: 'Exercices',
+                icon: 'bi-journal-text',
+                icon_variant: 'success'
+            } %}
+            
+            {% include 'components/ui/StatCard.html.twig' with {
+                value: sessions_count|default(0),
+                label: 'Sessions',
+                icon: 'bi-play-circle',
+                icon_variant: 'warning'
+            } %}
+            
+            {% include 'components/ui/StatCard.html.twig' with {
+                value: avg_progress|default(0) ~ '%',
+                label: 'Progression moyenne',
+                icon: 'bi-graph-up-arrow',
+                icon_variant: 'primary'
+            } %}
+        </div>
+    </section>
+    
+    <!-- Quick Access Grid -->
+    <section style="margin-bottom: 2.5rem;">
+        <h2 style="font-size: var(--text-xl); font-weight: 600; margin: 0 0 1.5rem 0;">
+            <i class="bi bi-grid" style="color: var(--brand-500);"></i>
+            Gestion
+        </h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+            <!-- Users Card -->
+            <a href="{{ path('admin_gestion_user_index') }}" class="card card-interactive" style="text-decoration: none;">
+                <div class="card-body" style="padding: 2rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="width: 3.5rem; height: 3.5rem; background: var(--brand-100); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-people" style="font-size: 1.5rem; color: var(--brand-600);"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin: 0;">Utilisateurs</h3>
+                            <p style="font-size: var(--text-xs); color: var(--text-muted); margin: 0;">Gestion des comptes</p>
+                        </div>
+                    </div>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); margin: 0; line-height: 1.6;">
+                        Créer, modifier, filtrer, supprimer et changer les rôles des utilisateurs.
+                    </p>
+                    <div style="margin-top: 1.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--brand-500);">
+                        <span style="font-size: var(--text-sm); font-weight: 500;">Accéder</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- Exercices Card -->
+            <a href="{{ path('admin_gestion_exercices_home') }}" class="card card-interactive" style="text-decoration: none;">
+                <div class="card-body" style="padding: 2rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="width: 3.5rem; height: 3.5rem; background: var(--success-100); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-journal-text" style="font-size: 1.5rem; color: var(--success-600);"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin: 0;">Exercices</h3>
+                            <p style="font-size: var(--text-xs); color: var(--text-muted); margin: 0;">Contenu pédagogique</p>
+                        </div>
+                    </div>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); margin: 0; line-height: 1.6;">
+                        Gérer le contenu des exercices et surveiller les sessions d'entraînement.
+                    </p>
+                    <div style="margin-top: 1.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--success-500);">
+                        <span style="font-size: var(--text-sm); font-weight: 500;">Accéder</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- Objectifs Card -->
+            <a href="{{ path('admin_gestion_objectifs_personnelles_index') }}" class="card card-interactive" style="text-decoration: none;">
+                <div class="card-body" style="padding: 2rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="width: 3.5rem; height: 3.5rem; background: var(--warning-100); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-bullseye" style="font-size: 1.5rem; color: var(--warning-600);"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin: 0;">Objectifs</h3>
+                            <p style="font-size: var(--text-xs); color: var(--text-muted); margin: 0;">Objectifs personnels</p>
+                        </div>
+                    </div>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); margin: 0; line-height: 1.6;">
+                        Gérer les objectifs personnels des utilisateurs et leur progression.
+                    </p>
+                    <div style="margin-top: 1.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--warning-500);">
+                        <span style="font-size: var(--text-sm); font-weight: 500;">Accéder</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- Habitudes Card -->
+            <a href="{{ path('admin_gestion_suivi_habitudes_index') }}" class="card card-interactive" style="text-decoration: none;">
+                <div class="card-body" style="padding: 2rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="width: 3.5rem; height: 3.5rem; background: rgba(99, 102, 241, 0.1); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-calendar-check" style="font-size: 1.5rem; color: var(--brand-500);"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin: 0;">Habitudes</h3>
+                            <p style="font-size: var(--text-xs); color: var(--text-muted); margin: 0;">Suivi quotidien</p>
+                        </div>
+                    </div>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); margin: 0; line-height: 1.6;">
+                        Superviser les habitudes et le suivi quotidien des utilisateurs.
+                    </p>
+                    <div style="margin-top: 1.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--brand-500);">
+                        <span style="font-size: var(--text-sm); font-weight: 500;">Accéder</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- Humeur Card -->
+            <a href="{{ path('admin_gestion_humeur_index') }}" class="card card-interactive" style="text-decoration: none;">
+                <div class="card-body" style="padding: 2rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="width: 3.5rem; height: 3.5rem; background: var(--info-100); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-emoji-smile" style="font-size: 1.5rem; color: var(--info-600);"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin: 0;">Humeur</h3>
+                            <p style="font-size: var(--text-xs); color: var(--text-muted); margin: 0;">Journal émotionnel</p>
+                        </div>
+                    </div>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); margin: 0; line-height: 1.6;">
+                        Analyser les humeurs et le bien-être émotionnel des utilisateurs.
+                    </p>
+                    <div style="margin-top: 1.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--info-500);">
+                        <span style="font-size: var(--text-sm); font-weight: 500;">Accéder</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- Stats Card -->
+            <div class="card" style="opacity: 0.7;">
+                <div class="card-body" style="padding: 2rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="width: 3.5rem; height: 3.5rem; background: var(--bg-secondary); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-bar-chart" style="font-size: 1.5rem; color: var(--text-muted);"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-size: var(--text-lg); font-weight: 600; color: var(--text-primary); margin: 0;">Statistiques</h3>
+                            <p style="font-size: var(--text-xs); color: var(--text-muted); margin: 0;">Bientôt disponible</p>
+                        </div>
+                    </div>
+                    <p style="font-size: var(--text-sm); color: var(--text-secondary); margin: 0; line-height: 1.6;">
+                        Rapports détaillés et analyses avancées de la plateforme.
+                    </p>
+                    <div style="margin-top: 1.5rem;">
+                        <span class="badge badge-default">Prochainement</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Recent Sessions -->
+    {% if recent_sessions is defined and recent_sessions|length > 0 %}
+    <section>
+        <h2 style="font-size: var(--text-xl); font-weight: 600; margin: 0 0 1.5rem 0;">
+            <i class="bi bi-clock-history" style="color: var(--brand-500);"></i>
+            Sessions récentes
+        </h2>
+        
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Exercice</th>
+                        <th>Date début</th>
+                        <th>Progression</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in recent_sessions %}
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 2rem; height: 2rem; background: var(--brand-100); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-person" style="color: var(--brand-600);"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 500;">{{ session.user.nomU }} {{ session.user.prenomU }}</div>
+                                    <div style="font-size: var(--text-xs); color: var(--text-muted);">{{ session.user.emailU }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ session.exercice.nom }}</td>
+                        <td>{{ session.dateDebut|date('d/m/Y H:i') }}</td>
+                        <td style="width: 150px;">
+                            {% include 'components/ui/ProgressBar.html.twig' with {
+                                value: session.progress|default(0),
+                                show_label: true,
+                                size: 'sm'
+                            } %}
+                        </td>
+                        <td>
+                            {% if session.terminee %}
+                                <span class="badge badge-success">
+                                    <i class="bi bi-check-circle"></i>
+                                    Terminée
+                                </span>
+                            {% else %}
+                                <span class="badge badge-warning">
+                                    <i class="bi bi-clock"></i>
+                                    En cours
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ path('admin_gestion_exercices_home') }}" class="btn btn-ghost btn-sm">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% else %}
+    <section>
+        {% include 'components/ui/EmptyState.html.twig' with {
+            icon: 'bi-clock-history',
+            title: 'Aucune session récente',
+            message: 'Les sessions apparaîtront ici dès que les utilisateurs commenceront à pratiquer des exercices.'
+        } %}
+    </section>
+    {% endif %}
+
+</div>
+{% endblock %}

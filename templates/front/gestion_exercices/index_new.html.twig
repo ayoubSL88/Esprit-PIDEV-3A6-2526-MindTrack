@@ -1,0 +1,89 @@
+{% extends 'layouts/front_base_new.html.twig' %}
+
+{% block page_title %}Mes Exercices{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+    
+    <!-- Page Header -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <h1 style="font-size: var(--text-3xl); font-weight: 700; margin: 0 0 0.5rem 0;">
+                    <i class="bi bi-journal-text" style="color: var(--brand-500);"></i>
+                    Mes Exercices
+                </h1>
+                <p style="font-size: var(--text-base); color: var(--text-secondary); margin: 0;">
+                    Découvrez et pratiquez des exercices adaptés à votre niveau
+                </p>
+            </div>
+            <a href="{{ path('front_gestion_exercices_home') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i>
+                Retour à l'espace exercices
+            </a>
+        </div>
+    </section>
+    
+    <!-- Filters -->
+    <section style="margin-bottom: 2rem;">
+        {% include 'components/exercises/ExerciseFilters.html.twig' with {
+            search_value: search|default(''),
+            difficulty_value: app.request.get('difficulte')|default(''),
+            action_path: 'front_gestion_exercices_index'
+        } %}
+    </section>
+    
+    <!-- Results Count -->
+    <section style="margin-bottom: 1.5rem;">
+        <p style="font-size: var(--text-sm); color: var(--text-muted); margin: 0;">
+            <i class="bi bi-list-ul"></i>
+            {% if exercices is defined %}
+                {{ exercices.getTotalItemCount|default(exercices|length) }} exercice(s) trouvé(s)
+            {% else %}
+                0 exercice trouvé
+            {% endif %}
+        </p>
+    </section>
+    
+    <!-- Exercise Grid -->
+    <section>
+        {% include 'components/exercises/ExerciseGrid.html.twig' with {
+            exercices: exercices|default([]),
+            empty_message: 'Essayez de modifier vos critères de recherche.',
+            empty_icon: 'bi-search',
+            empty_action_label: 'Voir tous les exercices',
+            empty_action_path: 'front_gestion_exercices_index'
+        } %}
+    </section>
+    
+    <!-- Pagination -->
+    {% if exercices is defined and exercices|length > 0 and exercices.getTotalItemCount is defined %}
+    <section style="margin-top: 2.5rem;">
+        <nav aria-label="Pagination" style="display: flex; justify-content: center; gap: 0.5rem;">
+            {% if exercices.currentPageNumber > 1 %}
+                <a href="{{ path('front_gestion_exercices_index', app.request.query.all|merge({'page': exercices.currentPageNumber - 1})) }}" class="btn btn-secondary">
+                    <i class="bi bi-chevron-left"></i>
+                    Précédent
+                </a>
+            {% endif %}
+            
+            {% for page in 1..exercices.pageCount %}
+                {% if page == exercices.currentPageNumber %}
+                    <span class="btn btn-primary">{{ page }}</span>
+                {% elseif page > exercices.currentPageNumber - 3 and page < exercices.currentPageNumber + 3 %}
+                    <a href="{{ path('front_gestion_exercices_index', app.request.query.all|merge({'page': page})) }}" class="btn btn-secondary">{{ page }}</a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if exercices.currentPageNumber < exercices.pageCount %}
+                <a href="{{ path('front_gestion_exercices_index', app.request.query.all|merge({'page': exercices.currentPageNumber + 1})) }}" class="btn btn-secondary">
+                    Suivant
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            {% endif %}
+        </nav>
+    </section>
+    {% endif %}
+    
+</div>
+{% endblock %}

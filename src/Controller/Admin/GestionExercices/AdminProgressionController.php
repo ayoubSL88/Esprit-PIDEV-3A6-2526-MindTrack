@@ -170,7 +170,7 @@ final class AdminProgressionController extends AbstractController
         $allUsers = $userRepository->findAll();
         $allExercices = $exerciceRepository->findAll();
         
-        return $this->render('admin/gestion_exercices/progression_index.html.twig', [
+        return $this->render('admin/gestion_exercices/progression_index_new.html.twig', [
             'global_progression' => [
                 'sessionsTerminees' => $totalSessions,
                 'tempsTotal' => round($totalTemps / 60),

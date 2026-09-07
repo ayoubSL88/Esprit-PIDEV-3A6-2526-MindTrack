@@ -37,7 +37,7 @@ final class AdminSessionController extends AbstractController
             20 // Sessions par page
         );
 
-        return $this->render('admin/gestion_exercices/sessions_index.html.twig', [
+        return $this->render('admin/gestion_exercices/sessions_index_new.html.twig', [
             'sessions' => $sessions
         ]);
     }
@@ -53,7 +53,7 @@ final class AdminSessionController extends AbstractController
         
         $sessions = $sessionRepository->findSessionsByUser($user);
         
-        return $this->render('admin/gestion_exercices/sessions_user.html.twig', [
+        return $this->render('admin/gestion_exercices/sessions_user_new.html.twig', [
             'user' => $user,
             'sessions' => $sessions
         ]);
@@ -68,7 +68,7 @@ final class AdminSessionController extends AbstractController
             throw $this->createNotFoundException('Session non trouvée');
         }
         
-        return $this->render('admin/gestion_exercices/sessions_show.html.twig', [
+        return $this->render('admin/gestion_exercices/sessions_show_new.html.twig', [
             'session' => $session
         ]);
     }

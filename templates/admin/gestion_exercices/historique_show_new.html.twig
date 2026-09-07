@@ -1,0 +1,175 @@
+{% extends 'layouts/admin_base_new.html.twig' %}
+
+{% block page_title %}Session #{{ session.idSession }} — Historique{% endblock %}
+
+{% block content %}
+<div style="max-width: 1100px; margin: 0 auto;">
+
+    <!-- Header -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <div style="margin-bottom: 0.5rem;">
+                    <span class="badge badge-success"><i class="bi bi-check-circle"></i> Terminée</span>
+                    <span style="color: var(--text-muted); font-size: var(--text-sm); margin-left: 0.5rem;">Session #{{ session.idSession }}</span>
+                </div>
+                <h1 style="font-size: var(--text-3xl); font-weight: 700; margin: 0;">
+                    <i class="bi bi-clock-history" style="color: var(--brand-500);"></i>
+                    Détails de la session
+                </h1>
+            </div>
+            <a href="{{ path('admin_historique_index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i>
+                Retour à l'historique
+            </a>
+        </div>
+    </section>
+
+    <!-- Progress Hero -->
+    <section style="margin-bottom: 2rem;">
+        <div class="card">
+            <div class="card-body" style="padding: 2rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                    <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0;">
+                        <i class="bi bi-graph-up" style="color: var(--success-500);"></i>
+                        Progression finale
+                    </h3>
+                    <span style="font-size: var(--text-3xl); font-weight: 800; color: var(--success-500);">{{ session.progress|default(0) }}%</span>
+                </div>
+                {% include 'components/ui/ProgressBar.html.twig' with { value: session.progress|default(0), show_label: false, size: 'lg' } %}
+                <div style="display: flex; gap: 2rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                    <div>
+                        <div style="font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Début</div>
+                        <div style="font-size: var(--text-sm); font-weight: 500;">{{ session.dateDebut|date('d/m/Y H:i:s') }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Fin</div>
+                        <div style="font-size: var(--text-sm); font-weight: 500;">{{ session.dateFin|date('d/m/Y H:i:s') }}</div>
+                    </div>
+                    {% if session.dureeReelle %}
+                    <div>
+                        <div style="font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Durée</div>
+                        <div style="font-size: var(--text-sm); font-weight: 500;">{{ (session.dureeReelle / 60)|round }} min</div>
+                    </div>
+                    {% endif %}
+                    {% if session.resultat %}
+                    <div>
+                        <div style="font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Résultat</div>
+                        <div style="font-size: var(--text-sm); font-weight: 500;">{{ session.resultat }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Info Cards Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+
+        <!-- Utilisateur -->
+        <div class="card">
+            <div class="card-header">
+                <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="bi bi-person-circle" style="color: var(--brand-500);"></i>
+                    Utilisateur
+                </h3>
+            </div>
+            <div class="card-body">
+                <div style="display: flex; align-items: center; gap: 1rem; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+                    <div style="width: 3rem; height: 3rem; background: var(--brand-100); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="bi bi-person" style="font-size: 1.25rem; color: var(--brand-600);"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--text-primary);">{{ session.user.nomU }} {{ session.user.prenomU }}</div>
+                        <div style="font-size: var(--text-sm); color: var(--text-muted);">{{ session.user.emailU }}</div>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: var(--text-sm);">
+                    <span style="color: var(--text-muted);">Âge</span>
+                    <span style="color: var(--text-primary);">{{ session.user.ageU }} ans</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exercice -->
+        <div class="card">
+            <div class="card-header">
+                <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="bi bi-journal-text" style="color: var(--success-500);"></i>
+                    Exercice pratiqué
+                </h3>
+            </div>
+            <div class="card-body">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 0.625rem 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-sm); color: var(--text-muted); width: 40%;">Nom</td>
+                        <td style="padding: 0.625rem 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-sm); font-weight: 600; color: var(--text-primary);">{{ session.exercice.nom }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.625rem 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-sm); color: var(--text-muted);">Type</td>
+                        <td style="padding: 0.625rem 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-sm); color: var(--text-secondary);">{{ session.exercice.type }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.625rem 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--text-sm); color: var(--text-muted);">Difficulté</td>
+                        <td style="padding: 0.625rem 0; border-bottom: 1px solid var(--border-subtle);">
+                            {% if session.exercice.difficulte == 'FACILE' %}<span class="badge badge-success">Facile</span>
+                            {% elseif session.exercice.difficulte == 'MOYEN' %}<span class="badge badge-warning">Moyen</span>
+                            {% else %}<span class="badge badge-error">Difficile</span>{% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.625rem 0; font-size: var(--text-sm); color: var(--text-muted);">Durée estimée</td>
+                        <td style="padding: 0.625rem 0; font-size: var(--text-sm); color: var(--text-secondary);">{{ session.exercice.duree }} min</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Commentaires -->
+    {% if session.commentaires %}
+    <section style="margin-bottom: 1.5rem;">
+        <div class="card">
+            <div class="card-header">
+                <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="bi bi-chat-text" style="color: var(--warning-500);"></i>
+                    Commentaires de l'utilisateur
+                </h3>
+            </div>
+            <div class="card-body">
+                <div style="background: var(--bg-secondary); border-left: 4px solid var(--warning-400, #fbbf24); border-radius: var(--radius-lg); padding: 1.25rem; font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.7;">
+                    {{ session.commentaires|nl2br }}
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Étapes -->
+    {% if session.steps %}
+    <section>
+        <div class="card">
+            <div class="card-header">
+                <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="bi bi-list-check" style="color: var(--success-500);"></i>
+                    Étapes réalisées
+                </h3>
+            </div>
+            <div class="card-body">
+                <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                    {% for step in session.steps %}
+                    <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <div style="width: 1.5rem; height: 1.5rem; background: var(--success-500); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="bi bi-check" style="color: white; font-size: 0.75rem;"></i>
+                        </div>
+                        <span style="font-size: var(--text-sm); color: var(--text-secondary);">{{ step }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+</div>
+{% endblock %}

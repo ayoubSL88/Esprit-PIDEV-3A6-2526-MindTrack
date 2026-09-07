@@ -1,0 +1,133 @@
+{% extends 'layouts/admin_base_new.html.twig' %}
+
+{% block page_title %}Modifier — {{ exercice.nom }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+
+    <!-- Header -->
+    <section style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    <span class="badge badge-warning">Modification</span>
+                </div>
+                <h1 style="font-size: var(--text-3xl); font-weight: 700; margin: 0;">
+                    <i class="bi bi-pencil-square" style="color: var(--warning-500);"></i>
+                    {{ exercice.nom }}
+                </h1>
+                <p style="font-size: var(--text-base); color: var(--text-secondary); margin: 0.5rem 0 0 0;">
+                    Modifiez les informations de cet exercice
+                </p>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <a href="{{ path('admin_gestion_exercices_show', {'idEx': exercice.idEx}) }}" class="btn btn-secondary">
+                    <i class="bi bi-eye"></i>
+                    Voir
+                </a>
+                <a href="{{ path('admin_gestion_exercices_index') }}" class="btn btn-ghost">
+                    <i class="bi bi-arrow-left"></i>
+                    Retour
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Form -->
+    <div class="card">
+        <div class="card-header">
+            <h3 style="font-size: var(--text-base); font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="bi bi-journal-text" style="color: var(--warning-500);"></i>
+                Informations de l'exercice
+            </h3>
+        </div>
+        <div class="card-body" style="padding: 2rem;">
+
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+            {% if form.vars.submitted and not form.vars.valid %}
+            {% include 'components/ui/Alert.html.twig' with {
+                type: 'error',
+                message: 'Veuillez corriger les erreurs dans le formulaire avant de continuer.',
+                dismissible: false
+            } %}
+            {% endif %}
+
+            <!-- Row 1: Nom + Type -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div>
+                    {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.nom, {'attr': {'class': 'input'}}) }}
+                    {% if form.nom.vars.errors|length > 0 %}
+                    <p style="color: var(--error-500); font-size: var(--text-xs); margin-top: 0.4rem;">{{ form_errors(form.nom) }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    {{ form_label(form.type, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.type, {'attr': {'class': 'input'}}) }}
+                    {% if form.type.vars.errors|length > 0 %}
+                    <p style="color: var(--error-500); font-size: var(--text-xs); margin-top: 0.4rem;">{{ form_errors(form.type) }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Row 2: Durée + Difficulté -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div>
+                    {{ form_label(form.duree, null, {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-wrapper">
+                        <i class="bi bi-clock input-icon"></i>
+                        {{ form_widget(form.duree, {'attr': {'class': 'input input-with-icon'}}) }}
+                    </div>
+                    {% if form.duree.vars.errors|length > 0 %}
+                    <p style="color: var(--error-500); font-size: var(--text-xs); margin-top: 0.4rem;">{{ form_errors(form.duree) }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    {{ form_label(form.difficulte, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.difficulte, {'attr': {'class': 'select'}}) }}
+                    {% if form.difficulte.vars.errors|length > 0 %}
+                    <p style="color: var(--error-500); font-size: var(--text-xs); margin-top: 0.4rem;">{{ form_errors(form.difficulte) }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div style="margin-bottom: 1.5rem;">
+                {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.description, {'attr': {'class': 'input', 'rows': 4}}) }}
+                {% if form.description.vars.errors|length > 0 %}
+                <p style="color: var(--error-500); font-size: var(--text-xs); margin-top: 0.4rem;">{{ form_errors(form.description) }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Demarche -->
+            <div style="margin-bottom: 2rem;">
+                {{ form_label(form.demarche, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.demarche, {'attr': {'class': 'input', 'rows': 6}}) }}
+                <p style="font-size: var(--text-xs); color: var(--text-muted); margin-top: 0.4rem;">
+                    <i class="bi bi-info-circle"></i>
+                    Séparez chaque étape par un retour à la ligne
+                </p>
+                {% if form.demarche.vars.errors|length > 0 %}
+                <p style="color: var(--error-500); font-size: var(--text-xs); margin-top: 0.4rem;">{{ form_errors(form.demarche) }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle);">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i>
+                    Enregistrer les modifications
+                </button>
+                <a href="{{ path('admin_gestion_exercices_index') }}" class="btn btn-secondary">
+                    Annuler
+                </a>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

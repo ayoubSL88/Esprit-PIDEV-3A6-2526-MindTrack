@@ -208,7 +208,7 @@ final class AdminHomeController extends AbstractController
             $selectedUser = $userRepo->find($selectedUserId);
         }
         
-        return $this->render('admin/gestion_exercices/home.html.twig', [
+        return $this->render('admin/gestion_exercices/home_new.html.twig', [
             // Stats générales
             'stats' => [
                 'total_exercices' => $totalExercices,
@@ -412,7 +412,7 @@ final class AdminHomeController extends AbstractController
             $selectedExercice = $exerciceRepo->find($selectedExerciceId);
         }
         
-        return $this->render('admin/gestion_exercices/statistiques.html.twig', [
+        return $this->render('admin/gestion_exercices/statistiques_new.html.twig', [
             'evolution_mensuelle' => array_values($evolutionMensuelle),
             'difficulte_stats' => $difficulteStats,
             'type_stats' => $typeStats,
