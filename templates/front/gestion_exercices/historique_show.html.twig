@@ -185,6 +185,14 @@ align-items: center;
         .progress-fill-large.primary {
             background: linear-gradient(90deg, #6366f1, #8b5cf6);
         }
+
+        .progress-fill-large.partial {
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+
+        .progress-fill-large.failed {
+            background: linear-gradient(90deg, #ef4444, #fb7185);
+        }
         
         /* ZONE DÉMARCHE */
         .demarche-box {
@@ -345,9 +353,9 @@ align-items: center;
                                 <th>📊 Progression</th>
                                 <td>
                                     <div class="progress-large">
-                                        <div class="progress-fill-large {% if session.progress == 100 %}success{% else %}primary{% endif %}" 
-                                             style="width: {{ session.progress|default(0) }}%">
-                                            {{ session.progress|default(0) }}%
+                                        <div class="progress-fill-large {% if session_progress >= 80 %}success{% elseif session_progress >= 50 %}partial{% else %}failed{% endif %}"
+                                            style="width: {{ session_progress }}%">
+                                            {{ session_progress }}%
                                         </div>
                                     </div>
                                 </td>
@@ -355,10 +363,12 @@ align-items: center;
                             <tr>
                                 <th>🎖️ Résultat</th>
                                 <td>
-                                    {% if session.resultat %}
-                                        <span class="badge-modern badge-facile">✅ {{ session.resultat }}</span>
+                                    {% if session_progress >= 80 %}
+                                        <span class="badge-modern badge-facile">✅ Réussi</span>
+                                    {% elseif session_progress >= 50 %}
+                                        <span class="badge-modern badge-moyen">⚠️ Partiellement réussi</span>
                                     {% else %}
-                                        <span class="badge-modern badge-duree">✓ Terminé</span>
+                                        <span class="badge-modern badge-difficile">🔄 À refaire</span>
                                     {% endif %}
                                 </td>
                             </tr>

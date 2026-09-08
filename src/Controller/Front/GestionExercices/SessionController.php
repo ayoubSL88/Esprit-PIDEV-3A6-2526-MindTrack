@@ -57,8 +57,9 @@ final class SessionController extends AbstractController
         }
         
         if (isset($data['steps'])) {
-            $currentSteps = $session->getSteps() ?? [];
-            $session->setSteps(array_merge($currentSteps, $data['steps']));
+            $steps = is_array($data['steps']) ? $data['steps'] : [];
+            $steps = array_values(array_filter($steps, static fn ($step): bool => is_string($step) && trim($step) !== ''));
+            $session->setSteps($steps);
         }
         
         $em->flush();
@@ -86,16 +87,24 @@ final class SessionController extends AbstractController
         $dureeReelle = $dateFin->getTimestamp() - $dateDebut->getTimestamp();
         $session->setDureeReelle($dureeReelle);
         
-        if (isset($data['resultat'])) {
-            $session->setResultat($data['resultat']);
+        if (isset($data['progress']) && is_numeric($data['progress'])) {
+            $session->setProgress(min(100, max(0, (int) $data['progress'])));
         }
         
         if (isset($data['commentaires'])) {
             $session->setCommentaires($data['commentaires']);
         }
-        
-        // Mettre à jour la progression à 100% si terminé
-        $session->setProgress(100);
+
+        $steps = $session->getSteps() ?? [];
+        $steps = array_values(array_filter($steps, static fn ($step): bool => is_string($step) && trim($step) !== ''));
+        $session->setSteps($steps);
+
+        $progress = $session->getProgress() ?? 0;
+        $session->setResultat(
+            $progress >= 80
+                ? 'Réussi'
+                : ($progress >= 50 ? 'Partiellement réussi' : 'À refaire')
+        );
         
         $em->flush();
 

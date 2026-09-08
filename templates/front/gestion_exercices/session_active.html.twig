@@ -533,6 +533,7 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         dureeReelle: dureeReelle,
+                        progress: currentProgress,
                         resultat: currentProgress >= 80 ? 'Réussi' : (currentProgress >= 50 ? 'Partiellement réussi' : 'À refaire'),
                         commentaires: commentaires
                     })

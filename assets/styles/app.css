@@ -753,6 +753,43 @@ html {
     @apply text-xs font-medium text-danger;
   }
 
+  .captcha-widget {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .captcha-shell {
+    max-width: 100%;
+  }
+
+  .captcha-image {
+    min-height: 3.5rem;
+    max-height: 4rem;
+  }
+
+  .captcha-actions .btn {
+    min-height: 2rem;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+
+  .captcha-input .field-input {
+    min-height: 2.15rem;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+  }
+
+  @media (max-width: 480px) {
+    .captcha-fields {
+      grid-template-columns: 1fr;
+    }
+
+    .captcha-actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
   .form-stack ul {
     @apply m-0 list-none p-0;
   }

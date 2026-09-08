@@ -174,7 +174,8 @@
         }
         
         .progress-fill.success { background: linear-gradient(90deg, #10b981, #34d399); }
-        .progress-fill.primary { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+        .progress-fill.partial { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .progress-fill.failed { background: linear-gradient(90deg, #ef4444, #fb7185); }
         
         .progress-percent {
             font-size: 0.8rem;
@@ -203,6 +204,16 @@
         .badge-secondary {
             background: #f1f5f9;
             color: #64748b;
+        }
+
+        .badge-partial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-failed {
+            background: #fecdd3;
+            color: #9f1239;
         }
         
         .btn-modern {
@@ -355,6 +366,7 @@
                             </thead>
                             <tbody>
                                 {% for session in sessions %}
+                                    {% set sessionProgress = progressions[session.idSession]|default(0) %}
                                     <tr>
                                         <td>
                                             <div class="exercice-name">{{ session.exercice.nom }}</div>
@@ -373,17 +385,19 @@
                                         <td>
                                             <div class="progress-wrapper">
                                                 <div class="progress-bar-modern">
-                                                    <div class="progress-fill {% if session.progress == 100 %}success{% else %}primary{% endif %}" 
-                                                         style="width: {{ session.progress|default(0) }}%"></div>
+                                                    <div class="progress-fill {% if sessionProgress >= 80 %}success{% elseif sessionProgress >= 50 %}partial{% else %}failed{% endif %}"
+                                                         style="width: {{ sessionProgress }}%"></div>
                                                 </div>
-                                                <span class="progress-percent">{{ session.progress|default(0) }}%</span>
+                                                <span class="progress-percent">{{ sessionProgress }}%</span>
                                             </div>
                                         </td>
                                         <td>
-                                            {% if session.resultat %}
-                                                <span class="badge-result badge-success">✅ {{ session.resultat }}</span>
+                                            {% if sessionProgress >= 80 %}
+                                                <span class="badge-result badge-success">✅ Réussi</span>
+                                            {% elseif session.progress >= 50 %}
+                                                <span class="badge-result badge-partial">⚠️ Partiellement réussi</span>
                                             {% else %}
-                                                <span class="badge-result badge-secondary">✓ Terminé</span>
+                                                <span class="badge-result badge-failed">🔄 À refaire</span>
                                             {% endif %}
                                         </td>
                                         <td>
