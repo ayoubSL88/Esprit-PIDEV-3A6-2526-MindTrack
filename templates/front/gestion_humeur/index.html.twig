@@ -73,8 +73,8 @@
                             {% for humeur in humeurs %}
                                 <tr data-search-value="{{ humeur.typeHumeur|lower }}" data-date-value="{{ humeur.date|date('Y-m-d') }}" data-intensity-value="{{ humeur.intensite }}">
                                     <td class="table-td">{{ humeur.date|date('Y-m-d') }}</td>
-                                    <td class="table-td">{{ humeur.typeHumeur }}</td>
-                                    <td class="table-td">{{ humeur.intensite }}/10</td>
+                                    <td class="table-td"><span class="mood-severity mood-severity-{{ humeur.intensite }}">{{ humeur.typeHumeur }}</span></td>
+                                    <td class="table-td"><span class="mood-severity mood-severity-{{ humeur.intensite }}">{{ humeur.intensite }}/10</span></td>
                                     <td class="table-td">
                                         <div class="button-row">
                                             <a class="btn-secondary px-4 py-2" href="{{ path('front_gestion_humeur_show', {idH: humeur.idH}) }}">View</a>

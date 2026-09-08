@@ -3,7 +3,7 @@ namespace App\Controller\Admin;
 
 use App\Repository\ExerciceRepository;
 use App\Repository\SessionRepository;
-use App\Entity\Utilisateur;
+use App\Repository\UtilisateurRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,11 +16,8 @@ final class DashboardController extends AbstractController
     public function index(
         ExerciceRepository $exerciceRepo,
         SessionRepository $sessionRepo,
-        EntityManagerInterface $entityManager
+        UtilisateurRepository $utilisateurRepo
     ): Response {
-        // Récupérer le repository Utilisateur via l'EntityManager
-        // $userRepo = $entityManager->getRepository(Utilisateur::class);
-
         // Compter les exercices
         $exercicesCount = $exerciceRepo->count([]);
         
@@ -28,8 +25,7 @@ final class DashboardController extends AbstractController
         $sessionsCount = $sessionRepo->count([]);
         
         // Compter les utilisateurs
-        //$usersCount = $userRepo->count([]);
-        $usersCount = 0;
+        $usersCount = $utilisateurRepo->count([]);
         
         // Calculer la progression moyenne
         $allSessions = $sessionRepo->findAll();

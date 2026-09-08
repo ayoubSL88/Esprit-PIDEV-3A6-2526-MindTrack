@@ -103,10 +103,37 @@
                     <span class="sidebar-link-text {% if collapsed %}hidden{% endif %}">Accueil</span>
                 </a>
                 
-                <a href="{{ path('front_gestion_exercices_home') }}" class="sidebar-link {{ current_route starts with 'front_gestion_exercices_' ? 'active' : '' }}">
+                {% set front_exercices_active = current_route starts with 'front_gestion_exercices_'
+                    or current_route starts with 'front_session_'
+                    or current_route starts with 'front_historique_'
+                    or current_route starts with 'front_progression_'
+                    or current_route == 'front_youtube_recommendations' %}
+
+                <a href="{{ path('front_gestion_exercices_home') }}" class="sidebar-link {{ front_exercices_active ? 'active' : '' }}">
                     <i class="bi bi-journal-text"></i>
                     <span class="sidebar-link-text {% if collapsed %}hidden{% endif %}">Exercices</span>
                 </a>
+
+                {% if front_exercices_active and not collapsed %}
+                <div style="margin-left: 1rem; border-left: 2px solid var(--border-light); padding-left: 0.75rem; margin-bottom: 0.25rem;">
+                    <a href="{{ path('front_gestion_exercices_index') }}" class="sidebar-link {{ current_route == 'front_gestion_exercices_index' ? 'active' : '' }}" style="padding: 0.4rem 0.75rem; font-size: var(--text-xs);">
+                        <i class="bi bi-list-ul" style="font-size: 0.8rem;"></i>
+                        <span class="sidebar-link-text">Liste</span>
+                    </a>
+                    <a href="{{ path('front_historique_index') }}" class="sidebar-link {{ current_route starts with 'front_historique_' ? 'active' : '' }}" style="padding: 0.4rem 0.75rem; font-size: var(--text-xs);">
+                        <i class="bi bi-clock-history" style="font-size: 0.8rem;"></i>
+                        <span class="sidebar-link-text">Historique</span>
+                    </a>
+                    <a href="{{ path('front_progression_index') }}" class="sidebar-link {{ current_route starts with 'front_progression_' ? 'active' : '' }}" style="padding: 0.4rem 0.75rem; font-size: var(--text-xs);">
+                        <i class="bi bi-graph-up-arrow" style="font-size: 0.8rem;"></i>
+                        <span class="sidebar-link-text">Progression</span>
+                    </a>
+                    <a href="{{ path('front_youtube_recommendations') }}" class="sidebar-link {{ current_route == 'front_youtube_recommendations' ? 'active' : '' }}" style="padding: 0.4rem 0.75rem; font-size: var(--text-xs);">
+                        <i class="bi bi-youtube" style="font-size: 0.8rem;"></i>
+                        <span class="sidebar-link-text">Vidéos</span>
+                    </a>
+                </div>
+                {% endif %}
                 
                 <a href="{{ path('front_gestion_objectifs_personnelles_index') }}" class="sidebar-link {{ current_route starts with 'front_gestion_objectifs_personnelles_' ? 'active' : '' }}">
                     <i class="bi bi-bullseye"></i>

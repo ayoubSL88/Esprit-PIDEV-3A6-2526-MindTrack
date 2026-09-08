@@ -3,15 +3,17 @@
 {% block title %}Front - {% block page_title %}MindTrack{% endblock %}{% endblock %}
 
 {% block body %}
-    {% include 'shared/_navbar.html.twig' with { office: 'front' } %}
+    {% include 'components/layout/Sidebar.html.twig' with { office: 'front' } %}
 
-    <main class="page-shell">
-        <div class="app-shell">
-            <section class="page-card">
-                {% block content %}{% endblock %}
-            </section>
+    <main class="main-content">
+        {% include 'components/layout/TopBar.html.twig' with { office: 'front' } %}
+
+        <div style="padding: 2rem; max-width: 1400px; margin: 0 auto;">
+            {% block content %}{% endblock %}
         </div>
     </main>
+
+    {% include 'components/layout/MobileNav.html.twig' with { office: 'front' } %}
 
     {% block floating_widgets %}{% endblock %}
     {% block javascripts %}{% endblock %}

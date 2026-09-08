@@ -292,11 +292,6 @@
                 <h1>📜 Mon historique d'exercices</h1>
                 <p>📊 Suivi détaillé de toutes tes séances et progression</p>
             </div>
-            <div style="display: flex; gap: 12px;">
-                <a class="btn-outline-primary-modern" href="{{ path('front_gestion_exercices_home') }}">
-                    ← Retour à l'espace d'exercices
-                </a>
-            </div>
         </section>
 
         <!-- STATISTIQUES RAPIDES -->
@@ -316,6 +311,15 @@
                 <div class="stat-value">{{ stats.moyenne_progression|default(0)|round }}%</div>
                 <div class="stat-label">Progression moyenne</div>
             </div>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <a class="btn btn-secondary" href="{{ path('front_gestion_exercices_home') }}">
+                <i class="bi bi-arrow-left"></i> Retour aux exercices
+            </a>
+            <a class="btn btn-primary" href="{{ path('front_progression_index') }}">
+                <i class="bi bi-graph-up"></i> Voir ma progression
+            </a>
         </div>
 
         <!-- LISTE DES SESSIONS -->

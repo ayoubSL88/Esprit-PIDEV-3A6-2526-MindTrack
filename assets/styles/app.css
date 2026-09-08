@@ -914,6 +914,33 @@ html {
     @apply w-full rounded-2xl border border-border bg-white/95 px-4 py-3 text-sm text-ink shadow-sm outline-none transition placeholder:text-muted/80 focus:border-brand focus:ring-2 focus:ring-brand/20;
   }
 
+  .field-input,
+  .field-select,
+  .form-input,
+  .form-select,
+  .form-control {
+    min-height: 2.35rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .field-input:user-invalid,
+  .field-select:user-invalid,
+  .form-input:invalid:not(:placeholder-shown),
+  .form-select:invalid,
+  .form-control:invalid:not(:placeholder-shown) {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px var(--danger-soft);
+  }
+
+  .field-error,
+  .form-error,
+  .invalid-feedback {
+    color: var(--danger);
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+
   .field-select {
     @apply field-input;
   }
@@ -929,6 +956,58 @@ html {
     border-color: rgb(22 163 74 / 0.7);
     box-shadow: 0 0 0 3px rgb(22 163 74 / 0.16);
   }
+
+  .exercise-card-easy {
+    border-top: 4px solid var(--success-500);
+  }
+
+  .exercise-card-medium {
+    border-top: 4px solid var(--warning-500);
+  }
+
+  .exercise-card-hard {
+    border-top: 4px solid var(--danger-500);
+  }
+
+  .mood-level {
+    @apply inline-flex items-center justify-center rounded-full font-bold transition;
+    min-width: 2.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: var(--text-xs);
+    color: #ffffff;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .mood-level:hover {
+    color: #ffffff;
+    transform: translateY(-2px) scale(1.05);
+  }
+
+  .mood-level-1 { background: linear-gradient(135deg, #b91c1c, #ef4444); }
+  .mood-level-2 { background: linear-gradient(135deg, #dc2626, #f97316); }
+  .mood-level-3 { background: linear-gradient(135deg, #ea580c, #f59e0b); }
+  .mood-level-4 { background: linear-gradient(135deg, #d97706, #eab308); color: #422006; }
+  .mood-level-5 { background: linear-gradient(135deg, #ca8a04, #84cc16); color: #1a2e05; }
+  .mood-level-6 { background: linear-gradient(135deg, #65a30d, #22c55e); }
+  .mood-level-7 { background: linear-gradient(135deg, #16a34a, #10b981); }
+  .mood-level-8 { background: linear-gradient(135deg, #059669, #14b8a6); }
+  .mood-level-9 { background: linear-gradient(135deg, #0891b2, #06b6d4); }
+  .mood-level-10 { background: linear-gradient(135deg, #2563eb, #7c3aed); }
+
+  .mood-severity {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold;
+  }
+
+  .mood-severity-1 { background: #fee2e2; color: #991b1b; }
+  .mood-severity-2 { background: #fecaca; color: #b91c1c; }
+  .mood-severity-3 { background: #fed7aa; color: #c2410c; }
+  .mood-severity-4 { background: #ffedd5; color: #c2410c; }
+  .mood-severity-5 { background: #fef3c7; color: #a16207; }
+  .mood-severity-6 { background: #ecfccb; color: #4d7c0f; }
+  .mood-severity-7 { background: #dcfce7; color: #15803d; }
+  .mood-severity-8 { background: #d1fae5; color: #047857; }
+  .mood-severity-9 { background: #cffafe; color: #0e7490; }
+  .mood-severity-10 { background: #dbeafe; color: #1d4ed8; }
 
   .field-error {
     @apply text-xs font-medium text-danger;
@@ -2002,4 +2081,225 @@ html {
 
   .hero-grid > .panel-section:first-child .mt-habitudes-grid {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  /* Vivid exercise palette */
+  .exercise-card,
+  .mt-exercise-card {
+    border-color: #c7d2fe;
+    box-shadow: 0 12px 30px rgba(79, 70, 229, 0.12);
+  }
+
+  .exercise-card-easy,
+  .mt-exercise-card:has(.badge-easy),
+  .mt-exercise-card:has(.mt-badge-facile) {
+    border-top: 5px solid #16a34a;
+    background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 38%);
+  }
+
+  .exercise-card-medium,
+  .mt-exercise-card:has(.badge-medium),
+  .mt-exercise-card:has(.mt-badge-moyen) {
+    border-top: 5px solid #f59e0b;
+    background: linear-gradient(180deg, #fffbeb 0%, #ffffff 38%);
+  }
+
+  .exercise-card-hard,
+  .mt-exercise-card:has(.badge-hard),
+  .mt-exercise-card:has(.mt-badge-difficile) {
+    border-top: 5px solid #ef4444;
+    background: linear-gradient(180deg, #fff1f2 0%, #ffffff 38%);
+  }
+
+  .badge-easy,
+  .mt-badge-facile {
+    background: #bbf7d0;
+    color: #166534;
+    border: 1px solid #4ade80;
+  }
+
+  .badge-medium,
+  .mt-badge-moyen {
+    background: #fde68a;
+    color: #92400e;
+    border: 1px solid #fbbf24;
+  }
+
+  .badge-hard,
+  .mt-badge-difficile {
+    background: #fecdd3;
+    color: #9f1239;
+    border: 1px solid #fb7185;
+  }
+
+  .badge-primary,
+  .mt-tag {
+    background: #dbeafe;
+    color: #1d4ed8;
+    border: 1px solid #60a5fa;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    box-shadow: 0 8px 18px rgba(79, 70, 229, 0.28);
+  }
+
+  .btn-primary:hover {
+    filter: saturate(1.25) brightness(1.05);
+  }
+
+  .mt-icon-badge {
+    background: linear-gradient(135deg, #f97316, #ec4899);
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(236, 72, 153, 0.24);
+  }
+
+  .table-head {
+    background: linear-gradient(90deg, #dbeafe, #ede9fe, #fce7f3);
+  }
+
+  .table-th {
+    color: #4338ca;
+  }
+
+  /* Shared vivid treatment for legacy exercise, session, mood and media views */
+  body .mood-level,
+  body .mood-btn {
+    border: 2px solid rgba(255, 255, 255, 0.55) !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(30, 41, 59, 0.2) !important;
+  }
+
+  body .mood-level-1,
+  body .mood-1 { background: linear-gradient(135deg, #ef4444, #be123c) !important; }
+  body .mood-level-2,
+  body .mood-2 { background: linear-gradient(135deg, #f97316, #ea580c) !important; }
+  body .mood-level-3,
+  body .mood-3 { background: linear-gradient(135deg, #f59e0b, #d97706) !important; }
+  body .mood-level-4,
+  body .mood-4 { background: linear-gradient(135deg, #eab308, #ca8a04) !important; color: #422006 !important; }
+  body .mood-level-5,
+  body .mood-5 { background: linear-gradient(135deg, #84cc16, #4d7c0f) !important; }
+  body .mood-level-6,
+  body .mood-6 { background: linear-gradient(135deg, #22c55e, #15803d) !important; }
+  body .mood-level-7,
+  body .mood-7 { background: linear-gradient(135deg, #10b981, #047857) !important; }
+  body .mood-level-8,
+  body .mood-8 { background: linear-gradient(135deg, #14b8a6, #0f766e) !important; }
+  body .mood-level-9,
+  body .mood-9 { background: linear-gradient(135deg, #06b6d4, #0369a1) !important; }
+  body .mood-level-10,
+  body .mood-10 { background: linear-gradient(135deg, #3b82f6, #7c3aed) !important; }
+
+  body .mood-severity-1 { background: #fecaca !important; color: #991b1b !important; }
+  body .mood-severity-2 { background: #fed7aa !important; color: #9a3412 !important; }
+  body .mood-severity-3 { background: #fef08a !important; color: #854d0e !important; }
+  body .mood-severity-4 { background: #bef264 !important; color: #3f6212 !important; }
+  body .mood-severity-5 { background: #86efac !important; color: #166534 !important; }
+  body .mood-severity-6 { background: #5eead4 !important; color: #115e59 !important; }
+  body .mood-severity-7 { background: #67e8f9 !important; color: #155e75 !important; }
+  body .mood-severity-8 { background: #93c5fd !important; color: #1e3a8a !important; }
+  body .mood-severity-9 { background: #a5b4fc !important; color: #3730a3 !important; }
+  body .mood-severity-10 { background: #c4b5fd !important; color: #5b21b6 !important; }
+
+  body .ia-card,
+  body .search-card,
+  body .wellness-card,
+  body .exercise-header {
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 55%, #db2777 100%) !important;
+  }
+
+  body .session-header-card {
+    background: linear-gradient(135deg, #059669 0%, #14b8a6 55%, #06b6d4 100%) !important;
+  }
+
+  body .stat-card,
+  body .main-card,
+  body .chart-card,
+  body .progression-card,
+  body .table-container,
+  body .info-card,
+  body .video-card,
+  body .card {
+    border-color: #c7d2fe !important;
+    box-shadow: 0 14px 30px rgba(79, 70, 229, 0.12) !important;
+  }
+
+  body .stat-card:nth-child(1) { border-top: 4px solid #6366f1 !important; }
+  body .stat-card:nth-child(2) { border-top: 4px solid #10b981 !important; }
+  body .stat-card:nth-child(3) { border-top: 4px solid #f59e0b !important; }
+  body .stat-card:nth-child(4) { border-top: 4px solid #ec4899 !important; }
+
+  body .modern-table thead tr,
+  body .progression-table th,
+  body .table thead {
+    background: linear-gradient(90deg, #2563eb, #7c3aed, #db2777) !important;
+    color: #ffffff !important;
+  }
+
+  body .modern-table th,
+  body .progression-table th,
+  body .table thead th {
+    color: #ffffff !important;
+  }
+
+  body .progression-table thead tr {
+    background: linear-gradient(90deg, #2563eb 0%, #7c3aed 50%, #db2777 100%) !important;
+  }
+
+  body .progression-table thead th {
+    background: transparent !important;
+  }
+
+  body .modern-table th:last-child,
+  body .modern-table td:last-child {
+    min-width: 150px;
+    width: 150px;
+  }
+
+  body .progression-table th:nth-child(4),
+  body .progression-table td:nth-child(4) {
+    min-width: 150px;
+    width: 150px;
+  }
+
+  body .progression-table th:last-child,
+  body .progression-table td:last-child {
+    min-width: 150px;
+    width: 150px;
+  }
+
+  body .badge-facile,
+  body .badge-easy,
+  body .badge-success { background: #bbf7d0 !important; color: #166534 !important; border: 1px solid #22c55e !important; }
+  body .badge-moyen,
+  body .badge-medium,
+  body .badge-warning { background: #fde68a !important; color: #92400e !important; border: 1px solid #f59e0b !important; }
+  body .badge-difficile,
+  body .badge-hard,
+  body .badge-error { background: #fecdd3 !important; color: #9f1239 !important; border: 1px solid #f43f5e !important; }
+
+  body .video-title,
+  body .exercice-name,
+  body .stat-value { color: #172554 !important; }
+
+  body .video-channel,
+  body .exercice-type,
+  body .stat-label { color: #475569 !important; }
+
+  body .similarity-badge,
+  body .btn-admin-info,
+  body .btn-outline-info { background: #bfdbfe !important; color: #1d4ed8 !important; }
+
+  body .btn-refaire,
+  body .btn-primary-modern,
+  body .search-btn {
+    background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(79, 70, 229, 0.25) !important;
+  }
+
+  body .empty-state {
+    background: linear-gradient(135deg, #eff6ff, #fdf2f8) !important;
+    color: #475569 !important;
   }

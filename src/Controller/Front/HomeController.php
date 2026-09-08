@@ -5,15 +5,20 @@ namespace App\Controller\Front;
 use App\Repository\ExerciceRepository;
 use App\Repository\SessionRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class HomeController extends AbstractController
 {
     #[Route('/', name: 'front_home')]
-    public function index(ExerciceRepository $exerciceRepo, SessionRepository $sessionRepo): Response
+    public function index(ExerciceRepository $exerciceRepo, SessionRepository $sessionRepo): Response|RedirectResponse
     {
         $user = $this->getUser();
+
+        if ($user === null) {
+            return $this->redirectToRoute('app_login');
+        }
         
         // Derniers exercices ajoutés
         $recentExercices = $exerciceRepo->findBy([], ['date_creation' => 'DESC'], 6);

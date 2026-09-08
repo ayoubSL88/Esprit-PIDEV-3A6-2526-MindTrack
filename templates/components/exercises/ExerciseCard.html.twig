@@ -14,7 +14,8 @@
 {% set show_actions = show_actions|default(true) %}
 
 {% if exercice %}
-<article class="exercise-card">
+{% set difficultyClass = exercice.difficulte == 'FACILE' ? 'exercise-card-easy' : (exercice.difficulte == 'MOYEN' ? 'exercise-card-medium' : 'exercise-card-hard') %}
+<article class="exercise-card {{ difficultyClass }}">
     <!-- Header -->
     <div class="exercise-card-header">
         <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0; color: var(--text-primary);">

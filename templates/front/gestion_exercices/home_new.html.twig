@@ -71,8 +71,7 @@
                         <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;">
                             {% for mood in 1..10 %}
                                 <a href="{{ path('front_suggestion_by_mood', {'mood': mood}) }}" 
-                                   class="btn {% if mood <= 3 %}btn-danger{% elseif mood <= 6 %}btn-warning{% else %}btn-success{% endif %}"
-                                   style="padding: 0.5rem 0.75rem; font-size: var(--text-xs); min-width: 2.5rem;"
+                                              class="mood-level mood-level-{{ mood }}"
                                    title="Humeur: {{ mood }}/10">
                                     {{ mood }}
                                 </a>

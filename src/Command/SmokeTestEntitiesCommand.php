@@ -250,7 +250,7 @@ final class SmokeTestEntitiesCommand extends Command
 
             $session = new Session();
             $session->setIdSession($nextSessionId);
-            $session->setIdEx($exercice);
+            $session->setExercice($exercice);
             $session->setDateSession(new DateTime('today'));
             $session->setDateDebut(new DateTime());
             $session->setDateFin(new DateTime('+10 minutes'));

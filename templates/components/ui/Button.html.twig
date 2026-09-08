@@ -70,7 +70,7 @@
             <i class="bi {{ icon }}"></i>
         {% endif %}
         {% if not icon_only %}
-            {% block content %}{% endblock %}
+            {{ block('content') }}
         {% endif %}
     </a>
 {% else %}
@@ -79,7 +79,7 @@
             <i class="bi {{ icon }}"></i>
         {% endif %}
         {% if not icon_only %}
-            {% block content %}{% endblock %}
+            {{ block('content') }}
         {% endif %}
     </button>
 {% endif %}

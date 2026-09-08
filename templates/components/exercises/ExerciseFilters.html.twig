@@ -26,7 +26,7 @@
                     type="text" 
                     id="search" 
                     name="search" 
-                    class="form-input"
+                    class="form-input form-input-sm"
                     placeholder="Rechercher un exercice..."
                     value="{{ search_value }}"
                 >
@@ -45,7 +45,7 @@
         <select 
             id="difficulty" 
             name="difficulty" 
-            class="form-select"
+            class="form-select form-input-sm"
             onchange="window.location.href=this.value"
         >
             <option value="{{ path(action_path) }}" {% if not difficulty_value %}selected{% endif %}>

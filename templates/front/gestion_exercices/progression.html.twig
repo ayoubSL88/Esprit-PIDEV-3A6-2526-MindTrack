@@ -155,6 +155,26 @@
             box-shadow: 0 8px 30px rgba(0,0,0,0.05);
             border: 1px solid #f1f5f9;
         }
+
+        .progression-card .progression-header {
+            padding: 20px 24px;
+            border-bottom: 2px solid #f1f5f9;
+            background: white;
+        }
+
+        .progression-card .progression-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .progression-card .progression-table th {
+            padding: 16px 20px;
+            text-align: left;
+        }
+
+        .progression-card .progression-table td {
+            padding: 16px 20px;
+        }
         
         .progression-header {
             padding: 20px 24px;
@@ -361,8 +381,8 @@
         </div>
 
         <!-- PROGRESSION PAR EXERCICE -->
-        <div class="progression-card">
-            <div class="progression-header">
+        <div class="main-card progression-card">
+            <div class="card-header-modern progression-header">
                 <h5>
                     <span>📋</span> Progression par exercice
                 </h5>
@@ -386,7 +406,7 @@
                     </div>
                 {% else %}
                     <div style="overflow-x: auto;">
-                        <table class="progression-table">
+                        <table class="modern-table progression-table">
                             <thead>
                                 <tr>
                                     <th>Exercice</th>

@@ -34,7 +34,7 @@
                 <i class="bi bi-house"></i>
                 <span class="mobile-nav-link-text">Accueil</span>
             </a>
-            <a href="{{ path('front_gestion_exercices_home') }}" class="mobile-nav-link {{ current_route starts with 'front_gestion_exercices_' ? 'active' : '' }}">
+            <a href="{{ path('front_gestion_exercices_home') }}" class="mobile-nav-link {{ current_route starts with 'front_gestion_exercices_' or current_route starts with 'front_session_' or current_route starts with 'front_historique_' or current_route starts with 'front_progression_' or current_route == 'front_youtube_recommendations' ? 'active' : '' }}">
                 <i class="bi bi-journal-text"></i>
                 <span class="mobile-nav-link-text">Exercices</span>
             </a>
